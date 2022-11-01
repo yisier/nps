@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"fmt"
 	"ehang.io/nps/lib/common"
 	"ehang.io/nps/lib/rate"
 )
@@ -19,14 +18,11 @@ func NewJsonDb(runPath string) *JsonDb {
 	HostFile := filepath.Join(runPath, "db", "hosts.json")
 	ClientFile := filepath.Join(runPath, "db", "clients.json")
 	exist, _ := PathExists(TaskFile)
-	fmt.Println(exist)
 	if !exist{
 		_, _ = os.Create(TaskFile)
 		_, _ = os.Create(HostFile)
 		_, _ = os.Create(ClientFile)
 	}
-	exist, _ = PathExists(TaskFile)
-	fmt.Println(exist)
 	return &JsonDb{
 		RunPath:        runPath,
 		TaskFilePath:   TaskFile,
