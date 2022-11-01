@@ -9,18 +9,45 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-
+	"fmt"
 	"ehang.io/nps/lib/common"
 	"ehang.io/nps/lib/rate"
 )
 
 func NewJsonDb(runPath string) *JsonDb {
+	TaskFile := filepath.Join(runPath, "db", "tasks.json")
+	HostFile := filepath.Join(runPath, "db", "hosts.json")
+	ClientFile := filepath.Join(runPath, "db", "clients.json")
+	exist, _ := PathExists(TaskFile)
+	fmt.Println(exist)
+	if !exist{
+		_, _ = os.Create(TaskFile)
+		_, _ = os.Create(HostFile)
+		_, _ = os.Create(ClientFile)
+	}
+	exist, _ = PathExists(TaskFile)
+	fmt.Println(exist)
 	return &JsonDb{
 		RunPath:        runPath,
-		TaskFilePath:   filepath.Join(runPath, "conf", "tasks.json"),
-		HostFilePath:   filepath.Join(runPath, "conf", "hosts.json"),
-		ClientFilePath: filepath.Join(runPath, "conf", "clients.json"),
+		TaskFilePath:   TaskFile,
+		HostFilePath:   HostFile,
+		ClientFilePath: ClientFile,
 	}
+}
+
+func PathExists(path string) (bool, error) {
+    _, err := os.Stat(path)
+    if err == nil {
+        return true, nil
+    }
+    if os.IsNotExist(err) {
+        return false, nil
+    }
+    return false, err
+}
+
+func CreateJsonDb(path string){
+
 }
 
 type JsonDb struct {
