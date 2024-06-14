@@ -1,23 +1,24 @@
 package main
 
 import (
-	"ehang.io/nps/client"
-	"ehang.io/nps/lib/common"
-	"ehang.io/nps/lib/config"
-	"ehang.io/nps/lib/file"
-	"ehang.io/nps/lib/install"
-	"ehang.io/nps/lib/version"
 	"flag"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/ccding/go-stun/stun"
-	"github.com/kardianos/service"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
+
+	"ehang.io/nps/client"
+	"ehang.io/nps/lib/common"
+	"ehang.io/nps/lib/config"
+	"ehang.io/nps/lib/file"
+	"ehang.io/nps/lib/install"
+	"ehang.io/nps/lib/version"
+	"github.com/astaxie/beego/logs"
+	"github.com/ccding/go-stun/stun"
+	"github.com/kardianos/service"
 )
 
 var (
@@ -116,6 +117,7 @@ func main() {
 			return
 		case "nat":
 			c := stun.NewClient()
+			flag.CommandLine.Parse(os.Args[2:])
 			c.SetServerAddr(*stunAddr)
 			nat, host, err := c.Discover()
 			if err != nil || host == nil {
