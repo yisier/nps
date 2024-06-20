@@ -52,7 +52,7 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 		nr, er := src.Read(buf)
 
 		//if len(pr)>0 && pr[0] && nr > 50 {
-		logs.Warn(string(buf[:50]))
+		logs.Warn(string(buf[:70]))
 		//}
 
 		if task != nil {
