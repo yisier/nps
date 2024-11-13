@@ -1,17 +1,17 @@
 
 # nps
-![](https://img.shields.io/github/stars/ehang-io/nps.svg)   ![](https://img.shields.io/github/forks/ehang-io/nps.svg)
+![](https://img.shields.io/github/stars/yisier/nps.svg)   ![](https://img.shields.io/github/forks/yisier/nps.svg)
 [![Gitter](https://badges.gitter.im/cnlh-nps/community.svg)](https://gitter.im/cnlh-nps/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-![Release](https://github.com/ehang-io/nps/workflows/Release/badge.svg)
-![GitHub All Releases](https://img.shields.io/github/downloads/ehang-io/nps/total)
+![Release](https://github.com/yisier/nps/workflows/Release/badge.svg)
+![GitHub All Releases](https://img.shields.io/github/downloads/yisier/nps/total)
 
-[README](https://github.com/ehang-io/nps/blob/master/README.md)|[中文文档](https://github.com/ehang-io/nps/blob/master/README_zh.md)
+[README](https://github.com/yisier/nps/blob/master/README.md)|[中文文档](https://github.com/yisier/nps/blob/master/README_zh.md)
 
 nps是一款轻量级、高性能、功能强大的**内网穿透**代理服务器。目前支持**tcp、udp流量转发**，可支持任何**tcp、udp**上层协议（访问内网网站、本地支付接口调试、ssh访问、远程桌面，内网dns解析等等……），此外还**支持内网http代理、内网socks5代理**、**p2p等**，并带有功能强大的web管理端。
 
 
 ## 背景
-![image](https://github.com/ehang-io/nps/blob/master/image/web.png?raw=true)
+![image](https://github.com/yisier/nps/blob/master/image/web.png?raw=true)
 
 1. 做微信公众号开发、小程序开发等----> 域名代理模式
 
@@ -37,7 +37,7 @@ nps是一款轻量级、高性能、功能强大的**内网穿透**代理服务�
 ## 快速开始
 
 ### 安装
-> [releases](https://github.com/ehang-io/nps/releases)
+> [releases](https://github.com/yisier/nps/releases)
 
 下载对应的系统版本即可，服务端和客户端是单独的
 
