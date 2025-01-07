@@ -12,5 +12,5 @@
 - 全平台兼容，一键注册为服务
 
 
-[GitHub](https://github.com/ehang-io/nps/)
+[GitHub](https://github.com/yisier/nps/)
 [开始使用](#nps)
