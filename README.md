@@ -32,9 +32,8 @@ https://natnps.com/
 
 
 ## 更新日志  
-- 2025-01-24  v0.26.23  
+- 2025-04-11  v0.26.23  
   新增：
-  - 增加安卓客户端。
   - TCP 隧道支持 Proxy Protocol 协议来传递经过请求的真实 IP。![img.png](image/new/protocol.png)  
   
   修复：  
