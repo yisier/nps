@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"sync"
 
@@ -35,6 +36,8 @@ var (
 )
 
 func main() {
+
+	debug.SetMaxThreads(1000000)
 
 	flag.Parse()
 	// init log

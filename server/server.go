@@ -27,6 +27,7 @@ import (
 var (
 	Bridge  *bridge.Bridge
 	RunList sync.Map //map[int]interface{}
+	once    sync.Once
 )
 
 func init() {
@@ -508,15 +509,17 @@ func GetDashboardData() map[string]interface{} {
 
 // 实例化流量数据到文件
 func flowSession(m time.Duration) {
-	ticker := time.NewTicker(m)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ticker.C:
-			file.GetDb().JsonDb.StoreHostToJsonFile()
-			file.GetDb().JsonDb.StoreTasksToJsonFile()
-			file.GetDb().JsonDb.StoreClientsToJsonFile()
-			file.GetDb().JsonDb.StoreGlobalToJsonFile()
+	once.Do(func() {
+		ticker := time.NewTicker(m)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				file.GetDb().JsonDb.StoreHostToJsonFile()
+				file.GetDb().JsonDb.StoreTasksToJsonFile()
+				file.GetDb().JsonDb.StoreClientsToJsonFile()
+				file.GetDb().JsonDb.StoreGlobalToJsonFile()
+			}
 		}
-	}
+	})
 }
