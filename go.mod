@@ -12,10 +12,11 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/kardianos/service v1.2.0
 	github.com/panjf2000/ants/v2 v2.4.2
+	github.com/pires/go-proxyproto v0.8.0
 	github.com/pkg/errors v0.9.1
 	github.com/shirou/gopsutil/v3 v3.23.10
 	github.com/xtaci/kcp-go v5.4.20+incompatible
-	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
+	golang.org/x/net v0.23.0
 )
 
 require (
@@ -54,10 +55,10 @@ require (
 	github.com/ulikunitz/xz v0.5.6 // indirect
 	github.com/xtaci/lossyconn v0.0.0-20190602105132-8df528c0c9ae // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
-	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/image v0.0.0-20200430140353-33d19683fad8 // indirect
 	golang.org/x/sys v0.25.0 // indirect
-	golang.org/x/text v0.3.3 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

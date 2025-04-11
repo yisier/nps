@@ -172,7 +172,7 @@ func handleP2PVisitor(localTcpConn net.Conn, config *config.CommonConfig, l *con
 	}
 	logs.Trace("start trying to connect with the server")
 	//TODO just support compress now because there is not tls file in client packages
-	link := conn.NewLink(common.CONN_TCP, l.Target, false, config.Client.Cnf.Compress, localTcpConn.LocalAddr().String(), false)
+	link := conn.NewLink(common.CONN_TCP, l.Target, false, config.Client.Cnf.Compress, localTcpConn.LocalAddr().String(), false, "")
 	if target, err := p2pNetBridge.SendLinkInfo(0, link, nil); err != nil {
 		logs.Error(err)
 		udpConnStatus = false

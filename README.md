@@ -32,6 +32,15 @@ https://natnps.com/
 
 
 ## 更新日志  
+- 2025-01-24  v0.26.23  
+  新增：
+  - 增加安卓客户端。
+  - TCP 隧道支持 Proxy Protocol 协议来传递经过请求的真实 IP。![img.png](image/new/protocol.png)  
+  
+  修复：  
+  - 客户端较多时，协程增长过快，感谢 [@huanglei288766](https://github.com/yisier/nps/pull/244) 的PR  
+
+
 - 2025-01-23  v0.26.22  
   优化：
   - 客户端注册系统服务时，（新版客户端注册方式，非 install 命令） 将按照 `npc-[vkey].log` 格式保存日志，每个客户端VKEY单独一个日志文件，windows 日志位于 `npc.exe` 同级目录下，linux 位于 `/var/log/`目录。  

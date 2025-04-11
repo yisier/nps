@@ -152,6 +152,7 @@ type Tunnel struct {
 	IsHttp       bool
 	LocalPath    string
 	StripPre     string
+	ProtoVersion string
 	Target       *Target
 	MultiAccount *MultiAccount
 	Health

@@ -8,7 +8,7 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label font-bold" langtag="word-scheme"></label>
                         <div class="col-sm-10">
-                            <span class="help-block m-b-none font-bold" langtag="word-usecase"></span>: 
+                            <span class="help-block m-b-none font-bold" langtag="word-usecase"></span>:
                             <span id="usecase">
                                 <span id="casetcp" langtag="info-casetcp"></span>
                                 <span id="caseudp" langtag="info-caseudp"></span>
@@ -25,7 +25,9 @@
                                 <option value="socks5" langtag="scheme-socks5"></option>
                                 <option value="secret" langtag="scheme-secret"></option>
                                 <option value="p2p" langtag="scheme-p2p"></option>
-                            {{/*<option value="file" langtag="scheme-file"></option>*/}}
+                                {{/*
+                                <option value="file" langtag="scheme-file"></option>
+                                */}}
                             </select>
                         </div>
                     </div>
@@ -33,45 +35,52 @@
                     <div class="form-group" id="client_id">
                         <label class="col-sm-2 control-label font-bold" langtag="word-clientid"></label>
                         <div class="col-sm-10">
-                            <input value="{{.t.Client.Id}}" value="{{.client_id}}" class="form-control" type="text" name="client_id" placeholder="" langtag="word-clientid">
+                            <input value="{{.t.Client.Id}}" value="{{.client_id}}" class="form-control" type="text"
+                                   name="client_id" placeholder="" langtag="word-clientid">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="col-sm-2 control-label font-bold" langtag="word-remark"></label>
                         <div class="col-sm-10">
-                            <input value="{{.t.Remark}}" class="form-control" type="text" name="remark" placeholder="" langtag="info-unrestricted">
+                            <input value="{{.t.Remark}}" class="form-control" type="text" name="remark" placeholder=""
+                                   langtag="info-unrestricted">
                         </div>
                     </div>
-                {{if eq true .allow_multi_ip}}
+                    {{if eq true .allow_multi_ip}}
                     <div class="form-group" id="server_ip">
                         <label class="col-sm-2 control-label font-bold" langtag="word-serverip"></label>
                         <div class="col-sm-10">
-                            <input class="form-control" type="text" value="{{.t.ServerIp}}" name="server_ip" placeholder="" langtag="info-suchasip">
+                            <input class="form-control" type="text" value="{{.t.ServerIp}}" name="server_ip"
+                                   placeholder="" langtag="info-suchasip">
                         </div>
                     </div>
-                {{end}}
+                    {{end}}
                     <div class="form-group" id="port">
                         <label class="col-sm-2 control-label font-bold" langtag="word-serverport"></label>
                         <div class="col-sm-10">
-                            <input value="{{.t.Port}}" class="form-control" type="text" name="port" placeholder="" langtag="info-suchasport">
+                            <input value="{{.t.Port}}" class="form-control" type="text" name="port" placeholder=""
+                                   langtag="info-suchasport">
                         </div>
                     </div>
-                {{if eq true .allow_local_proxy}}
+                    {{if eq true .allow_local_proxy}}
                     <div class="form-group" id="local_proxy">
                         <label class="control-label col-sm-2 font-bold" langtag="word-proxytolocal"></label>
                         <div class="col-sm-10">
                             <select class="form-control" name="local_proxy">
-                                <option  {{if eq false .t.Target.LocalProxy}}selected{{end}} value="0" langtag="word-no"></option>
-                                <option  {{if eq true .t.Target.LocalProxy}}selected{{end}} value="1" langtag="word-yes"></option>
+                                <option {{if eq false .t.Target.LocalProxy}}selected{{end}} value="0"
+                                        langtag="word-no"></option>
+                                <option {{if eq true .t.Target.LocalProxy}}selected{{end}} value="1"
+                                        langtag="word-yes"></option>
                             </select>
                         </div>
                     </div>
-                {{end}}
+                    {{end}}
                     <div class="form-group" id="target">
                         <label class="col-sm-2 control-label font-bold" langtag="word-target"></label>
                         <div class="col-sm-10">
-                            <textarea class="form-control" name="target" rows="4" placeholder="" langtag="info-suchasiplist">{{.t.Target.TargetStr}}</textarea>
+                            <textarea class="form-control" name="target" rows="4" placeholder=""
+                                      langtag="info-suchasiplist">{{.t.Target.TargetStr}}</textarea>
                             <span class="help-block m-b-none" langtag="info-targettunnel"></span>
                         </div>
                     </div>
@@ -79,30 +88,48 @@
                     <div class="form-group" id="local_path">
                         <label class="col-sm-2 control-label font-bold" langtag="word-localpath"></label>
                         <div class="col-sm-10">
-                            <input value="{{.t.LocalPath}}" class="form-control" type="text" name="local_path" placeholder="" langtag="info-suchaslocalpath">
+                            <input value="{{.t.LocalPath}}" class="form-control" type="text" name="local_path"
+                                   placeholder="" langtag="info-suchaslocalpath">
                         </div>
                     </div>
 
                     <div class="form-group" id="strip_pre">
                         <label class="col-sm-2 control-label font-bold" langtag="word-stripprefix"></label>
                         <div class="col-sm-10">
-                            <input value="{{.t.StripPre}}" class="form-control" type="text" name="strip_pre" placeholder="" langtag="info-suchasstripprefix">
+                            <input value="{{.t.StripPre}}" class="form-control" type="text" name="strip_pre"
+                                   placeholder="" langtag="info-suchasstripprefix">
                         </div>
                     </div>
 
                     <div class="form-group" id="password">
                         <label class="col-sm-2 control-label font-bold" langtag="word-identificationkey"></label>
                         <div class="col-sm-10">
-                            <input value="{{.t.Password}}" class="form-control" type="text" name="password" placeholder="" langtag="word-identificationkey">
+                            <input value="{{.t.Password}}" class="form-control" type="text" name="password"
+                                   placeholder="" langtag="word-identificationkey">
                             <span class="help-block m-b-none" langtag="info-identificationkey"></span>
                         </div>
                     </div>
+
+                    <div class="form-group" id="proto_version">
+                        <label class="control-label font-bold">Proxy Protocol Version：</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" name="proto_version"  id="ProtoVersion">
+                                <option value=""></option>
+                                <option value="V1">V1</option>
+                                <option value="V2">V2</option>
+                            </select>
+                            <span class="help-block m-b-none">开启此功能，请确保本地的服务能够支持 Proxy Protocol 协议。</span>
+                        </div>
+                    </div>
+
+
                     <div class="hr-line-dashed"></div>
                     <div class="form-group">
                         <div class="col-sm-4 col-sm-offset-2">
-                            <button class="btn btn-success" type="button" onclick="submitform('edit', '{{.web_base_url}}/index/edit', $('form').serializeArray())">
+                            <button class="btn btn-success" type="button"
+                                    onclick="submitform('edit', '{{.web_base_url}}/index/edit', $('form').serializeArray())">
                                 <i class="fa fa-fw fa-lg fa-check-circle"></i> <span langtag="word-save"></span>
-                                
+
                             </button>
                         </div>
                     </div>
@@ -115,7 +142,7 @@
 <script>
     var arr = []
     arr["all"] = ["port", "target", "password", "local_path", "strip_pre", "local_proxy"]
-    arr["tcp"] = ["client_id", "port", "target", "local_proxy"]
+    arr["tcp"] = ["client_id", "port", "target", "local_proxy", "proto_version"]
     arr["udp"] = ["client_id", "port", "target", "local_proxy"]
     arr["socks5"] = ["client_id", "port"]
     arr["httpProxy"] = ["client_id", "port"]
@@ -127,7 +154,7 @@
         $(".form-group[id]").css("display", "none");
         $("#usecase span").css("display", "none");
         o = $("#type").val();
-        $('#case'+ o).css("display", "inline")
+        $('#case' + o).css("display", "inline")
         for (var i = 0; i < arr[o].length; i++) {
             $("#" + arr[o][i]).css("display", "block")
         }
@@ -135,6 +162,7 @@
 
     $(function () {
         $("#type").val('{{.t.Mode}}');
+        $("#ProtoVersion").val('{{.t.ProtoVersion}}');
         resetForm()
         $("#type").on("change", function () {
             resetForm()

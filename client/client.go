@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"ehang.io/nps/lib/nps_mux"
+	"github.com/pires/go-proxyproto"
 	"net"
 	"net/http"
 	"strconv"
@@ -34,7 +35,7 @@ type TRPClient struct {
 	once           sync.Once
 }
 
-//new client
+// new client
 func NewRPClient(svraddr string, vKey string, bridgeConnType string, proxyUrl string, cnf *config.Config, disconnectTime int) *TRPClient {
 	return &TRPClient{
 		svrAddr:        svraddr,
@@ -51,7 +52,7 @@ func NewRPClient(svraddr string, vKey string, bridgeConnType string, proxyUrl st
 var NowStatus int
 var CloseClient bool
 
-//start
+// start
 func (s *TRPClient) Start() {
 	CloseClient = false
 retry:
@@ -85,7 +86,7 @@ retry:
 	s.handleMain()
 }
 
-//handle main connection
+// handle main connection
 func (s *TRPClient) handleMain() {
 	for {
 		flags, err := s.signal.ReadFlag()
@@ -152,7 +153,7 @@ func (s *TRPClient) newUdpConn(localAddr, rAddr string, md5Password string) {
 	}
 }
 
-//pmux tunnel
+// pmux tunnel
 func (s *TRPClient) newChan() {
 	tunnel, err := NewConn(s.bridgeConnType, s.vKey, s.svrAddr, common.WORK_CHAN, s.proxyUrl)
 	if err != nil {
@@ -219,6 +220,47 @@ func (s *TRPClient) handleChan(src net.Conn) {
 		src.Close()
 	} else {
 		logs.Trace("new %s connection with the goal of %s, remote address:%s", lk.ConnType, lk.Host, lk.RemoteAddr)
+
+		if lk.ProtoVersion == "V1" || lk.ProtoVersion == "V2" {
+			var addr = targetConn.RemoteAddr()
+			if lk.RemoteAddr != "" {
+				s := strings.Split(lk.RemoteAddr, ":")[1]
+				port, _ := strconv.Atoi(s)
+				addr = &net.TCPAddr{
+					IP:   net.ParseIP(strings.Split(lk.RemoteAddr, ":")[0]),
+					Port: port,
+				}
+			}
+
+			var version byte
+
+			if lk.ProtoVersion == "V1" {
+				version = 1
+			} else if lk.ProtoVersion == "V2" {
+				version = 2
+			}
+
+			transportProtocol := proxyproto.TCPv4
+			if strings.Contains(addr.String(), ".") {
+				transportProtocol = proxyproto.TCPv4
+			} else {
+				transportProtocol = proxyproto.TCPv6
+			}
+
+			header := &proxyproto.Header{
+				Command:           proxyproto.PROXY,
+				SourceAddr:        addr,
+				DestinationAddr:   targetConn.RemoteAddr(),
+				Version:           version,
+				TransportProtocol: transportProtocol,
+			}
+
+			_, err2 := header.WriteTo(targetConn)
+			if err2 != nil {
+				logs.Error(err2)
+			}
+		}
+
 		conn.CopyWaitGroup(src, targetConn, lk.Crypt, lk.Compress, nil, nil, false, nil, nil)
 	}
 }
