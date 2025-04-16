@@ -34,7 +34,7 @@ https://natnps.com/
 ## 更新日志  
 - 2025-04-16  v0.26.24   
   新增：
-  - TCP 隧道支持复制功能，在【TCP隧道】页面增加复制按钮，除了端口号为随机生成外，其他参数全部拷贝。[251](https://github.com/yisier/nps/issues/251)    
+  - 隧道支持复制功能，在隧道页面增加复制按钮，除了端口号为随机生成外，其他参数全部拷贝。[251](https://github.com/yisier/nps/issues/251)    
     
   修复：
   - 私密代理连接时服务端会报错退出，[250](https://github.com/yisier/nps/issues/250)
