@@ -189,6 +189,10 @@
 		<zh-CN>访问端命令</zh-CN>
 		<en-US>Access command</en-US>
 	</lang>
+	<lang id="word-protoversion">
+		<zh-CN>Proxy Protocol Version</zh-CN>
+		<en-US>Proxy Protocol Version</en-US>
+	</lang>
 
 	<lang id="word-quicklycommand">
 		<zh-CN>快捷启动命令</zh-CN>
@@ -774,6 +778,10 @@
 		<lang id="stop">
 			<zh-CN>你确定你要停止它吗？</zh-CN>
 			<en-US>Are you sure you want to stop it?</en-US>
+		</lang>
+		<lang id="copy">
+			<zh-CN>你确定要复制它吗？</zh-CN>
+			<en-US>Are you sure you want to copy it?</en-US>
 		</lang>
 	</confirm>
 

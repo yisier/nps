@@ -132,6 +132,53 @@ func (s *IndexController) Add() {
 		}
 	}
 }
+
+func (s *IndexController) Copy() {
+	oldId := s.GetIntNoErr("id")
+	if oldTask, err := file.GetDb().GetTask(oldId); err != nil {
+		s.error()
+	} else {
+		if client, err := file.GetDb().GetClient(oldTask.Client.Id); err != nil {
+			s.AjaxErr("modified error,the client is not exist")
+			return
+		} else {
+			oldTask.Client = client
+		}
+
+		id := int(file.GetDb().JsonDb.GetTaskId())
+		newTask := &file.Tunnel{
+			Client:       oldTask.Client,
+			Port:         tool.GenerateServerPort(oldTask.Mode),
+			ServerIp:     oldTask.ServerIp,
+			Mode:         oldTask.Mode,
+			Target:       oldTask.Target,
+			Id:           id,
+			Status:       true,
+			Remark:       oldTask.Remark,
+			Password:     oldTask.Password,
+			LocalPath:    oldTask.LocalPath,
+			StripPre:     oldTask.StripPre,
+			ProtoVersion: oldTask.ProtoVersion,
+			Flow:         &file.Flow{},
+		}
+		if !tool.TestServerPort(newTask.Port, newTask.Mode) {
+			s.AjaxErr("The port cannot be opened because it may has been occupied or is no longer allowed.")
+		}
+
+		if newTask.Client.MaxTunnelNum != 0 && newTask.Client.GetTunnelNum() >= newTask.Client.MaxTunnelNum {
+			s.AjaxErr("The number of tunnels exceeds the limit")
+		}
+		if err := file.GetDb().NewTask(newTask); err != nil {
+			s.AjaxErr(err.Error())
+		}
+		if err := server.AddTask(newTask); err != nil {
+			s.AjaxErr(err.Error())
+		} else {
+			s.AjaxOkWithId("add success", id)
+		}
+	}
+}
+
 func (s *IndexController) GetOneTunnel() {
 	id := s.GetIntNoErr("id")
 	data := make(map[string]interface{})

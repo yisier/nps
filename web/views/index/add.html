@@ -34,7 +34,7 @@
                     <div class="form-group" id="client_id">
                         <label class="control-label font-bold" langtag="word-clientid"></label>
                         <div class="col-sm-10">
-                            <select class="form-control" name="client_id" placeholder=""
+                            <select class="form-control" name="client_id" placeholder="" id="nps_client_id"
                                     langtag="word-belongclient"></select>
 
                             <!--                            <input value="{{.client_id}}" class="form-control" type="text" name="client_id"-->
@@ -187,7 +187,7 @@
                         var option = "<option value=\"" + data.rows[i].Id + "\"";
                         option += ">" + data.rows[i].Id + '-' + data.rows[i].Remark + "</option>"; //动态添加数据
                         $("select[name='client_id']").append(option);
-                        $("select[name='client_id']").find("option[value='{{.t.Client.Id}}']").attr("selected", true);
+                        $("select[name='client_id']").find("option[value='{{.client_id}}']").attr("selected", true);
                     }
                 }
             }

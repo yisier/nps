@@ -76,7 +76,7 @@
                     + '<b langtag="word-compress"></b>: ' + row.Client.Cnf.Compress + '&emsp;'
                     + '<b langtag="word-basicusername"></b>: ' + row.Client.Cnf.U + '&emsp;'
                     + '<b langtag="word-basicpassword"></b>: ' + row.Client.Cnf.P + '&emsp;'
-                    + '<b langtag="word-ishttp"></b>: ' + row.IsHttp + '&emsp;'
+                    + '<b langtag="word-protoversion"></b>: ' + row.ProtoVersion + '&emsp;'
             if (row.Mode == "p2p") {
                 return tmp + "<br/><br>"
                         + '<b langtag="word-commandaccessp2p"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
@@ -215,6 +215,7 @@
                 title: '<span langtag="word-option"></span>',//内容
                 align: 'center',
                 halign: 'center',
+                width: '200px',
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     btn_group = '<div class="btn-group">'
@@ -227,8 +228,12 @@
                     }
                     btn_group += "<a onclick=\"submitform('delete', '{{.web_base_url}}/index/del', {'id':" + row.Id
                     btn_group += '})" class="btn btn-outline btn-danger"><i class="fa fa-trash"></i></a>'
+
                     btn_group += '<a  href="{{.web_base_url}}/index/edit?id=' + row.Id
-                    btn_group += '" class="btn btn-outline btn-success"><i class="fa fa-edit"></i></a></div>'
+                    btn_group += '" class="btn btn-outline btn-success"><i class="fa fa-edit"></i></a>'
+
+                    btn_group += "<a onclick=\"submitform('copy', '{{.web_base_url}}/index/copy', {'id':" + row.Id
+                    btn_group += '})" class="btn btn-outline btn-primary"><i class="fa fa-copy"></i></a></div>'
                     return btn_group
                 }
             }
