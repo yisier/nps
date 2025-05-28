@@ -29,7 +29,8 @@ https://natnps.com/
 # 更新日志  
 - 2025-05-28  v0.26.25  
   新增：
-  - nps增加`nps(.exe) -server` 命令，用于管理NPS服务，安装和卸载服务在 Linux 下需要有 sudo 权限，Windows 下需要有管理员权限。  ![img.png](image/new/server.png)
+  - nps增加`nps(.exe) -server` 命令，用于管理NPS服务，安装和卸载服务在 Linux 下需要有 sudo 权限，Windows 下需要有管理员权限。  
+  ![img.png](image/new/server.png)
   - 增加【TLS快捷启动命令】，可用于在tls模式下，快速启动客户端。 [257](https://github.com/yisier/nps/issues/257)
 
 
