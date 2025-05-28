@@ -74,6 +74,7 @@
                 + '<b langtag="word-createtime"></b>: ' + row.CreateTime + '&emsp;<br/><br/>'
                 + '<b langtag="word-lastonlinetime"></b>: ' + row.LastOnlineTime + '&emsp;<br/><br/>'
                 + '<b langtag="word-quicklycommand"></b>: <span>' + encodeToBase64('{{.ip}}:{{.p}} ' + row.VerifyKey)   + '</span>&emsp;<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button><br/>'
+                + '<b langtag="word-tlsquicklycommand"></b>: <span>' + encodeToBase64('{{.ip}}:{{.tls_p}} ' + row.VerifyKey + ' -tls_enable=true')   + '</span>&emsp;<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button><br/>'
                 + '<b langtag="word-commandclient"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.VerifyKey + " -type=" +{{.bridgeType}} +"</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
                 + '<b langtag="word-commandclient-tls"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.VerifyKey + " -tls_enable=true</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button>"
         },

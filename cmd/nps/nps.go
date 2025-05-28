@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"ehang.io/nps/bridge"
 	"ehang.io/nps/lib/daemon"
+	"ehang.io/nps/server"
 	"flag"
+	"fmt"
+	"github.com/fatih/color"
 	"log"
 	"os"
 	"os/exec"
@@ -16,7 +20,6 @@ import (
 	"ehang.io/nps/lib/file"
 	"ehang.io/nps/lib/install"
 	"ehang.io/nps/lib/version"
-	"ehang.io/nps/server"
 	"ehang.io/nps/server/connection"
 	"ehang.io/nps/server/tool"
 	"ehang.io/nps/web/routers"
@@ -30,9 +33,11 @@ import (
 )
 
 var (
-	level    string
-	ver      = flag.Bool("version", false, "show current version")
-	confPath = flag.String("conf_path", "", "set current confPath")
+	level      string
+	ver        = flag.Bool("version", false, "show current version")
+	confPath   = flag.String("conf_path", "", "set current confPath")
+	serverCmd  = flag.Bool("server", false, "NPS管理脚本")
+	npsLogPath = flag.String("log_path", "", "nps log path")
 )
 
 func main() {
@@ -45,7 +50,13 @@ func main() {
 		common.PrintVersion()
 		return
 	}
+	if *serverCmd {
+		printSlogan()
+		inputCmd()
+		return
+	}
 
+	var logPath string
 	// *confPath why get null value ?
 	for _, v := range os.Args[1:] {
 		switch v {
@@ -54,6 +65,10 @@ func main() {
 		}
 		if strings.Contains(v, "-conf_path=") {
 			common.ConfPath = strings.Replace(v, "-conf_path=", "", -1)
+		}
+
+		if strings.Contains(v, "-log_path=") {
+			logPath = strings.Replace(v, "-log_path=", "", -1)
 		}
 	}
 
@@ -68,13 +83,17 @@ func main() {
 	logs.Reset()
 	logs.EnableFuncCallDepth(true)
 	logs.SetLogFuncCallDepth(3)
-	logPath := beego.AppConfig.String("log_path")
+
 	if logPath == "" {
-		logPath = common.GetLogPath()
+		logPath := beego.AppConfig.String("log_path")
+		if logPath == "" {
+			logPath = common.GetLogPath()
+		}
+		if common.IsWindows() {
+			logPath = strings.Replace(logPath, "\\", "\\\\", -1)
+		}
 	}
-	if common.IsWindows() {
-		logPath = strings.Replace(logPath, "\\", "\\\\", -1)
-	}
+
 	// init service
 	options := make(service.KeyValue)
 	svcConfig := &service.Config{
@@ -186,6 +205,185 @@ func main() {
 	_ = s.Run()
 }
 
+func printSlogan() {
+	green := color.New(color.FgGreen).SprintFunc()
+	// 第一次输入，如果输入 1,2,3，4 则需要输入秘钥，否则
+
+	fmt.Printf("%s", green(""))
+
+	fmt.Printf("\033[32;0m欢迎使用 NPS 管理脚本 \n")
+	fmt.Printf("\033[0m") // 重置颜色
+
+	fmt.Printf("\n")
+
+	fmt.Printf("\u001B[32m输入[1]\u001B[0m - 安装 NPS\n")
+	fmt.Printf("\u001B[32m输入[2]\u001B[0m - 卸载 NPS\n")
+	fmt.Printf("\u001B[32m输入[3]\u001B[0m - 更新 NPS\n")
+	fmt.Printf("---------------------\n")
+	fmt.Printf("\u001B[32m输入[4]\u001B[0m - 查看状态\n")
+	fmt.Printf("---------------------\n")
+	fmt.Printf("\u001B[32m输入[5]\u001B[0m - 启动 NPS\n")
+	fmt.Printf("\u001B[32m输入[6]\u001B[0m - 停止 NPS\n")
+	fmt.Printf("\u001B[32m输入[7]\u001B[0m - 重启 NPS\n")
+	fmt.Printf("---------------------\n")
+	fmt.Printf("\u001B[32m输入[0]\u001B[0m - 退出脚本\n")
+	fmt.Printf("---------------------\n")
+	fmt.Printf("\n")
+
+}
+
+func inputCmd() {
+	var flag string
+	fmt.Printf("请输入[0-7]：")
+
+	stdin := bufio.NewReader(os.Stdin)
+	_, err := fmt.Fscanln(stdin, &flag)
+	if err != nil {
+		fmt.Println("输入有误")
+	} else {
+		if flag == "0" {
+			os.Exit(0)
+		}
+
+		// init service
+
+		prg := &nps{
+			exit: make(chan struct{}),
+		}
+		options := make(service.KeyValue)
+		svcConfig := &service.Config{
+			Name:        "Nps",
+			DisplayName: "nps内网穿透代理服务器",
+			Description: "一款轻量级、功能强大的内网穿透代理服务器。支持tcp、udp流量转发，支持内网http代理、内网socks5代理，同时支持snappy压缩、站点保护、加密传输、多路复用、header修改等。支持web图形化管理，集成多用户模式。",
+			Option:      options,
+		}
+		s, _ := service.New(prg, svcConfig)
+
+		switch flag {
+		case "1":
+			// uninstall before
+			_ = service.Control(s, "stop")
+			_ = service.Control(s, "uninstall")
+			binPath := install.InstallNpsToCurrentDir()
+
+			beego.LoadAppConfig("ini", filepath.Join(common.GetAppPath(), "conf", "nps.conf"))
+
+			logPath := filepath.Join(common.GetAppPath(), "nps.log")
+			if common.IsWindows() {
+				logPath = strings.Replace(logPath, "\\", "\\\\", -1)
+			}
+			svcConfig.Arguments = append(svcConfig.Arguments, "service")
+			svcConfig.Arguments = append(svcConfig.Arguments, "-conf_path="+common.GetAppPath())
+			svcConfig.Arguments = append(svcConfig.Arguments, "-log_path="+logPath)
+
+			fmt.Println("日志文件路径为：", logPath)
+
+			svcConfig.Executable = binPath
+			s, err := service.New(prg, svcConfig)
+
+			if service.Platform() == "unix-systemv" {
+				logs.Info("unix-systemv service")
+				confPath := "/etc/init.d/" + svcConfig.Name
+				os.Symlink(confPath, "/etc/rc.d/S90"+svcConfig.Name)
+				os.Symlink(confPath, "/etc/rc.d/K02"+svcConfig.Name)
+			}
+
+			err = service.Control(s, "install")
+			if err != nil {
+				logs.Error("Valid actions: %q\n%s", service.ControlAction, err.Error())
+			} else {
+				fmt.Println("NPS服务安装成功")
+			}
+
+			err = service.Control(s, "start")
+			if err != nil {
+				fmt.Println("启动NPS服务失败", err)
+			} else {
+				fmt.Println("NPS服务已启动，管理面板访问地址：127.0.0.1:" + beego.AppConfig.String("web_port"))
+			}
+
+			break
+		case "2":
+			// 卸载系统服务
+			err := service.Control(s, "stop")
+			if err != nil {
+				fmt.Println("NPS服务停止失败", err)
+			} else {
+				fmt.Println("NPS服务已停止")
+			}
+
+			err = service.Control(s, "uninstall")
+			if err != nil {
+				logs.Error("NPS服务卸载失败")
+			}
+			if service.Platform() == "unix-systemv" {
+				logs.Info("unix-systemv service")
+				os.Remove("/etc/rc.d/S90" + svcConfig.Name)
+				os.Remove("/etc/rc.d/K02" + svcConfig.Name)
+			}
+
+			if err == nil {
+				fmt.Println("NPS服务已卸载成功")
+			}
+			break
+		case "3":
+			install.UpdateNpsNew()
+			return
+		case "4":
+			// 查看状态
+			var statusMsg = ""
+			status, err := s.Status()
+			if err != nil {
+				statusMsg = "\u001B[31m未运行\u001B[0m"
+			} else {
+				if status == 1 {
+					statusMsg = "\u001B[32m运行中\u001B[0m"
+				} else {
+					statusMsg = "\u001B[31m未运行\u001B[0m"
+				}
+			}
+			fmt.Println("NPS服务状态：" + statusMsg)
+			break
+		case "5":
+			// 启动 NPS
+			err := service.Control(s, "start")
+			if err != nil {
+				fmt.Println("NPS服务启动失败", err)
+			} else {
+				fmt.Println("NPS服务启动成功")
+			}
+
+			break
+		case "6":
+			// 停止 NPS
+			err := service.Control(s, "stop")
+			if err != nil {
+				fmt.Println("NPS服务停止失败", err)
+			} else {
+				fmt.Println("NPS服务停止成功")
+			}
+
+			break
+		case "7":
+			// 重启 NPS
+			err := service.Control(s, "restart")
+			if err != nil {
+				fmt.Println("NPS服务重启失败", err)
+			} else {
+				fmt.Println("NPS服务重启成功")
+			}
+
+			break
+		}
+	}
+
+	inputCmd()
+}
+
+func installNps() {
+
+}
+
 type nps struct {
 	exit chan struct{}
 }
@@ -232,6 +430,7 @@ func run() {
 		os.Exit(0)
 	}
 
+	logs.Info("日志路径111：" + *npsLogPath)
 	logs.Info("the config path is:" + common.GetRunPath())
 	logs.Info("the version of server is %s ,allow client core version to be %s,tls enable is %t", version.VERSION, version.GetVersion(), bridge.ServerTlsEnable)
 	connection.InitConnectionService()

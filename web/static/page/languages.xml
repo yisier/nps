@@ -198,6 +198,10 @@
 		<zh-CN>快捷启动命令</zh-CN>
 		<en-US>Quickly command</en-US>
 	</lang>
+	<lang id="word-tlsquicklycommand">
+		<zh-CN>TLS快捷启动命令</zh-CN>
+		<en-US>TLS Quickly command</en-US>
+	</lang>
 
 	<lang id="word-commandclient">
 		<zh-CN>客户端命令</zh-CN>

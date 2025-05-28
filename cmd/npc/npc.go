@@ -344,14 +344,25 @@ func inputCmd() {
 func startNpcServer(startCmd string) {
 	var serAddr string
 	var vkey string
+	var tls string
 	array := strings.Fields(startCmd)
 	serAddr = array[0]
 	vkey = array[1]
-
+	if len(array) > 2 {
+		tls = array[2]
+	}
 	go func() {
 		for {
-			logs.Info("start cmd:-server=" + serAddr + " -vkey=" + vkey)
-			logs.Info("the version of client is %s, the core version of client is %s", version.VERSION, version.GetVersion())
+			if tls == "-tls_enable=true" {
+				client.SetTlsEnable(true)
+				logs.Info("start cmd:-server=" + serAddr + " -vkey=" + vkey + " " + tls)
+				logs.Info("the version of client is %s, the core version of client is %s,tls enable is %t", version.VERSION, version.GetVersion(), client.GetTlsEnable())
+			} else {
+				client.SetTlsEnable(false)
+				logs.Info("start cmd:-server=" + serAddr + " -vkey=" + vkey)
+				logs.Info("the version of client is %s, the core version of client is %s", version.VERSION, version.GetVersion())
+			}
+
 			client.NewRPClient(serAddr, vkey, *connType, *proxyUrl, nil, *disconnectTime).Start()
 			logs.Info("Client closed! It will be reconnected in five seconds")
 			time.Sleep(time.Second * 5)

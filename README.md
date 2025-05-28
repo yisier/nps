@@ -27,6 +27,12 @@ https://natnps.com/
 
 
 # 更新日志  
+- 2025-05-28  v0.26.25  
+  新增：
+  - nps增加`nps(.exe) -server` 命令，用于管理NPS服务，安装和卸载服务在 Linux 下需要有 sudo 权限，Windows 下需要有管理员权限。![img.png](image/new/server.png)
+  - 增加【TLS快捷启动命令】，可用于在tls模式下，快速启动客户端。 [257](https://github.com/yisier/nps/issues/257)
+
+
 - 2025-04-16  v0.26.24   
   新增：
   - 隧道支持复制功能，在隧道页面增加复制按钮，除了端口号为随机生成外，其他参数全部拷贝。[251](https://github.com/yisier/nps/issues/251)    
