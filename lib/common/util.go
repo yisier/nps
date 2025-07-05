@@ -265,8 +265,16 @@ func FormatAddress(s string) string {
 
 // get address from the complete address
 func GetIpByAddr(addr string) string {
-	arr := strings.Split(addr, ":")
-	return arr[0]
+	// 如果是 IPv6 地址，可能的格式为[2001:0db8:85a3:0000:0000:8a2e:0370:7334]:8080或[2001:0db8:85a3:0000:0000:8a2e:0370:7334]
+	// IPv4 地址，可能的格式为192.168.1.1:80或192.168.1.1
+	// 截取地址
+	if strings.Contains(addr, "[") {
+		addr = strings.Split(addr, "[")[1]
+		addr = strings.Split(addr, "]")[0]
+	} else {
+		addr = strings.Split(addr, ":")[0]
+	}
+	return addr
 }
 
 // get port from the complete address

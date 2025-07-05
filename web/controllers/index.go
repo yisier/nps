@@ -81,7 +81,7 @@ func (s *IndexController) GetTunnel() {
 	start, length := s.GetAjaxParams()
 	taskType := s.getEscapeString("type")
 	clientId := s.GetIntNoErr("client_id")
-	list, cnt := server.GetTunnel(start, length, taskType, clientId, s.getEscapeString("search"))
+	list, cnt := server.GetTunnel(start, length, taskType, clientId, s.getEscapeString("search"), s.getEscapeString("sort"), s.getEscapeString("order"))
 	s.AjaxTable(list, cnt, cnt, nil)
 }
 
@@ -94,17 +94,18 @@ func (s *IndexController) Add() {
 	} else {
 		id := int(file.GetDb().JsonDb.GetTaskId())
 		t := &file.Tunnel{
-			Port:      s.GetIntNoErr("port"),
-			ServerIp:  s.getEscapeString("server_ip"),
-			Mode:      s.getEscapeString("type"),
-			Target:    &file.Target{TargetStr: s.getEscapeString("target"), LocalProxy: s.GetBoolNoErr("local_proxy")},
-			Id:        id,
-			Status:    true,
-			Remark:    s.getEscapeString("remark"),
-			Password:  s.getEscapeString("password"),
-			LocalPath: s.getEscapeString("local_path"),
-			StripPre:  s.getEscapeString("strip_pre"),
-			Flow:      &file.Flow{},
+			Port:         s.GetIntNoErr("port"),
+			ServerIp:     s.getEscapeString("server_ip"),
+			Mode:         s.getEscapeString("type"),
+			Target:       &file.Target{TargetStr: s.getEscapeString("target"), LocalProxy: s.GetBoolNoErr("local_proxy")},
+			Id:           id,
+			Status:       true,
+			Remark:       s.getEscapeString("remark"),
+			Password:     s.getEscapeString("password"),
+			LocalPath:    s.getEscapeString("local_path"),
+			StripPre:     s.getEscapeString("strip_pre"),
+			ProtoVersion: s.getEscapeString("proto_version"),
+			Flow:         &file.Flow{},
 		}
 
 		if t.Port <= 0 {
@@ -131,6 +132,53 @@ func (s *IndexController) Add() {
 		}
 	}
 }
+
+func (s *IndexController) Copy() {
+	oldId := s.GetIntNoErr("id")
+	if oldTask, err := file.GetDb().GetTask(oldId); err != nil {
+		s.error()
+	} else {
+		if client, err := file.GetDb().GetClient(oldTask.Client.Id); err != nil {
+			s.AjaxErr("modified error,the client is not exist")
+			return
+		} else {
+			oldTask.Client = client
+		}
+
+		id := int(file.GetDb().JsonDb.GetTaskId())
+		newTask := &file.Tunnel{
+			Client:       oldTask.Client,
+			Port:         tool.GenerateServerPort(oldTask.Mode),
+			ServerIp:     oldTask.ServerIp,
+			Mode:         oldTask.Mode,
+			Target:       oldTask.Target,
+			Id:           id,
+			Status:       true,
+			Remark:       oldTask.Remark,
+			Password:     oldTask.Password,
+			LocalPath:    oldTask.LocalPath,
+			StripPre:     oldTask.StripPre,
+			ProtoVersion: oldTask.ProtoVersion,
+			Flow:         &file.Flow{},
+		}
+		if !tool.TestServerPort(newTask.Port, newTask.Mode) {
+			s.AjaxErr("The port cannot be opened because it may has been occupied or is no longer allowed.")
+		}
+
+		if newTask.Client.MaxTunnelNum != 0 && newTask.Client.GetTunnelNum() >= newTask.Client.MaxTunnelNum {
+			s.AjaxErr("The number of tunnels exceeds the limit")
+		}
+		if err := file.GetDb().NewTask(newTask); err != nil {
+			s.AjaxErr(err.Error())
+		}
+		if err := server.AddTask(newTask); err != nil {
+			s.AjaxErr(err.Error())
+		} else {
+			s.AjaxOkWithId("add success", id)
+		}
+	}
+}
+
 func (s *IndexController) GetOneTunnel() {
 	id := s.GetIntNoErr("id")
 	data := make(map[string]interface{})
@@ -181,6 +229,7 @@ func (s *IndexController) Edit() {
 			t.Password = s.getEscapeString("password")
 			t.Id = id
 			t.LocalPath = s.getEscapeString("local_path")
+			t.ProtoVersion = s.getEscapeString("proto_version")
 			t.StripPre = s.getEscapeString("strip_pre")
 			t.Remark = s.getEscapeString("remark")
 			t.Target.LocalProxy = s.GetBoolNoErr("local_proxy")
@@ -278,6 +327,10 @@ func (s *IndexController) AddHost() {
 		if h.Client, err = file.GetDb().GetClient(s.GetIntNoErr("client_id")); err != nil {
 			s.AjaxErr("add error the client can not be found")
 		}
+		if h.Client.MaxTunnelNum != 0 && h.Client.GetTunnelNum() >= h.Client.MaxTunnelNum {
+			s.AjaxErr("The number of tunnels exceeds the limit")
+		}
+
 		if err := file.GetDb().NewHost(h); err != nil {
 			s.AjaxErr("add fail" + err.Error())
 		}

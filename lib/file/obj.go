@@ -52,6 +52,7 @@ type Client struct {
 	MaxTunnelNum    int
 	Version         string
 	BlackIpList     []string
+	CreateTime      string
 	LastOnlineTime  string
 	sync.RWMutex
 }
@@ -110,6 +111,14 @@ func (s *Client) GetTunnelNum() (num int) {
 		}
 		return true
 	})
+
+	GetDb().JsonDb.Hosts.Range(func(key, value interface{}) bool {
+		v := value.(*Host)
+		if v.Client.Id == s.Id {
+			num++
+		}
+		return true
+	})
 	return
 }
 
@@ -143,6 +152,7 @@ type Tunnel struct {
 	IsHttp       bool
 	LocalPath    string
 	StripPre     string
+	ProtoVersion string
 	Target       *Target
 	MultiAccount *MultiAccount
 	Health

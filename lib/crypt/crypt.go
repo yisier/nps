@@ -5,13 +5,16 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"github.com/google/uuid"
 	"math/rand"
+	"strings"
 	"time"
 )
 
-//en
+// en
 func AesEncrypt(origData, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -25,7 +28,7 @@ func AesEncrypt(origData, key []byte) ([]byte, error) {
 	return crypted, nil
 }
 
-//de
+// de
 func AesDecrypt(crypted, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -39,14 +42,14 @@ func AesDecrypt(crypted, key []byte) ([]byte, error) {
 	return origData, err
 }
 
-//Completion when the length is insufficient
+// Completion when the length is insufficient
 func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(ciphertext, padtext...)
 }
 
-//Remove excess
+// Remove excess
 func PKCS5UnPadding(origData []byte) (error, []byte) {
 	length := len(origData)
 	unpadding := int(origData[length-1])
@@ -56,14 +59,14 @@ func PKCS5UnPadding(origData []byte) (error, []byte) {
 	return nil, origData[:(length - unpadding)]
 }
 
-//Generate 32-bit MD5 strings
+// Generate 32-bit MD5 strings
 func Md5(s string) string {
 	h := md5.New()
 	h.Write([]byte(s))
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-//Generating Random Verification Key
+// Generating Random Verification Key
 func GetRandomString(l int) string {
 	str := "0123456789abcdefghijklmnopqrstuvwxyz"
 	bytes := []byte(str)
@@ -73,4 +76,33 @@ func GetRandomString(l int) string {
 		result = append(result, bytes[r.Intn(len(bytes))])
 	}
 	return string(result)
+}
+
+func GetVkey() string {
+	// 生成UUID
+	u, _ := uuid.NewRandom()
+	// 将UUID转换为字符串
+	uuidStr := u.String()
+	uuidStr = strings.ReplaceAll(uuidStr, "-", "")
+	// 截取前10位
+	return uuidStr[:10]
+}
+
+func Base64Decoding(encodedString string) (string, error) {
+	decodedBytes, err := base64.StdEncoding.DecodeString(encodedString)
+	if err != nil {
+		// 处理解码错误
+		return "", err
+	}
+
+	// 将解码后的字节数组转换为字符串
+	decodedString := string(decodedBytes)
+
+	// 如果startCmd开头不包含"nps "，则报错
+	if len(decodedString) < 4 || !(decodedString[0:4] == "nps ") {
+		return "", errors.New("快捷启动命令错误，请检查")
+	}
+
+	return decodedString[4:], nil
+
 }

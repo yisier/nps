@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -26,13 +27,14 @@ import (
 var (
 	Bridge  *bridge.Bridge
 	RunList sync.Map //map[int]interface{}
+	once    sync.Once
 )
 
 func init() {
 	RunList = sync.Map{}
 }
 
-//init task from db
+// init task from db
 func InitFromCsv() {
 	//Add a public password
 	if vkey := beego.AppConfig.String("public_vkey"); vkey != "" {
@@ -50,7 +52,7 @@ func InitFromCsv() {
 	})
 }
 
-//get bridge command
+// get bridge command
 func DealBridgeTask() {
 	for {
 		select {
@@ -84,7 +86,7 @@ func DealBridgeTask() {
 	}
 }
 
-//start a new server
+// start a new server
 func StartNewServer(bridgePort int, cnf *file.Tunnel, bridgeType string, bridgeDisconnect int) {
 	Bridge = bridge.NewTunnel(bridgePort, bridgeType, common.GetBoolByStr(beego.AppConfig.String("ip_limit")), RunList, bridgeDisconnect)
 	go func() {
@@ -122,7 +124,7 @@ func dealClientFlow() {
 	}
 }
 
-//new a server by mode name
+// new a server by mode name
 func NewMode(Bridge *bridge.Bridge, c *file.Tunnel) proxy.Service {
 	var service proxy.Service
 	switch c.Mode {
@@ -156,7 +158,7 @@ func NewMode(Bridge *bridge.Bridge, c *file.Tunnel) proxy.Service {
 	return service
 }
 
-//stop server
+// stop server
 func StopServer(id int) error {
 	//if v, ok := RunList[id]; ok {
 	if v, ok := RunList.Load(id); ok {
@@ -182,7 +184,7 @@ func StopServer(id int) error {
 	return errors.New("task is not running")
 }
 
-//add task
+// add task
 func AddTask(t *file.Tunnel) error {
 	if t.Mode == "secret" || t.Mode == "p2p" {
 		logs.Info("secret task %s start ", t.Remark)
@@ -215,7 +217,7 @@ func AddTask(t *file.Tunnel) error {
 	return nil
 }
 
-//start task
+// start task
 func StartTask(id int) error {
 	if t, err := file.GetDb().GetTask(id); err != nil {
 		return err
@@ -227,7 +229,7 @@ func StartTask(id int) error {
 	return nil
 }
 
-//delete task
+// delete task
 func DelTask(id int) error {
 	//if _, ok := RunList[id]; ok {
 	if _, ok := RunList.Load(id); ok {
@@ -238,18 +240,64 @@ func DelTask(id int) error {
 	return file.GetDb().DelTask(id)
 }
 
-//get task list by page num
-func GetTunnel(start, length int, typeVal string, clientId int, search string) ([]*file.Tunnel, int) {
+// get task list by page num
+func GetTunnel(start, length int, typeVal string, clientId int, search string, sortField string, order string) ([]*file.Tunnel, int) {
+	all_list := make([]*file.Tunnel, 0) //store all Tunnel
 	list := make([]*file.Tunnel, 0)
 	var cnt int
 	keys := file.GetMapKeys(file.GetDb().JsonDb.Tasks, false, "", "")
+
+	//get all Tunnel and sort
 	for _, key := range keys {
 		if value, ok := file.GetDb().JsonDb.Tasks.Load(key); ok {
 			v := value.(*file.Tunnel)
 			if (typeVal != "" && v.Mode != typeVal || (clientId != 0 && v.Client.Id != clientId)) || (typeVal == "" && clientId != v.Client.Id) {
 				continue
 			}
-			if search != "" && !(v.Id == common.GetIntNoErrByStr(search) || v.Port == common.GetIntNoErrByStr(search) || strings.Contains(v.Password, search) || strings.Contains(v.Remark, search) || strings.Contains(v.Client.VerifyKey, search)) {
+			all_list = append(all_list, v)
+		}
+	}
+	//sort by Id, Remark, TargetStr, Port, asc or desc
+	if sortField == "Id" {
+		if order == "asc" {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Id < all_list[j].Id })
+		} else {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Id > all_list[j].Id })
+		}
+	} else if sortField == "ClientId" {
+		if order == "asc" {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Client.Id < all_list[j].Client.Id })
+		} else {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Client.Id > all_list[j].Client.Id })
+		}
+	} else if sortField == "Remark" {
+		if order == "asc" {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Remark < all_list[j].Remark })
+		} else {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Remark > all_list[j].Remark })
+		}
+	} else if sortField == "Client.VerifyKey" {
+		if order == "asc" {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Client.VerifyKey < all_list[j].Client.VerifyKey })
+		} else {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Client.VerifyKey > all_list[j].Client.VerifyKey })
+		}
+	} else if sortField == "Target" {
+		if order == "asc" {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Target.TargetStr < all_list[j].Target.TargetStr })
+		} else {
+			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Target.TargetStr > all_list[j].Target.TargetStr })
+		}
+	}
+
+	//search
+	for _, key := range all_list {
+		if value, ok := file.GetDb().JsonDb.Tasks.Load(key.Id); ok {
+			v := value.(*file.Tunnel)
+			if (typeVal != "" && v.Mode != typeVal || (clientId != 0 && v.Client.Id != clientId)) || (typeVal == "" && clientId != v.Client.Id) {
+				continue
+			}
+			if search != "" && !(v.Id == common.GetIntNoErrByStr(search) || v.Port == common.GetIntNoErrByStr(search) || strings.Contains(v.Password, search) || strings.Contains(v.Remark, search) || strings.Contains(v.Target.TargetStr, search)) {
 				continue
 			}
 			cnt++
@@ -260,7 +308,6 @@ func GetTunnel(start, length int, typeVal string, clientId int, search string) (
 			}
 			if start--; start < 0 {
 				if length--; length >= 0 {
-					//if _, ok := RunList[v.Id]; ok {
 					if _, ok := RunList.Load(v.Id); ok {
 						v.RunStatus = true
 					} else {
@@ -274,7 +321,7 @@ func GetTunnel(start, length int, typeVal string, clientId int, search string) (
 	return list, cnt
 }
 
-//get client list
+// get client list
 func GetClientList(start, length int, search, sort, order string, clientId int) (list []*file.Client, cnt int) {
 	list, cnt = file.GetDb().GetClientList(start, length, search, sort, order, clientId)
 	dealClientData()
@@ -326,7 +373,7 @@ func dealClientData() {
 	return
 }
 
-//delete all host and tasks by client id
+// delete all host and tasks by client id
 func DelTunnelAndHostByClientId(clientId int, justDelNoStore bool) {
 	var ids []int
 	file.GetDb().JsonDb.Tasks.Range(func(key, value interface{}) bool {
@@ -358,7 +405,7 @@ func DelTunnelAndHostByClientId(clientId int, justDelNoStore bool) {
 	}
 }
 
-//close the client
+// close the client
 func DelClientConnect(clientId int) {
 	Bridge.DelClient(clientId)
 }
@@ -462,15 +509,17 @@ func GetDashboardData() map[string]interface{} {
 
 // 实例化流量数据到文件
 func flowSession(m time.Duration) {
-	ticker := time.NewTicker(m)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ticker.C:
-			file.GetDb().JsonDb.StoreHostToJsonFile()
-			file.GetDb().JsonDb.StoreTasksToJsonFile()
-			file.GetDb().JsonDb.StoreClientsToJsonFile()
-			file.GetDb().JsonDb.StoreGlobalToJsonFile()
+	once.Do(func() {
+		ticker := time.NewTicker(m)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				file.GetDb().JsonDb.StoreHostToJsonFile()
+				file.GetDb().JsonDb.StoreTasksToJsonFile()
+				file.GetDb().JsonDb.StoreClientsToJsonFile()
+				file.GetDb().JsonDb.StoreGlobalToJsonFile()
+			}
 		}
-	}
+	})
 }

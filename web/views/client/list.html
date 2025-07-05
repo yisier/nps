@@ -61,7 +61,7 @@
             return '<b langtag="word-maxconnections"></b>: ' + row.MaxConn + '&emsp;'
                 + '<b langtag="word-curconnections"></b>: ' + row.NowConn + '&emsp;'
                 + '<b langtag="word-flowlimit"></b>: ' + row.Flow.FlowLimit + 'm&emsp;'
-                + '<b langtag="word-ratelimit"></b>: ' + row.RateLimit + 'kb/s&emsp;'
+                + '<b langtag="word-ratelimit"></b>: ' + row.RateLimit + 'KB/s&emsp;'
                 + '<b langtag="word-maxtunnels"></b>: ' + row.MaxTunnelNum + '&emsp;<br/><br/>'
                 + '<b langtag="word-webusername"></b>: ' + row.WebUserName + '&emsp;'
                 + '<b langtag="word-webpassword"></b>: ' + row.WebPassword + '&emsp;'
@@ -71,9 +71,12 @@
                 + '<b langtag="word-compress"></b>: <span langtag="word-' + row.Cnf.Compress + '"></span>&emsp;'
                 + '<b langtag="word-connectbyconfig"></b>: <span langtag="word-' + row.ConfigConnAllow + '"></span>&emsp;<br/><br/>'
                 + '<b langtag="word-blackip"></b>: ' + row.BlackIpList + '&emsp;<br/><br/>'
+                + '<b langtag="word-createtime"></b>: ' + row.CreateTime + '&emsp;<br/><br/>'
                 + '<b langtag="word-lastonlinetime"></b>: ' + row.LastOnlineTime + '&emsp;<br/><br/>'
-                + '<b langtag="word-commandclient"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.VerifyKey + " -type=" +{{.bridgeType}} +"</code><br/>"
-                + '<b langtag="word-commandclient-tls"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.VerifyKey + " -tls_enable=true</code>"
+                + '<b langtag="word-quicklycommand"></b>: <span>' + encodeToBase64('{{.ip}}:{{.p}} ' + row.VerifyKey)   + '</span>&emsp;<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button><br/>'
+                + '<b langtag="word-tlsquicklycommand"></b>: <span>' + encodeToBase64('{{.ip}}:{{.tls_p}} ' + row.VerifyKey + ' -tls_enable=true')   + '</span>&emsp;<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button><br/>'
+                + '<b langtag="word-commandclient"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.VerifyKey + " -type=" +{{.bridgeType}} +"</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
+                + '<b langtag="word-commandclient-tls"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.VerifyKey + " -tls_enable=true</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button>"
         },
         //表格的列
         columns: [
@@ -212,4 +215,26 @@
             }
         ]
     });
+
+    function encodeToBase64(str){
+        return btoa("nps "+ str);
+    }
+
+    function copyCommand(data) {
+        data.setAttribute("data-clipboard-text", data.previousElementSibling.innerHTML)
+    }
+
+    var clipboard = new ClipboardJS('.copy');
+    clipboard.on('success', function (e) {
+        // alert("复制成功"+e.text)
+        toastr.success('复制成功');
+        e.clearSelection();
+    });
+
+    clipboard.on('error', function (e) {
+        // alert("复制失败")
+        toastr.error('复制失败', '提示');
+    });
+
+
 </script>

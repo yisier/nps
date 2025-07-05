@@ -24,7 +24,9 @@
                                 <option value="socks5" langtag="scheme-socks5"></option>
                                 <option value="secret" langtag="scheme-secret"></option>
                                 <option value="p2p" langtag="scheme-p2p"></option>
-                                {{/*<option value="file" langtag="scheme-file"></option>*/}}
+                                {{/*
+                                <option value="file" langtag="scheme-file"></option>
+                                */}}
                             </select>
                         </div>
                     </div>
@@ -32,8 +34,11 @@
                     <div class="form-group" id="client_id">
                         <label class="control-label font-bold" langtag="word-clientid"></label>
                         <div class="col-sm-10">
-                            <input value="{{.client_id}}" class="form-control" type="text" name="client_id"
-                                   placeholder="" langtag="word-clientid">
+                            <select class="form-control" name="client_id" placeholder="" id="nps_client_id"
+                                    langtag="word-belongclient"></select>
+
+                            <!--                            <input value="{{.client_id}}" class="form-control" type="text" name="client_id"-->
+                            <!--                                   placeholder="" langtag="word-clientid">-->
                         </div>
                     </div>
 
@@ -45,13 +50,13 @@
                         </div>
                     </div>
                     {{if eq true .allow_multi_ip}}
-                        <div class="form-group" id="server_ip">
-                            <label class="control-label font-bold" langtag="word-serverip"></label>
-                            <div class="col-sm-10">
-                                <input class="form-control" type="text" value="0.0.0.0" name="server_ip" placeholder=""
-                                       langtag="info-suchasip">
-                            </div>
+                    <div class="form-group" id="server_ip">
+                        <label class="control-label font-bold" langtag="word-serverip"></label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" value="0.0.0.0" name="server_ip" placeholder=""
+                                   langtag="info-suchasip">
                         </div>
+                    </div>
                     {{end}}
                     <div class="form-group" id="port">
                         <label class="control-label font-bold" langtag="word-serverport"></label>
@@ -62,15 +67,15 @@
                     </div>
 
                     {{if eq true .allow_local_proxy}}
-                        <div class="form-group" id="local_proxy">
-                            <label class="control-label font-bold" langtag="word-proxytolocal"></label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="local_proxy">
-                                    <option value="0" langtag="word-no"></option>
-                                    <option value="1" langtag="word-yes"></option>
-                                </select>
-                            </div>
+                    <div class="form-group" id="local_proxy">
+                        <label class="control-label font-bold" langtag="word-proxytolocal"></label>
+                        <div class="col-sm-10">
+                            <select class="form-control" name="local_proxy">
+                                <option value="0" langtag="word-no"></option>
+                                <option value="1" langtag="word-yes"></option>
+                            </select>
                         </div>
+                    </div>
                     {{end}}
 
                     <div class="form-group" id="target">
@@ -106,6 +111,20 @@
                             <span class="help-block m-b-none" langtag="info-identificationkey"></span>
                         </div>
                     </div>
+
+                    <div class="form-group" id="proto_version">
+                        <label class="control-label font-bold">Proxy Protocol Version：</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" name="proto_version">
+                                <option value=""></option>
+                                <option value="V1">V1</option>
+                                <option value="V2">V2</option>
+                            </select>
+                            <span class="help-block m-b-none">开启此功能，请确保本地的服务能够支持 Proxy Protocol 协议。</span>
+                        </div>
+                    </div>
+
+
                     <div class="hr-line-dashed"></div>
                     <div class="form-group">
                         <div class="col-sm-4 col-sm-offset-2">
@@ -124,7 +143,7 @@
 <script>
     var arr = []
     arr["all"] = ["port", "target", "password", "local_path", "strip_pre", "local_proxy", "client_id", "server_ip"]
-    arr["tcp"] = ["port", "target", "local_proxy", "client_id", "server_ip"]
+    arr["tcp"] = ["port", "target", "local_proxy", "client_id", "server_ip", "proto_version"]
     arr["udp"] = ["port", "target", "local_proxy", "client_id", "server_ip"]
     arr["socks5"] = ["port", "client_id", "server_ip"]
     arr["httpProxy"] = ["port", "client_id", "server_ip"]
@@ -151,5 +170,27 @@
         $("#use_client").on("change", function () {
             resetForm()
         })
+
+        getClientList()
     })
+
+    function getClientList() {
+        $("select[name='client_id']").empty();
+        $.ajax({
+            type: "POST",
+            url: "{{.web_base_url}}/client/list", // 服务器数据的加载地址
+            data: {order: "asc", offset: 0, limit: 999},
+            dataType: "json",
+            success: function (data) {
+                if (data && data.rows.length > 0) {
+                    for (var i = 0; i < data.rows.length; i++) {
+                        var option = "<option value=\"" + data.rows[i].Id + "\"";
+                        option += ">" + data.rows[i].Id + '-' + data.rows[i].Remark + "</option>"; //动态添加数据
+                        $("select[name='client_id']").append(option);
+                        $("select[name='client_id']").find("option[value='{{.client_id}}']").attr("selected", true);
+                    }
+                }
+            }
+        });
+    }
 </script>

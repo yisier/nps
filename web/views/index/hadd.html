@@ -7,7 +7,9 @@
                     <div class="form-group">
                         <label class="control-label font-bold" langtag="word-clientid"></label>
                         <div class="col-sm-10">
-                            <input value="{{.client_id}}" class="form-control" type="text" name="client_id" placeholder="" langtag="word-clientid">
+                            <select class="form-control" name="client_id" placeholder=""
+                                    langtag="word-belongclient"></select>
+                            <!--                            <input value="{{.client_id}}" class="form-control" type="text" name="client_id" placeholder="" langtag="word-clientid">-->
                         </div>
                     </div>
                     <div class="form-group">
@@ -19,7 +21,8 @@
                     <div class="form-group">
                         <label class="control-label font-bold" langtag="word-host"></label>
                         <div class="col-sm-10">
-                            <input class="form-control" type="text" name="host" placeholder="" langtag="info-suchashost">
+                            <input class="form-control" type="text" name="host" placeholder=""
+                                   langtag="info-suchashost">
                         </div>
                     </div>
                     <div class="form-group" id="scheme">
@@ -46,22 +49,27 @@
                     <div class="form-group" id="cert_file">
                         <label class="control-label font-bold" langtag="word-httpscert"></label>
                         <div class="col-sm-10">
-                            <textarea  rows="6" class="form-control" type="text" name="cert_file_path" id="pemText" placeholder="请将证书文件拖拽或将内容复制粘贴到此处，证书文件格式为：xxxx_example.com.pem"></textarea>
+                            <textarea rows="6" class="form-control" type="text" name="cert_file_path" id="pemText"
+                                      placeholder="请将证书文件拖拽或将内容复制粘贴到此处，证书文件格式为：xxxx_example.com.pem。
+或者配置证书文件路径。"></textarea>
                         </div>
                     </div>
                     <div class="form-group" id="key_file">
                         <label class="control-label font-bold" langtag="word-httpskey"></label>
                         <div class="col-sm-10">
-                            <textarea rows="6" class="form-control" type="text" name="key_file_path" id="pemKey"  placeholder="请将私钥文件拖拽或复制粘贴到此处，证书秘钥格式为：xxxx_example.com.key"></textarea>
+                            <textarea rows="6" class="form-control" type="text" name="key_file_path" id="pemKey"
+                                      placeholder="请将私钥文件拖拽或复制粘贴到此处，证书秘钥格式为：xxxx_example.com.key。
+或者配置秘钥文件路径。"></textarea>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="control-label font-bold" langtag="word-urlroute"></label>
                         <div class="col-sm-10">
-                            <input class="form-control" type="text" name="location" placeholder="" langtag="info-unrestricted">
+                            <input class="form-control" type="text" name="location" placeholder=""
+                                   langtag="info-unrestricted">
                         </div>
                     </div>
-                {{if eq true .allow_local_proxy}}
+                    {{if eq true .allow_local_proxy}}
                     <div class="form-group" id="local_proxy">
                         <label class="control-label font-bold" langtag="word-proxytolocal"></label>
                         <div class="col-sm-10">
@@ -71,11 +79,12 @@
                             </select>
                         </div>
                     </div>
-                {{end}}
+                    {{end}}
                     <div class="form-group">
                         <label class="control-label font-bold" langtag="word-target"></label>
                         <div class="col-sm-10">
-                        <textarea class="form-control" rows="4" type="text" name="target" placeholder="" langtag="info-suchasiplist"></textarea>
+                            <textarea class="form-control" rows="4" type="text" name="target" placeholder=""
+                                      langtag="info-suchasiplist"></textarea>
                             <span class="help-block m-b-none" langtag="info-targethost"></span>
 
                         </div>
@@ -83,7 +92,8 @@
                     <div class="form-group" id="header">
                         <label class="control-label font-bold" langtag="word-requestheader"></label>
                         <div class="col-sm-10">
-                        <textarea class="form-control" rows="4" type="text" name="header" placeholder="Cache-Control: no-cache"></textarea>
+                            <textarea class="form-control" rows="4" type="text" name="header"
+                                      placeholder="Cache-Control: no-cache"></textarea>
                             <span class="help-block m-b-none" langtag="info-header"></span>
                         </div>
 
@@ -91,13 +101,15 @@
                     <div class="form-group" id="hostchange">
                         <label class="control-label font-bold" langtag="word-requesthost"></label>
                         <div class="col-sm-10">
-                            <input class="form-control" value="" type="text" name="hostchange" placeholder="" langtag="word-requesthost">
+                            <input class="form-control" value="" type="text" name="hostchange" placeholder=""
+                                   langtag="word-requesthost">
                         </div>
                     </div>
                     <div class="hr-line-dashed"></div>
                     <div class="form-group">
                         <div class="col-sm-4 col-sm-offset-2">
-                            <button class="btn btn-success" type="button" onclick="submitform('add', '{{.web_base_url}}/index/addhost', $('form').serializeArray())">
+                            <button class="btn btn-success" type="button"
+                                    onclick="submitform('add', '{{.web_base_url}}/index/addhost', $('form').serializeArray())">
                                 <i class="fa fa-fw fa-lg fa-check-circle"></i> <span langtag="word-add"></span>
                             </button>
                         </div>
@@ -113,16 +125,16 @@
         const pemKey = document.getElementById("pemKey");
 
         // 阻止浏览器默认打开文件的行为
-        document.addEventListener("dragover", function(event) {
+        document.addEventListener("dragover", function (event) {
             event.preventDefault();
         });
 
-        pemText.addEventListener("drop", function(event) {
+        pemText.addEventListener("drop", function (event) {
             event.preventDefault();
             const file = event.dataTransfer.files[0];
             const reader = new FileReader();
 
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 pemText.value = e.target.result;
                 console.log("上传pem")
                 $('#edit_form').data('bootstrapValidator').updateStatus('pemText', 'NOT_VALIDATED');
@@ -132,12 +144,12 @@
             reader.readAsText(file);
         });
 
-        pemKey.addEventListener("drop", function(event) {
+        pemKey.addEventListener("drop", function (event) {
             event.preventDefault();
             const file = event.dataTransfer.files[0];
             const reader = new FileReader();
 
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 pemKey.value = e.target.result;
                 $('#edit_form').data('bootstrapValidator').updateStatus('pemKey', 'NOT_VALIDATED');
                 $('#edit_form').data('bootstrapValidator').validateField('pemKey');
@@ -158,5 +170,26 @@
                 $("#AutoHttps").css("display", "none")
             }
         })
+
+        getClientList();
     })
+
+    function getClientList() {
+        $("select[name='client_id']").empty();
+        $.ajax({
+            type: "POST",
+            url: "{{.web_base_url}}/client/list", // 服务器数据的加载地址
+            data: {order: "asc", offset: 0, limit: 999},
+            dataType: "json",
+            success: function (data) {
+                if (data && data.rows.length > 0) {
+                    for (var i = 0; i < data.rows.length; i++) {
+                        var option = "<option value=\"" + data.rows[i].Id + "\"";
+                        option += ">" + data.rows[i].Id + '-' + data.rows[i].Remark + "</option>"; //动态添加数据
+                        $("select[name='client_id']").append(option);
+                    }
+                }
+            }
+        });
+    }
 </script>

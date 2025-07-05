@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 
 	"ehang.io/nps/lib/cache"
@@ -48,7 +49,36 @@ func (https *HttpsServer) Start() error {
 				https.handleHttps2(c, serverName, rb, r)
 			} else {
 				logs.Debug("使用上传证书")
-				https.cert(host, c, rb, host.CertFilePath, host.KeyFilePath)
+
+				// 判断是路径还是证书，-----BEGIN 开头的为证书
+				if strings.Contains(host.CertFilePath, "-----BEGIN") || strings.Contains(host.KeyFilePath, "-----BEGIN") {
+					logs.Debug("通过上传文件加载证书")
+					https.cert(host, c, rb, host.CertFilePath, host.KeyFilePath)
+				} else {
+					logs.Debug("通过路径加载证书")
+					if !common.FileExists(host.CertFilePath) || !common.FileExists(host.KeyFilePath) {
+						c.Close()
+						logs.Error("证书或秘钥文件不存在", host.KeyFilePath, host.CertFilePath)
+						return
+					}
+
+					cert, err := common.ReadAllFromFile(host.CertFilePath)
+					if err != nil {
+						c.Close()
+						logs.Error("加载证书失败", err)
+						return
+					}
+					key, err := common.ReadAllFromFile(host.KeyFilePath)
+					if err != nil {
+						c.Close()
+						logs.Error("加载证书秘钥失败", err)
+						return
+					}
+
+					https.cert(host, c, rb, string(cert), string(key))
+
+				}
+
 			}
 		}
 	})

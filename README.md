@@ -9,19 +9,81 @@
 
 ***DockerHub***： [NPS](https://hub.docker.com/r/yisier1/nps) [NPC](https://hub.docker.com/r/yisier1/npc)
 
+***宝塔面板***：[宝塔面板 Docker](docs/bt.md)
+
 # 交流群
-聊天灌水QQ群：619833483
+聊天灌水QQ群：619833483(2000人群),770569342
+
+# 免费NPS节点
+https://natnps.com/
+免费NPS内网穿透节点，长期免费，6M带宽，3条隧道，欢迎来嫖，自行注册账号。
 
 # 特价云服务器  
 国内BGP，游戏开服，2核 2G 15M上行 25元/月，[专属连接，首月5折](https://www.rainyun.com/MjY0MzY1_)
 
+# 提示
+强烈推荐使用无配置文件模式启动客户端（删除掉npc.exe 目录下的`conf`文件夹即可），所有数据应该在服务端保存和配置，而客户端只做连接转发。客户端配置文件对小白极不友好，配置繁琐，容易出错。   
+0.26.21 版本后的客户端，无需再通过命令行方式启动、安装、卸载客户端，直接双击运行，按照提示输入指令即可完成，非常方便。
+
+
+# 更新日志  
+- 2025-05-28  v0.26.25  
+  新增：
+  - nps增加`nps(.exe) -server` 命令，用于管理NPS服务，安装和卸载服务在 Linux 下需要有 sudo 权限，Windows 下需要有管理员权限。  
+  ![img.png](image/new/server.png)
+  - 增加【TLS快捷启动命令】，可用于在tls模式下，快速启动客户端。 [257](https://github.com/yisier/nps/issues/257)
+
+
+- 2025-04-16  v0.26.24   
+  新增：
+  - 隧道支持复制功能，在隧道页面增加复制按钮，除了端口号为随机生成外，其他参数全部拷贝。[251](https://github.com/yisier/nps/issues/251)    
+    
+  修复：
+  - 私密代理连接时服务端会报错退出，[250](https://github.com/yisier/nps/issues/250)
+
+
+
+- 2025-04-11  v0.26.23  
+  新增：
+  - TCP 隧道支持 Proxy Protocol 协议来传递经过请求的真实 IP。![img.png](image/new/protocol.png)  
   
-# 捐赠
-![image](image/new/payCode.png)
+  修复：  
+  - 客户端较多时，协程增长过快，感谢 [@huanglei288766](https://github.com/yisier/nps/pull/244) 的PR  
 
 
+- 2025-01-23  v0.26.22  
+  优化：
+  - 客户端注册系统服务时，（新版客户端注册方式，非 install 命令） 将按照 `npc-[vkey].log` 格式保存日志，每个客户端VKEY单独一个日志文件，windows 日志位于 `npc.exe` 同级目录下，linux 位于 `/var/log/`目录。  
+  - 域名模式，HTTPS证书支持上传文件和文件路径，系统将自动识别路径还是证书内容。 [#175](https://github.com/yisier/nps/issues/175)  
+  
+  修复：
+  - ipv6地址显示不全 [#237](https://github.com/yisier/nps/issues/237)
+  
 
-## 更新日志  
+- 2025-01-07  v0.26.21   
+  新增：
+  - 客户端列表页面新增【快捷启动命令】，此命令为连接地址+链接秘钥的base64编码，方便一键启动、一键安装客户端。  
+  - 域名解析和隧道列表增加访问地址，可以点击隧道链接，直接网页打开。 [#234](https://github.com/yisier/nps/issues/234)  
+  
+  优化：  
+  - 修改vkey生成方式，由16位缩短至10位，截取uuid前10位，避免重复。  
+  - 优化客户端启动方式，当npc文件目录下无配置文件时，可直接双击运行客户端，输入命令完成启动、安装、卸载客户端，直接启动和安装服务时需要输入【快捷启动命令】，卸载服务、启动服务、停止服务时，只需输入隧道秘钥【vkey】即可。安装服务以 nps-client-vkey 方式命名 ，实现注册多个服务。  
+  ![image](image/new/cmd.png)
+  
+
+   **注意**  
+   强烈推荐使用无配置文件模式启动客户端，所有数据应该在服务端保存和配置，而客户端只做连接转发。客户端配置文件对小白极不友好，配置繁琐，容易出错。
+
+- 2024-11-07  v0.26.20  
+  新增：
+  - 客户端增加创建时间
+  
+  修复：
+  - 客户端限速单位不统一 [#185](https://github.com/yisier/nps/issues/185)
+  - 增加从下拉选择客户端,隧道列表排序,新增编辑后不会刷新界面 [#183](https://github.com/yisier/nps/issues/183)
+  - 隧道数量限制无法统计域名映射 [#209](https://github.com/yisier/nps/issues/209) 
+  
+
 - 2024-06-01  v0.26.19  
   - golang 版本升级到 1.22.
   - 增加自动https，自动将http 重定向（301）到 https.  
@@ -108,3 +170,8 @@
 - 2022-09-14:  
 修改NPS工作目录为当前可执行文件目录（即配置文件和nps可执行文件放在同一目录下，直接执行nps文件即可），去除注册系统服务，启动、停止、升级等命令
 
+
+
+  
+# 捐赠
+![image](image/new/payCode.png)

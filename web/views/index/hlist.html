@@ -88,7 +88,7 @@
                 halign: 'center',
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
-                    return row.Client.Id
+                    return row.Client.Id + '-' + row.Client.Remark
                 }
             },
             {
@@ -107,7 +107,10 @@
                 field: 'Host',//域值
                 title: '<span langtag="word-host"></span>',//标题
                 halign: 'center',
-                visible: true//false表示不显示
+                visible: true,//false表示不显示
+                formatter: function (value, row, index) {
+                    return "<a href='http://" + row.Host  + "' target='_blank'>" + row.Host + "</a>"
+                }
             },
             {
                 field: 'Scheme',//域值

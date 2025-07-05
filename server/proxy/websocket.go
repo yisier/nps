@@ -119,7 +119,7 @@ func NewHttpReverseProxy(s *httpServer) *HttpReverseProxy {
 				host = ctx.Value("host").(*file.Host)
 				targetAddr = ctx.Value("target").(string)
 
-				lk = conn.NewLink("http", targetAddr, host.Client.Cnf.Crypt, host.Client.Cnf.Compress, r.RemoteAddr, host.Target.LocalProxy)
+				lk = conn.NewLink("http", targetAddr, host.Client.Cnf.Crypt, host.Client.Cnf.Compress, r.RemoteAddr, host.Target.LocalProxy, "")
 				if target, err = s.bridge.SendLinkInfo(host.Client.Id, lk, nil); err != nil {
 					logs.Notice("connect to target %s error %s", lk.Host, err)
 					return nil, NewHTTPError(http.StatusBadGateway, "Cannot connect to the server")
@@ -150,7 +150,7 @@ func NewHttpReverseProxy(s *httpServer) *HttpReverseProxy {
 		host = ctx.Value("host").(*file.Host)
 		targetAddr = ctx.Value("target").(string)
 
-		lk = conn.NewLink("tcp", targetAddr, host.Client.Cnf.Crypt, host.Client.Cnf.Compress, r.RemoteAddr, host.Target.LocalProxy)
+		lk = conn.NewLink("tcp", targetAddr, host.Client.Cnf.Crypt, host.Client.Cnf.Compress, r.RemoteAddr, host.Target.LocalProxy, "")
 		if target, err = s.bridge.SendLinkInfo(host.Client.Id, lk, nil); err != nil {
 			logs.Notice("connect to target %s error %s", lk.Host, err)
 			return nil, NewHTTPError(http.StatusBadGateway, "Cannot connect to the target")

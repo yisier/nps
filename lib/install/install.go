@@ -141,6 +141,13 @@ func UpdateNps() {
 	fmt.Println("Update completed, please restart")
 }
 
+func UpdateNpsNew() {
+	destPath := downloadLatest2("server", filepath.Join(common.GetAppPath(), "temp"))
+	//复制文件到对应目录
+	copyStaticFileReplaceNps(destPath, common.GetAppPath())
+	fmt.Println("更新成功，请重启服务")
+}
+
 func UpdateNpc() {
 	destPath := downloadLatest("client")
 	//复制文件到对应目录
@@ -190,6 +197,43 @@ func downloadLatest(bin string) string {
 	return destPath
 }
 
+func downloadLatest2(bin string, path string) string {
+	// get version
+	data, err := http.Get("https://api.github.com/repos/yisier/nps/releases/latest")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	b, err := ioutil.ReadAll(data.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rl := new(release)
+	json.Unmarshal(b, &rl)
+	version := rl.TagName
+	fmt.Println("the latest version is", version)
+	filename := runtime.GOOS + "_" + runtime.GOARCH + "_" + bin + ".tar.gz"
+	// download latest package
+	downloadUrl := fmt.Sprintf("https://github.com/yisier/nps/releases/download/%s/%s", version, filename)
+	fmt.Println("download package from ", downloadUrl)
+	resp, err := http.Get(downloadUrl)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	destPath, err := unpackit.Unpack(resp.Body, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if bin == "server" {
+		destPath = strings.Replace(destPath, "/web", "", -1)
+		destPath = strings.Replace(destPath, `\web`, "", -1)
+		destPath = strings.Replace(destPath, "/views", "", -1)
+		destPath = strings.Replace(destPath, `\views`, "", -1)
+	} else {
+		destPath = strings.Replace(destPath, `\conf`, "", -1)
+		destPath = strings.Replace(destPath, "/conf", "", -1)
+	}
+	return destPath
+}
 func copyStaticFile(srcPath, bin string) string {
 	path := common.GetInstallPath()
 	if bin == "nps" {
@@ -223,6 +267,22 @@ func copyStaticFile(srcPath, bin string) string {
 		copyFile(filepath.Join(srcPath, bin+".exe"), filepath.Join(common.GetAppPath(), bin+".exe"))
 	}
 	chMod(binPath, 0755)
+	return binPath
+}
+
+func copyStaticFileReplaceNps(srcPath, descPath string) string {
+	//复制文件到对应目录
+	os.Rename(filepath.Join(srcPath, "web"), filepath.Join(descPath, "web"))
+	chMod(filepath.Join(descPath, "web"), 0766)
+
+	binPath, _ := filepath.Abs(os.Args[0])
+	if !common.IsWindows() {
+		os.Rename(filepath.Join(srcPath, "nps"), filepath.Join(descPath, "nps"))
+	} else {
+		os.Rename(filepath.Join(srcPath, "nps.exe"), filepath.Join(descPath, "nps.exe"))
+	}
+	chMod(binPath, 0755)
+	os.RemoveAll(srcPath)
 	return binPath
 }
 
@@ -266,6 +326,21 @@ now!`)
 	chMod(common.GetLogPath(), 0777)
 	return binPath
 }
+
+func InstallNpsToCurrentDir() string {
+	path := common.GetAppPath()
+	log.Println("install path:" + path)
+	log.Println("install ok!")
+	chMod(filepath.Join(path, "nps.log"), 0777)
+
+	if !common.IsWindows() {
+		path = filepath.Join(path, "nps")
+	} else {
+		path = filepath.Join(path, "nps.exe")
+	}
+	return path
+}
+
 func MkidrDirAll(path string, v ...string) {
 	for _, item := range v {
 		if err := os.MkdirAll(filepath.Join(path, item), 0755); err != nil {
@@ -310,7 +385,7 @@ func CopyDir(srcPath string, destPath string) error {
 	return err
 }
 
-//生成目录并拷贝文件
+// 生成目录并拷贝文件
 func copyFile(src, dest string) (w int64, err error) {
 	srcFile, err := os.Open(src)
 	if err != nil {
@@ -345,7 +420,7 @@ func copyFile(src, dest string) (w int64, err error) {
 	return io.Copy(dstFile, srcFile)
 }
 
-//检测文件夹路径时候存在
+// 检测文件夹路径时候存在
 func pathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
