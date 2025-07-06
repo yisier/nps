@@ -3,7 +3,7 @@
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <h5 langtag="word-clientdownloads">客户端下载</h5>
+                    <h5 langtag="word-clientdownloads">客户端下载与安装</h5>
                     <div class="ibox-tools">
                         <a class="collapse-link">
                             <i class="fa fa-chevron-up"></i>
@@ -14,48 +14,74 @@
                     </div>
                 </div>
                 <div class="ibox-content">
-                    <p>请根据您的操作系统和架构下载 nps 客户端。我们提供命令行 (CLI) 和图形用户界面 (GUI) 两种版本（如果可用）。</p>
+                    <p>欢迎来到 nps 客户端下载页面。请根据您的操作系统和处理器架构选择合适的客户端版本。我们提供两种类型的客户端：</p>
+                    <ul>
+                        <li><strong>命令行客户端 (CLI)</strong>: 轻量级，适合服务器或熟悉命令行的用户。</li>
+                        <li><strong>图形用户界面客户端 (GUI)</strong>: 提供直观的操作界面，适合桌面用户（目前仅支持 Windows 和 macOS）。</li>
+                    </ul>
+                    <p>下载后，请参考下方详细的安装指南。</p>
 
                     <!-- Linux 客户端 -->
-                    <div class="panel panel-default">
+                    <div class="panel panel-default m-t-lg">
                         <div class="panel-heading">
-                            <h4 class="panel-title">Linux 客户端</h4>
+                            <h4 class="panel-title">Linux 客户端下载与安装</h4>
                         </div>
                         <div class="panel-body">
+                            <p>适用于 Linux 系统的 nps 命令行客户端。目前暂无官方 GUI 版本。</p>
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
                                         <th>架构</th>
                                         <th>CLI 客户端</th>
-                                        <th>GUI 客户端</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>amd64</td>
-                                        <td><a href="/linux_amd64_client.tar.gz" download>下载</a></td>
-                                        <td>暂无</td>
+                                        <td><a href="/linux_amd64_client.tar.gz" download>下载 (amd64)</a></td>
                                     </tr>
                                     <tr>
                                         <td>arm64</td>
-                                        <td><a href="/linux_arm64_client.tar.gz" download>下载</a></td>
-                                        <td>暂无</td>
+                                        <td><a href="/linux_arm64_client.tar.gz" download>下载 (arm64)</a></td>
                                     </tr>
                                 </tbody>
                             </table>
-                            <h5>安装指南:</h5>
-                            <p>1. 下载适用于您架构的客户端。<br>
-                               2. 解压文件：<code>tar -zxvf linux_amd64_client.tar.gz</code> (请替换为实际下载的文件名)。<br>
-                               3. 运行客户端：<code>./npc</code> (命令行版) 或 <code>./npc_gui</code> (图形界面版，如果可用)。</p>
+                            <h5>安装指南 (CLI):</h5>
+                            <ol>
+                                <li><strong>下载客户端</strong>：
+                                    <p>
+根据您的 Linux 系统架构（通常是 amd64 或 arm64），点击上方表格中对应的“下载”链接，将客户端压缩包保存到您的计算机。</p>
+                                </li>
+                                <li><strong>解压客户端</strong>：
+                                    <p>
+打开终端（Terminal），导航到您下载文件的目录（例如：<code>cd ~/Downloads</code>）。然后使用 <code>tar</code> 命令解压文件。请将 <code>linux_amd64_client.tar.gz</code> 替换为您实际下载的文件名：</p>
+                                    <pre><code>tar -zxvf linux_amd64_client.tar.gz</code></pre>
+                                    <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
+                                </li>
+                                <li><strong>运行客户端</strong>：
+                                    <p>
+首先，赋予 <code>npc</code> 可执行权限：</p>
+                                    <pre><code>chmod +x npc</code></pre>
+                                    <p>然后，直接运行客户端：</p>
+                                    <pre><code>./npc</code></pre>
+                                    <p>首次运行会提示您输入服务器地址和验证密钥。按照提示操作即可。</p>
+                                    <p><strong>（可选）后台运行</strong>：如果您希望客户端在后台持续运行，可以使用 <code>nohup</code> 命令：</p>
+                                    <pre><code>nohup ./npc &</code></pre>
+                                    <p>
+要停止后台运行的客户端，您需要查找其进程 ID (PID) 并使用 <code>kill</code> 命令。例如：<code>ps aux | grep npc</code> 找到 PID，然后 <code>kill &lt;PID&gt;</code>。</p>
+                                    <p><strong>（可选）安装为系统服务</strong>：对于长期稳定运行，强烈建议将其安装为系统服务。具体步骤请参考官方文档。</p>
+                                </li>
+                            </ol>
                         </div>
                     </div>
 
                     <!-- Windows 客户端 -->
                     <div class="panel panel-default m-t-lg">
                         <div class="panel-heading">
-                            <h4 class="panel-title">Windows 客户端</h4>
+                            <h4 class="panel-title">Windows 客户端下载与安装</h4>
                         </div>
                         <div class="panel-body">
+                            <p>适用于 Windows 系统的 nps 命令行和图形界面客户端。</p>
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
@@ -67,29 +93,62 @@
                                 <tbody>
                                     <tr>
                                         <td>amd64</td>
-                                        <td><a href="/windows_amd64_client.zip" download>下载</a></td>
-                                        <td><a href="/windows_amd64_gui_client.zip" download>下载 GUI</a></td>
+                                        <td><a href="/windows_amd64_client.zip" download>下载 (amd64)</a></td>
+                                        <td><a href="/windows_amd64_gui_client.zip" download>下载 GUI (amd64)</a></td>
                                     </tr>
                                     <tr>
                                         <td>arm64</td>
-                                        <td><a href="/windows_arm64_client.zip" download>下载</a></td>
-                                        <td><a href="/windows_arm64_gui_client.zip" download>下载 GUI</a></td>
+                                        <td><a href="/windows_arm64_client.zip" download>下载 (arm64)</a></td>
+                                        <td><a href="/windows_arm64_gui_client.zip" download>下载 GUI (arm64)</a></td>
                                     </tr>
                                 </tbody>
                             </table>
-                            <h5>安装指南:</h5>
-                            <p>1. 下载适用于您架构的客户端。<br>
-                               2. 解压 ZIP 文件。<br>
-                               3. 运行 <code>npc.exe</code> (命令行版) 或 <code>npc_gui.exe</code> (图形界面版)。</p>
+                            <h5>安装指南 (CLI):</h5>
+                            <ol>
+                                <li><strong>下载客户端</strong>：
+                                    <p>
+根据您的 Windows 系统架构，点击上方表格中对应的“下载”链接，将客户端 ZIP 压缩包保存到您的计算机。</p>
+                                </li>
+                                <li><strong>解压客户端</strong>：
+                                    <p>
+找到下载的 ZIP 文件，右键点击选择“全部提取”或使用您喜欢的解压工具将其解压到一个您方便的目录（例如：<code>C:\nps-client</code>）。解压后，您会得到一个名为 <code>npc.exe</code> 的可执行文件。</p>
+                                </li>
+                                <li><strong>运行客户端</strong>：
+                                    <p>
+打开命令提示符 (CMD) 或 PowerShell，导航到您解压客户端的目录：</p>
+                                    <pre><code>cd C:\nps-client</code></pre>
+                                    <p>然后，运行客户端：</p>
+                                    <pre><code>npc.exe</code></pre>
+                                    <p>首次运行会提示您输入服务器地址和验证密钥。按照提示操作即可。</p>
+                                    <p><strong>（可选）后台运行</strong>：您可以创建一个批处理文件 (.bat) 或使用任务计划程序来使其在后台运行。</p>
+                                    <p><strong>（可选）安装为系统服务</strong>：对于长期稳定运行，建议将其安装为系统服务。具体步骤请参考官方文档。</p>
+                                </li>
+                            </ol>
+                            <h5>安装指南 (GUI):</h5>
+                            <ol>
+                                <li><strong>下载客户端</strong>：
+                                    <p>
+根据您的 Windows 系统架构，点击上方表格中对应的“下载 GUI”链接，将客户端 ZIP 压缩包保存到您的计算机。</p>
+                                </li>
+                                <li><strong>解压客户端</strong>：
+                                    <p>
+找到下载的 ZIP 文件，右键点击选择“全部提取”或使用您喜欢的解压工具将其解压到一个您方便的目录。解压后，您会得到一个名为 <code>npc_gui.exe</code> 的可执行文件。</p>
+                                </li>
+                                <li><strong>运行客户端</strong>：
+                                    <p>
+双击 <code>npc_gui.exe</code> 即可运行图形界面客户端。按照界面提示进行配置和连接。</p>
+                                </li>
+                            </ol>
                         </div>
                     </div>
 
                     <!-- macOS 客户端 -->
                     <div class="panel panel-default m-t-lg">
                         <div class="panel-heading">
-                            <h4 class="panel-title">macOS 客户端</h4>
+                            <h4 class="panel-title">macOS 客户端下载与安装</h4>
                         </div>
                         <div class="panel-body">
+                            <p>适用于 macOS 系统的 nps 命令行和图形界面客户端。</p>
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
@@ -101,20 +160,56 @@
                                 <tbody>
                                     <tr>
                                         <td>amd64</td>
-                                        <td><a href="/darwin_amd64_client.tar.gz" download>下载</a></td>
-                                        <td><a href="/darwin_amd64_gui_client.tar.gz" download>下载 GUI</a></td>
+                                        <td><a href="/darwin_amd64_client.tar.gz" download>下载 (amd64)</a></td>
+                                        <td><a href="/darwin_amd64_gui_client.tar.gz" download>下载 GUI (amd64)</a></td>
                                     </tr>
                                     <tr>
                                         <td>arm64</td>
-                                        <td><a href="/darwin_arm64_client.tar.gz" download>下载</a></td>
-                                        <td><a href="/darwin_arm64_gui_client.tar.gz" download>下载 GUI</a></td>
+                                        <td><a href="/darwin_arm64_client.tar.gz" download>下载 (arm64)</a></td>
+                                        <td><a href="/darwin_arm64_gui_client.tar.gz" download>下载 GUI (arm64)</a></td>
                                     </tr>
                                 </tbody>
                             </table>
-                            <h5>安装指南:</h5>
-                            <p>1. 下载适用于您架构的客户端。<br>
-                               2. 解压文件：<code>tar -zxvf darwin_amd64_client.tar.gz</code> (请替换为实际下载的文件名)。<br>
-                               3. 运行客户端：<code>./npc</code> (命令行版) 或 <code>./npc_gui</code> (图形界面版)。</p>
+                            <h5>安装指南 (CLI):</h5>
+                            <ol>
+                                <li><strong>下载客户端</strong>：
+                                    <p>
+根据您的 macOS 系统架构，点击上方表格中对应的“下载”链接，将客户端压缩包保存到您的计算机。</p>
+                                </li>
+                                <li><strong>解压客户端</strong>：
+                                    <p>
+打开终端（Terminal），导航到您下载文件的目录（例如：<code>cd ~/Downloads</code>）。然后使用 <code>tar</code> 命令解压文件：</p>
+                                    <pre><code>tar -zxvf darwin_amd64_client.tar.gz</code></pre>
+                                    <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
+                                </li>
+                                <li><strong>运行客户端</strong>：
+                                    <p>
+首先，赋予 <code>npc</code> 可执行权限：</p>
+                                    <pre><code>chmod +x npc</code></pre>
+                                    <p>然后，直接运行客户端：</p>
+                                    <pre><code>./npc</code></pre>
+                                    <p>首次运行会提示您输入服务器地址和验证密钥。按照提示操作即可。</p>
+                                    <p><strong>（可选）后台运行</strong>：如果您希望客户端在后台持续运行，可以使用 <code>nohup</code> 命令：</p>
+                                    <pre><code>nohup ./npc &</code></pre>
+                                    <p>
+要停止后台运行的客户端，您需要查找其进程 ID (PID) 并使用 <code>kill</code> 命令。</p>
+                                </li>
+                            </ol>
+                            <h5>安装指南 (GUI):</h5>
+                            <ol>
+                                <li><strong>下载客户端</strong>：
+                                    <p>
+根据您的 macOS 系统架构，点击上方表格中对应的“下载 GUI”链接，将客户端压缩包保存到您的计算机。</p>
+                                </li>
+                                <li><strong>解压客户端</strong>：
+                                    <p>
+找到下载的压缩包，双击即可解压。解压后，您会得到一个名为 <code>npc_gui</code> 的应用程序。</p>
+                                </li>
+                                <li><strong>运行客户端</strong>：
+                                    <p>
+双击 <code>npc_gui</code> 应用程序即可运行图形界面客户端。按照界面提示进行配置和连接。</p>
+                                </li>
+                            </ol>
                         </div>
                     </div>
 
