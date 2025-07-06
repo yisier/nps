@@ -6,6 +6,7 @@ import (
 )
 
 func Init() {
+	beego.SetStaticPath("/static", "web/static")
 	web_base_url := beego.AppConfig.String("web_base_url")
 	if len(web_base_url) > 0 {
 		ns := beego.NewNamespace(web_base_url,
@@ -15,6 +16,7 @@ func Init() {
 			beego.NSAutoRouter(&controllers.ClientController{}),
 			beego.NSAutoRouter(&controllers.AuthController{}),
 			beego.NSAutoRouter(&controllers.GlobalController{}),
+			beego.NSRouter("/downloads", &controllers.PublicController{}, "*:Downloads"),
 		)
 		beego.AddNamespace(ns)
 	} else {
@@ -24,6 +26,7 @@ func Init() {
 		beego.AutoRouter(&controllers.ClientController{})
 		beego.AutoRouter(&controllers.AuthController{})
 		beego.AutoRouter(&controllers.GlobalController{})
+		beego.Router("/downloads", &controllers.PublicController{}, "*:Downloads")
 
 	}
 }
