@@ -15,59 +15,92 @@
                 </div>
                 <div class="ibox-content">
                     <p>Download the nps client for your operating system and architecture. We provide both command-line (CLI) and graphical user interface (GUI) versions where available.</p>
+
+                    <!-- Linux Downloads -->
+                    <h4>Linux Clients</h4>
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>Operating System</th>
                                 <th>Architecture</th>
                                 <th>CLI Client</th>
                                 <th>GUI Client</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Linux -->
                             <tr>
-                                <td>Linux</td>
                                 <td>amd64</td>
                                 <td><a href="/linux_amd64_client.tar.gz" download>Download</a></td>
                                 <td>N/A</td>
                             </tr>
                             <tr>
-                                <td>Linux</td>
                                 <td>arm64</td>
                                 <td><a href="/linux_arm64_client.tar.gz" download>Download</a></td>
                                 <td>N/A</td>
                             </tr>
-                            <!-- Windows -->
+                        </tbody>
+                    </table>
+                    <h5>Linux Installation Guide:</h5>
+                    <p>1. Download the appropriate client for your architecture.<br>
+                       2. Extract the archive: <code>tar -zxvf linux_amd64_client.tar.gz</code> (replace with your downloaded file).<br>
+                       3. Run the client: <code>./npc</code> (for CLI) or <code>./npc_gui</code> (for GUI, if available).</p>
+
+                    <!-- Windows Downloads -->
+                    <h4 class="m-t-lg">Windows Clients</h4>
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>Windows</td>
+                                <th>Architecture</th>
+                                <th>CLI Client</th>
+                                <th>GUI Client</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
                                 <td>amd64</td>
                                 <td><a href="/windows_amd64_client.zip" download>Download</a></td>
                                 <td><a href="/windows_amd64_gui_client.zip" download>Download GUI</a></td>
                             </tr>
                             <tr>
-                                <td>Windows</td>
                                 <td>arm64</td>
                                 <td><a href="/windows_arm64_client.zip" download>Download</a></td>
                                 <td><a href="/windows_arm64_gui_client.zip" download>Download GUI</a></td>
                             </tr>
-                            <!-- macOS -->
+                        </tbody>
+                    </table>
+                    <h5>Windows Installation Guide:</h5>
+                    <p>1. Download the appropriate client for your architecture.<br>
+                       2. Extract the ZIP archive.<br>
+                       3. Run <code>npc.exe</code> (for CLI) or <code>npc_gui.exe</code> (for GUI).</p>
+
+                    <!-- macOS Downloads -->
+                    <h4 class="m-t-lg">macOS Clients</h4>
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>macOS</td>
+                                <th>Architecture</th>
+                                <th>CLI Client</th>
+                                <th>GUI Client</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
                                 <td>amd64</td>
                                 <td><a href="/darwin_amd64_client.tar.gz" download>Download</a></td>
                                 <td><a href="/darwin_amd64_gui_client.tar.gz" download>Download GUI</a></td>
                             </tr>
                             <tr>
-                                <td>macOS</td>
                                 <td>arm64</td>
                                 <td><a href="/darwin_arm64_client.tar.gz" download>Download</a></td>
                                 <td><a href="/darwin_arm64_gui_client.tar.gz" download>Download GUI</a></td>
                             </tr>
-                            <!-- Add more OS/Arch as needed -->
                         </tbody>
                     </table>
-                    <p>For detailed installation instructions, please refer to our <a href="https://ehang-io.github.io/nps/#/install" target="_blank">documentation</a>.</p>
+                    <h5>macOS Installation Guide:</h5>
+                    <p>1. Download the appropriate client for your architecture.<br>
+                       2. Extract the archive: <code>tar -zxvf darwin_amd64_client.tar.gz</code> (replace with your downloaded file).<br>
+                       3. Run the client: <code>./npc</code> (for CLI) or <code>./npc_gui</code> (for GUI).</p>
+
+                    <p class="m-t-lg">For more detailed and advanced installation instructions, please refer to our official <a href="https://ehang-io.github.io/nps/#/install" target="_blank">documentation</a>.</p>
                 </div>
             </div>
         </div>
