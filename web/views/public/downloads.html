@@ -84,101 +84,64 @@
                                     </table>
                                     <hr>
                                     <h5>Linux 安装与运行指南 (CLI):</h5>
-                                    <div class="panel-group" id="linux-accordion">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#linux-accordion" href="#linux-step1">
-                                                        1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="linux-step1" class="panel-collapse collapse in">
-                                                <div class="panel-body">
-                                                    <p>根据您的 Linux 系统处理器架构（通常是 <code>amd64</code> 或 <code>arm64</code>），点击上方表格中对应的“下载”按钮，将客户端压缩包保存到您的计算机（例如，下载到 <code>~/Downloads</code> 目录）。</p>
-                                                </div>
-                                            </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#linux-accordion" href="#linux-step2">
-                                                        2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="linux-step2" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件。请将 <code>linux_amd64_client.tar.gz</code> 替换为您实际下载的文件名：</p>
-                                                    <pre><code class="language-bash">cd ~/Downloads
+                                        <div class="ibox-content">
+                                            <p>根据您的 Linux 系统处理器架构（通常是 <code>amd64</code> 或 <code>arm64</code>），点击上方表格中对应的“下载”按钮，将客户端压缩包保存到您的计算机（例如，下载到 <code>~/Downloads</code> 目录）。</p>
+                                        </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件。请将 <code>linux_amd64_client.tar.gz</code> 替换为您实际下载的文件名：</p>
+                                            <pre><code class="language-bash">cd ~/Downloads
 tar -zxvf linux_amd64_client.tar.gz</code></pre>
-                                                    <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
-                                                </div>
-                                            </div>
+                                            <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#linux-accordion" href="#linux-step3">
-                                                        3. 赋予执行权限 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="linux-step3" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</p>
-                                                    <pre><code class="language-bash">chmod +x npc</code></pre>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>3. 赋予执行权限 <i class="fa fa-chevron-down pull-right"></i></h5>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#linux-accordion" href="#linux-step4">
-                                                        4. 运行客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="linux-step4" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>直接在终端中运行客户端：</p>
-                                                    <pre><code class="language-bash">./npc</code></pre>
-                                                    <p>首次运行 <code>npc</code> 时，它会提示您输入 nps 服务器的地址（例如：<code>your_server_ip:8024</code>）和验证密钥（<code>vkey</code>）。请按照提示输入正确的信息。</p>
-                                                    <p><strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</p>
-                                                </div>
-                                            </div>
+                                        <div class="ibox-content">
+                                            <p>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</p>
+                                            <pre><code class="language-bash">chmod +x npc</code></pre>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#linux-accordion" href="#linux-step5">
-                                                        5. （可选）后台运行客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="linux-step5" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>如果您希望 <code>npc</code> 客户端在关闭终端后仍然在后台持续运行，可以使用 <code>nohup</code> 命令：</p>
-                                                    <pre><code class="language-bash">nohup ./npc &</code></pre>
-                                                    <p>要停止后台运行的客户端，您需要先查找其进程 ID (PID)，然后使用 <code>kill</code> 命令。例如：</p>
-                                                    <pre><code class="language-bash">ps aux | grep npc
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>4. 运行客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>直接在终端中运行客户端：</p>
+                                            <pre><code class="language-bash">./npc</code></pre>
+                                            <p>首次运行 <code>npc</code> 时，它会提示您输入 nps 服务器的地址（例如：<code>your_server_ip:8024</code>）和验证密钥（<code>vkey</code>）。请按照提示输入正确的信息。</p>
+                                            <p><strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</p>
+                                        </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>5. （可选）后台运行客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>如果您希望 <code>npc</code> 客户端在关闭终端后仍然在后台持续运行，可以使用 <code>nohup</code> 命令：</p>
+                                            <pre><code class="language-bash">nohup ./npc &</code></pre>
+                                            <p>要停止后台运行的客户端，您需要先查找其进程 ID (PID)，然后使用 <code>kill</code> 命令。例如：</p>
+                                            <pre><code class="language-bash">ps aux | grep npc
 kill &lt;PID&gt;</code></pre>
-                                                </div>
-                                            </div>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#linux-accordion" href="#linux-step6">
-                                                        6. （可选）安装为系统服务 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="linux-step6" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>对于需要长期稳定运行的场景，强烈建议将 nps 客户端安装为系统服务（如 Systemd 服务）。这样可以确保客户端在系统启动时自动运行，并在意外停止后自动重启。具体安装步骤和配置方法，请参考 nps 官方文档中关于“注册到系统服务”的部分。</p>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>6. （可选）安装为系统服务 <i class="fa fa-chevron-down pull-right"></i>
+                                            </h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>对于需要长期稳定运行的场景，强烈建议将 nps 客户端安装为系统服务（如 Systemd 服务）。这样可以确保客户端在系统启动时自动运行，并在意外停止后自动重启。具体安装步骤和配置方法，请参考 nps 官方文档中关于“注册到系统服务”的部分。</p>
                                         </div>
                                     </div>
                                 </div>
@@ -216,127 +179,77 @@ kill &lt;PID&gt;</code></pre>
                                     </table>
                                     <hr>
                                     <h5>Windows 安装与运行指南 (CLI):</h5>
-                                    <div class="panel-group" id="windows-cli-accordion">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#windows-cli-step1">
-                                                        1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="windows-cli-step1" class="panel-collapse collapse in">
-                                                <div class="panel-body">
-                                                    <p>根据您的 Windows 系统处理器架构，点击上方表格中对应的“下载”按钮，将客户端 ZIP 压缩包保存到您的计算机。</p>
-                                                </div>
-                                            </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#windows-cli-step2">
-                                                        2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="windows-cli-step2" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>找到下载的 ZIP 文件，右键点击选择“全部提取”或使用您常用的解压工具（如 WinRAR, 7-Zip）将其解压到一个您方便的目录（例如：<code>C:\nps-client</code>）。解压后，您会得到一个名为 <code>npc.exe</code> 的可执行文件。</p>
-                                                </div>
-                                            </div>
+                                        <div class="ibox-content">
+                                            <p>根据您的 Windows 系统处理器架构，点击上方表格中对应的“下载”按钮，将客户端 ZIP 压缩包保存到您的计算机。</p>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#windows-cli-step3">
-                                                        3. 运行客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="windows-cli-step3" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>打开命令提示符 (CMD) 或 PowerShell，导航到您解压客户端的目录：</p>
-                                                    <pre><code class="language-cmd">cd C:\nps-client</code></pre>
-                                                    <p>然后，运行客户端：</p>
-                                                    <pre><code class="language-cmd">npc.exe</code></pre>
-                                                    <p>首次运行 <code>npc.exe</code> 时，它会提示您输入 nps 服务器的地址和验证密钥。请按照提示输入正确的信息。</p>
-                                                    <p><strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</p>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#windows-cli-step4">
-                                                        4. （可选）后台运行客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="windows-cli-step4" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>在 Windows 上，您可以通过创建批处理文件 (.bat) 或使用任务计划程序来使其在后台运行。例如，创建一个 <code>start_npc.bat</code> 文件，内容为 <code>start /B npc.exe</code>，然后运行此批处理文件。</p>
-                                                </div>
-                                            </div>
+                                        <div class="ibox-content">
+                                            <p>找到下载的 ZIP 文件，右键点击选择“全部提取”或使用您常用的解压工具（如 WinRAR, 7-Zip）将其解压到一个您方便的目录（例如：<code>C:\nps-client</code>）。解压后，您会得到一个名为 <code>npc.exe</code> 的可执行文件。</p>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#windows-cli-step5">
-                                                        5. （可选）安装为系统服务 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="windows-cli-step5" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>对于需要长期稳定运行的场景，建议将 nps 客户端安装为 Windows 服务。这样可以确保客户端在系统启动时自动运行，并在意外停止后自动重启。具体安装步骤和配置方法，请参考 nps 官方文档中关于“注册到系统服务”的部分。</p>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>3. 运行客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>打开命令提示符 (CMD) 或 PowerShell，导航到您解压客户端的目录：</p>
+                                            <pre><code class="language-cmd">cd C:\nps-client</code></pre>
+                                            <p>然后，运行客户端：</p>
+                                            <pre><code class="language-cmd">npc.exe</code></pre>
+                                            <p>首次运行 <code>npc.exe</code> 时，它会提示您输入 nps 服务器的地址和验证密钥。请按照提示输入正确的信息。</p>
+                                            <p><strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</p>
+                                        </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>4. （可选）后台运行客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>在 Windows 上，您可以通过创建批处理文件 (.bat) 或使用任务计划程序来使其在后台运行。例如，创建一个 <code>start_npc.bat</code> 文件，内容为 <code>start /B npc.exe</code>，然后运行此批处理文件。</p>
+                                        </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>5. （可选）安装为系统服务 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>对于需要长期稳定运行的场景，建议将 nps 客户端安装为 Windows 服务。这样可以确保客户端在系统启动时自动运行，并在意外停止后自动重启。具体安装步骤和配置方法，请参考 nps 官方文档中关于“注册到系统服务”的部分。</p>
                                         </div>
                                     </div>
                                     <hr>
                                     <h5>Windows 安装与运行指南 (GUI):</h5>
-                                    <div class="panel-group" id="windows-gui-accordion">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#windows-gui-step1">
-                                                        1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="windows-gui-step1" class="panel-collapse collapse in">
-                                                <div class="panel-body">
-                                                    <p>根据您的 Windows 系统处理器架构，点击上方表格中对应的“下载 GUI”按钮，将客户端 ZIP 压缩包保存到您的计算机。</p>
-                                                </div>
-                                            </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#windows-gui-step2">
-                                                        2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="windows-gui-step2" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>找到下载的 ZIP 文件，右键点击选择“全部提取”或使用您常用的解压工具将其解压到一个您方便的目录。解压后，您会得到一个名为 <code>npc_gui.exe</code> 的可执行文件。</p>
-                                                </div>
-                                            </div>
+                                        <div class="ibox-content">
+                                            <p>根据您的 Windows 系统处理器架构，点击上方表格中对应的“下载 GUI”按钮，将客户端 ZIP 压缩包保存到您的计算机。</p>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#windows-gui-step3">
-                                                        3. 运行客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="windows-gui-step3" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>双击 <code>npc_gui.exe</code> 即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</p>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i>
+                                            </h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>找到下载的 ZIP 文件，右键点击选择“全部提取”或使用您常用的解压工具将其解压到一个您方便的目录。解压后，您会得到一个名为 <code>npc_gui.exe</code> 的可执行文件。</p>
+                                        </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>3. 运行客户端 <i class="fa fa-chevron-down pull-right"></i>
+                                            </h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>双击 <code>npc_gui.exe</code> 即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</p>
                                         </div>
                                     </div>
                                 </div>
@@ -374,130 +287,78 @@ kill &lt;PID&gt;</code></pre>
                                     </table>
                                     <hr>
                                     <h5>macOS 安装与运行指南 (CLI):</h5>
-                                    <div class="panel-group" id="macos-cli-accordion">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#macos-cli-step1">
-                                                        1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="macos-cli-step1" class="panel-collapse collapse in">
-                                                <div class="panel-body">
-                                                    <p>根据您的 macOS 系统处理器架构（Intel 芯片选择 <code>amd64</code>，Apple 芯片选择 <code>arm64</code>），点击上方表格中对应的“下载”按钮，将客户端压缩包保存到您的计算机。</p>
-                                                </div>
-                                            </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#macos-cli-step2">
-                                                        2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="macos-cli-step2" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件：</p>
-                                                    <pre><code class="language-bash">cd ~/Downloads
+                                        <div class="ibox-content">
+                                            <p>根据您的 macOS 系统处理器架构（Intel 芯片选择 <code>amd64</code>，Apple 芯片选择 <code>arm64</code>），点击上方表格中对应的“下载”按钮，将客户端压缩包保存到您的计算机。</p>
+                                        </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件：</p>
+                                            <pre><code class="language-bash">cd ~/Downloads
 tar -zxvf darwin_amd64_client.tar.gz</code></pre>
-                                                    <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
-                                                </div>
-                                            </div>
+                                            <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#macos-cli-step3">
-                                                        3. 赋予执行权限 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="macos-cli-step3" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</p>
-                                                    <pre><code class="language-bash">chmod +x npc</code></pre>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>3. 赋予执行权限 <i class="fa fa-chevron-down pull-right"></i></h5>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#macos-cli-step4">
-                                                        4. 运行客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="macos-cli-step4" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>直接在终端中运行客户端：</p>
-                                                    <pre><code class="language-bash">./npc</code></pre>
-                                                    <p>首次运行 <code>npc</code> 时，它会提示您输入 nps 服务器的地址和验证密钥。请按照提示输入正确的信息。</p>
-                                                </div>
-                                            </div>
+                                        <div class="ibox-content">
+                                            <p>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</p>
+                                            <pre><code class="language-bash">chmod +x npc</code></pre>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#macos-cli-step5">
-                                                        5. （可选）后台运行客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="macos-cli-step5" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>如果您希望 <code>npc</code> 客户端在关闭终端后仍然在后台持续运行，可以使用 <code>nohup</code> 命令：</p>
-                                                    <pre><code class="language-bash">nohup ./npc &</code></pre>
-                                                    <p>要停止后台运行的客户端，您需要先查找其进程 ID (PID)，然后使用 <code>kill</code> 命令。</p>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>4. 运行客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>直接在终端中运行客户端：</p>
+                                            <pre><code class="language-bash">./npc</code></pre>
+                                            <p>首次运行 <code>npc</code> 时，它会提示您输入 nps 服务器的地址和验证密钥。请按照提示输入正确的信息。</p>
+                                        </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>5. （可选）后台运行客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>如果您希望 <code>npc</code> 客户端在关闭终端后仍然在后台持续运行，可以使用 <code>nohup</code> 命令：</p>
+                                            <pre><code class="language-bash">nohup ./npc &</code></pre>
+                                            <p>要停止后台运行的客户端，您需要先查找其进程 ID (PID)，然后使用 <code>kill</code> 命令。</p>
                                         </div>
                                     </div>
                                     <hr>
                                     <h5>macOS 安装与运行指南 (GUI):</h5>
-                                    <div class="panel-group" id="macos-gui-accordion">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#macos-gui-step1">
-                                                        1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="macos-gui-step1" class="panel-collapse collapse in">
-                                                <div class="panel-body">
-                                                    <p>根据您的 macOS 系统处理器架构，点击上方表格中对应的“下载 GUI”按钮，将客户端压缩包保存到您的计算机。</p>
-                                                </div>
-                                            </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>1. 下载客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#macos-gui-step2">
-                                                        2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="macos-gui-step2" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>找到下载的压缩包，双击即可解压。解压后，您会得到一个名为 <code>npc_gui</code> 的应用程序。</p>
-                                                </div>
-                                            </div>
+                                        <div class="ibox-content">
+                                            <p>根据您的 macOS 系统处理器架构，点击上方表格中对应的“下载 GUI”按钮，将客户端压缩包保存到您的计算机。</p>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h5 class="panel-title">
-                                                    <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#macos-gui-step3">
-                                                        3. 运行客户端 <i class="fa fa-chevron-down pull-right"></i>
-                                                    </a>
-                                                </h5>
-                                            </div>
-                                            <div id="macos-gui-step3" class="panel-collapse collapse">
-                                                <div class="panel-body">
-                                                    <p>双击 <code>npc_gui</code> 应用程序即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</p>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>2. 解压客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>找到下载的压缩包，双击即可解压。解压后，您会得到一个名为 <code>npc_gui</code> 的应用程序。</p>
+                                        </div>
+                                    </div>
+                                    <div class="ibox float-e-margins">
+                                        <div class="ibox-title">
+                                            <h5>3. 运行客户端 <i class="fa fa-chevron-down pull-right"></i></h5>
+                                        </div>
+                                        <div class="ibox-content">
+                                            <p>双击 <code>npc_gui</code> 应用程序即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</p>
                                         </div>
                                     </div>
                                 </div>
