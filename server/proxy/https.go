@@ -302,8 +302,12 @@ func (httpsListener *HttpsListener) Addr() net.Addr {
 
 // get server name from connection by read client hello bytes
 func GetServerNameFromClientHello(c net.Conn) (string, []byte) {
-	buf := make([]byte, 4096)
-	data := make([]byte, 4096)
+	buf := common.BufPool.Get().([]byte)
+	data := common.BufPool.Get().([]byte)
+	defer func() {
+		common.BufPool.Put(buf)
+		common.BufPool.Put(data)
+	}()
 	n, err := c.Read(buf)
 	if err != nil {
 		return "", nil
