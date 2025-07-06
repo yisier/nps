@@ -282,6 +282,10 @@
 		<zh-CN>使用说明</zh-CN>
 		<en-US>Manual</en-US>
 	</lang>
+	<lang id="word-downloads">
+		<zh-CN>下载</zh-CN>
+		<en-US>Downloads</en-US>
+	</lang>
 	<lang id="word-host">
 		<zh-CN>主机</zh-CN>
 		<en-US>Host</en-US>
