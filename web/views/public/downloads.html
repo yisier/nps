@@ -3,7 +3,7 @@
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <h5 langtag="word-clientdownloads">Client Downloads</h5>
+                    <h5 langtag="word-clientdownloads">客户端下载</h5>
                     <div class="ibox-tools">
                         <a class="collapse-link">
                             <i class="fa fa-chevron-up"></i>
@@ -14,93 +14,111 @@
                     </div>
                 </div>
                 <div class="ibox-content">
-                    <p>Download the nps client for your operating system and architecture. We provide both command-line (CLI) and graphical user interface (GUI) versions where available.</p>
+                    <p>请根据您的操作系统和架构下载 nps 客户端。我们提供命令行 (CLI) 和图形用户界面 (GUI) 两种版本（如果可用）。</p>
 
-                    <!-- Linux Downloads -->
-                    <h4>Linux Clients</h4>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Architecture</th>
-                                <th>CLI Client</th>
-                                <th>GUI Client</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>amd64</td>
-                                <td><a href="/linux_amd64_client.tar.gz" download>Download</a></td>
-                                <td>N/A</td>
-                            </tr>
-                            <tr>
-                                <td>arm64</td>
-                                <td><a href="/linux_arm64_client.tar.gz" download>Download</a></td>
-                                <td>N/A</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>Linux Installation Guide:</h5>
-                    <p>1. Download the appropriate client for your architecture.<br>
-                       2. Extract the archive: <code>tar -zxvf linux_amd64_client.tar.gz</code> (replace with your downloaded file).<br>
-                       3. Run the client: <code>./npc</code> (for CLI) or <code>./npc_gui</code> (for GUI, if available).</p>
+                    <!-- Linux 客户端 -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Linux 客户端</h4>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>架构</th>
+                                        <th>CLI 客户端</th>
+                                        <th>GUI 客户端</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>amd64</td>
+                                        <td><a href="/linux_amd64_client.tar.gz" download>下载</a></td>
+                                        <td>暂无</td>
+                                    </tr>
+                                    <tr>
+                                        <td>arm64</td>
+                                        <td><a href="/linux_arm64_client.tar.gz" download>下载</a></td>
+                                        <td>暂无</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>安装指南:</h5>
+                            <p>1. 下载适用于您架构的客户端。<br>
+                               2. 解压文件：<code>tar -zxvf linux_amd64_client.tar.gz</code> (请替换为实际下载的文件名)。<br>
+                               3. 运行客户端：<code>./npc</code> (命令行版) 或 <code>./npc_gui</code> (图形界面版，如果可用)。</p>
+                        </div>
+                    </div>
 
-                    <!-- Windows Downloads -->
-                    <h4 class="m-t-lg">Windows Clients</h4>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Architecture</th>
-                                <th>CLI Client</th>
-                                <th>GUI Client</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>amd64</td>
-                                <td><a href="/windows_amd64_client.zip" download>Download</a></td>
-                                <td><a href="/windows_amd64_gui_client.zip" download>Download GUI</a></td>
-                            </tr>
-                            <tr>
-                                <td>arm64</td>
-                                <td><a href="/windows_arm64_client.zip" download>Download</a></td>
-                                <td><a href="/windows_arm64_gui_client.zip" download>Download GUI</a></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>Windows Installation Guide:</h5>
-                    <p>1. Download the appropriate client for your architecture.<br>
-                       2. Extract the ZIP archive.<br>
-                       3. Run <code>npc.exe</code> (for CLI) or <code>npc_gui.exe</code> (for GUI).</p>
+                    <!-- Windows 客户端 -->
+                    <div class="panel panel-default m-t-lg">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Windows 客户端</h4>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>架构</th>
+                                        <th>CLI 客户端</th>
+                                        <th>GUI 客户端</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>amd64</td>
+                                        <td><a href="/windows_amd64_client.zip" download>下载</a></td>
+                                        <td><a href="/windows_amd64_gui_client.zip" download>下载 GUI</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>arm64</td>
+                                        <td><a href="/windows_arm64_client.zip" download>下载</a></td>
+                                        <td><a href="/windows_arm64_gui_client.zip" download>下载 GUI</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>安装指南:</h5>
+                            <p>1. 下载适用于您架构的客户端。<br>
+                               2. 解压 ZIP 文件。<br>
+                               3. 运行 <code>npc.exe</code> (命令行版) 或 <code>npc_gui.exe</code> (图形界面版)。</p>
+                        </div>
+                    </div>
 
-                    <!-- macOS Downloads -->
-                    <h4 class="m-t-lg">macOS Clients</h4>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Architecture</th>
-                                <th>CLI Client</th>
-                                <th>GUI Client</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>amd64</td>
-                                <td><a href="/darwin_amd64_client.tar.gz" download>Download</a></td>
-                                <td><a href="/darwin_amd64_gui_client.tar.gz" download>Download GUI</a></td>
-                            </tr>
-                            <tr>
-                                <td>arm64</td>
-                                <td><a href="/darwin_arm64_client.tar.gz" download>Download</a></td>
-                                <td><a href="/darwin_arm64_gui_client.tar.gz" download>Download GUI</a></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>macOS Installation Guide:</h5>
-                    <p>1. Download the appropriate client for your architecture.<br>
-                       2. Extract the archive: <code>tar -zxvf darwin_amd64_client.tar.gz</code> (replace with your downloaded file).<br>
-                       3. Run the client: <code>./npc</code> (for CLI) or <code>./npc_gui</code> (for GUI).</p>
+                    <!-- macOS 客户端 -->
+                    <div class="panel panel-default m-t-lg">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">macOS 客户端</h4>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>架构</th>
+                                        <th>CLI 客户端</th>
+                                        <th>GUI 客户端</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>amd64</td>
+                                        <td><a href="/darwin_amd64_client.tar.gz" download>下载</a></td>
+                                        <td><a href="/darwin_amd64_gui_client.tar.gz" download>下载 GUI</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>arm64</td>
+                                        <td><a href="/darwin_arm64_client.tar.gz" download>下载</a></td>
+                                        <td><a href="/darwin_arm64_gui_client.tar.gz" download>下载 GUI</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>安装指南:</h5>
+                            <p>1. 下载适用于您架构的客户端。<br>
+                               2. 解压文件：<code>tar -zxvf darwin_amd64_client.tar.gz</code> (请替换为实际下载的文件名)。<br>
+                               3. 运行客户端：<code>./npc</code> (命令行版) 或 <code>./npc_gui</code> (图形界面版)。</p>
+                        </div>
+                    </div>
 
-                    <p class="m-t-lg">For more detailed and advanced installation instructions, please refer to our official <a href="https://ehang-io.github.io/nps/#/install" target="_blank">documentation</a>.</p>
+                    <p class="m-t-lg">更多详细和高级的安装说明，请参考我们的官方<a href="https://ehang-io.github.io/nps/#/install" target="_blank">文档</a>。</p>
                 </div>
             </div>
         </div>
