@@ -197,7 +197,7 @@ func AddTask(t *file.Tunnel) error {
 		return errors.New("the port open error")
 	}
 	if minute, err := beego.AppConfig.Int("flow_store_interval"); err == nil && minute > 0 {
-		go flowSession(time.Minute * time.Duration(minute))
+		once.Do(func() { go flowSession(time.Minute * time.Duration(minute)) })
 	}
 	if svr := NewMode(Bridge, t); svr != nil {
 		logs.Info("tunnel task %s start mode：%s port %d", t.Remark, t.Mode, t.Port)
@@ -509,17 +509,15 @@ func GetDashboardData() map[string]interface{} {
 
 // 实例化流量数据到文件
 func flowSession(m time.Duration) {
-	once.Do(func() {
-		ticker := time.NewTicker(m)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				file.GetDb().JsonDb.StoreHostToJsonFile()
-				file.GetDb().JsonDb.StoreTasksToJsonFile()
-				file.GetDb().JsonDb.StoreClientsToJsonFile()
-				file.GetDb().JsonDb.StoreGlobalToJsonFile()
-			}
+	ticker := time.NewTicker(m)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			file.GetDb().JsonDb.StoreHostToJsonFile()
+			file.GetDb().JsonDb.StoreTasksToJsonFile()
+			file.GetDb().JsonDb.StoreClientsToJsonFile()
+			file.GetDb().JsonDb.StoreGlobalToJsonFile()
 		}
-	})
+	}
 }
