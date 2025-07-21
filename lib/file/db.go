@@ -220,18 +220,20 @@ reset:
 		isNotSet = true
 		c.VerifyKey = crypt.GetVkey()
 	}
-	if c.RateLimit == 0 {
-		c.Rate = rate.NewRate(int64(2 << 23))
-	} else if c.Rate == nil {
-		c.Rate = rate.NewRate(int64(c.RateLimit * 1024))
-	}
-	c.Rate.Start()
 	if !s.VerifyVkey(c.VerifyKey, c.Id) {
 		if isNotSet {
 			goto reset
 		}
 		return errors.New("Vkey duplicate, please reset")
 	}
+
+	if c.RateLimit == 0 {
+		c.Rate = rate.NewRate(int64(2 << 23))
+	} else if c.Rate == nil {
+		c.Rate = rate.NewRate(int64(c.RateLimit * 1024))
+	}
+	c.Rate.Start()
+
 	if c.Id == 0 {
 		c.Id = int(s.JsonDb.GetClientId())
 	}
