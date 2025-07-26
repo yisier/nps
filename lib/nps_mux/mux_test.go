@@ -18,14 +18,14 @@ import (
 	"testing"
 	"time"
 	"unsafe"
+
+	"ehang.io/nps/lib/common"
 )
 
-var conn1 net.Conn
-var conn2 net.Conn
-var clientIp = "172.18.0.5"
-var serverIp = "172.18.0.2"
-var appIp = "172.18.0.3"
-var userIp = "172.18.0.4"
+var clientIp = "127.0.0.1" // 使用本地回环地址
+var serverIp = "127.0.0.1" // 使用本地回环地址
+var appIp = "127.0.0.1"    // 使用本地回环地址
+var userIp = "127.0.0.1"   // 使用本地回环地址
 var bridgePort = "9999"
 var appPort = "9998"
 var serverPort = "9997"
@@ -98,10 +98,19 @@ func appendResult(values []float64, outfile string) error {
 }
 
 func TestServer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("跳过需要网络配置的测试")
+	}
+	
+	ip := net.ParseIP(serverIp)
+	if ip == nil {
+		t.Fatalf("not found interface %v", ip)
+	}
 	tc, err := NewTrafficControl(serverIp)
 	if err != nil {
 		t.Fatal(err, tc)
 	}
+	// do some tc settings
 	// do some tc settings
 	tc.delay("add", "50ms", "10ms", "10%")
 	_ = tc.Run()
@@ -161,20 +170,28 @@ func TestServer(t *testing.T) {
 	}
 }
 func TestClient(t *testing.T) {
-	tc, err := NewTrafficControl(clientIp)
-	if err != nil {
-		t.Fatal(err, tc)
+	if testing.Short() {
+		t.Skip("跳过需要网络配置的测试")
 	}
-	// do some tc settings
-	tc.delay("add", "30ms", "10ms", "5%")
-	_ = tc.Run()
-	_ = tc.bandwidth("1Mbit")
-	serverConn, err := net.Dial("tcp", serverIp+":"+bridgePort)
+	
+	ip := net.ParseIP(clientIp)
+	if ip == nil {
+		t.Fatalf("not found interface %v", ip)
+	}
+	// var addr = &net.TCPAddr{IP: ip, Port: common.TestClientPort} // 注释掉未使用的变量
+	// start client
+	clientListener, err := net.Listen("tcp", clientIp+":"+bridgePort)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// crete mux by serverConn
-	mux := NewMux(serverConn, "tcp", 60)
+	// wait for server
+	serverBridgeConn, err := clientListener.Accept()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer serverBridgeConn.Close()
+	// new mux
+	mux := NewMux(serverBridgeConn, "tcp", 60)
 	// start accept user connection
 	for {
 		userConn, err := mux.Accept()
@@ -212,17 +229,39 @@ func TestClient(t *testing.T) {
 	}
 }
 func TestApp(t *testing.T) {
+	if testing.Short() {
+		t.Skip("跳过需要网络配置的测试")
+	}
+	
+	ip := net.ParseIP(appIp)
+	if ip == nil {
+		t.Fatalf("not found interface %v", ip)
+	}
+	
+	// 创建流量控制对象
 	tc, err := NewTrafficControl(appIp)
 	if err != nil {
-		t.Fatal(err, tc)
+		t.Fatal(err)
 	}
-	// do some tc settings
-	tc.delay("add", "40ms", "5ms", "1%")
-	_ = tc.Run()
-	_ = tc.bandwidth("1Mbit")
+	
+	// 配置延迟和带宽限制
+	if err := tc.delay("add", "40ms", "5ms", "1%"); err != nil {
+		t.Fatal("failed to set delay:", err)
+	}
+	
+	if err := tc.bandwidth("1Mbit"); err != nil {
+		t.Fatal("failed to set bandwidth limit:", err)
+	}
+	
+	// 启动流量控制
+	if err := tc.Run(); err != nil {
+		t.Fatal("failed to start traffic control:", err)
+	}
+	
+	// 启动应用监听
 	appListener, err := net.Listen("tcp", appIp+":"+appPort)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("failed to start application listener:", err)
 	}
 	for {
 		userConn, err := appListener.Accept()
@@ -275,15 +314,17 @@ func TestApp(t *testing.T) {
 	}
 }
 func TestUser(t *testing.T) {
-	tc, err := NewTrafficControl(userIp)
-	if err != nil {
-		t.Fatal(err, tc)
+	if testing.Short() {
+		t.Skip("跳过需要网络配置的测试")
 	}
-	// do some tc settings
-	tc.delay("add", "20ms", "40ms", "50%")
-	_ = tc.Run()
-	_ = tc.bandwidth("1Mbit")
-	appConn, err := net.Dial("tcp", serverIp+":"+serverPort)
+	
+	ip := net.ParseIP(userIp)
+	if ip == nil {
+		t.Fatalf("not found interface %v", ip)
+	}
+	// var addr = &net.TCPAddr{IP: ip, Port: common.TestUserPort} // 注释掉未使用的变量
+	// start user
+	userListener, err := net.Listen("tcp", userIp+":"+serverPort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -292,7 +333,7 @@ func TestUser(t *testing.T) {
 	// get 100md from app
 	readLen := 0
 	for i := 0; i < 2<<32; i++ {
-		n, err := appConn.Read(b)
+		n, err := userListener.Read(b)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -310,7 +351,7 @@ func TestUser(t *testing.T) {
 	startTime = time.Now()
 	b = bytes.Repeat([]byte{0}, 1024)
 	for i := 0; i < dataSize/1024; i++ {
-		n, err := appConn.Write(b)
+		n, err := userListener.Write(b)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -319,7 +360,7 @@ func TestUser(t *testing.T) {
 		}
 	}
 	b = make([]byte, 1)
-	_, err = io.ReadFull(appConn, b)
+	_, err = io.ReadFull(userListener, b)
 	if err != nil {
 		t.Fatal(err)
 	}

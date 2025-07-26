@@ -4,6 +4,8 @@ import (
 	"log"
 	"regexp"
 	"testing"
+
+	"ehang.io/nps/lib/file"
 )
 
 func TestReg(t *testing.T) {
