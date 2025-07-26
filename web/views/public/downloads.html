@@ -3,7 +3,7 @@
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <h5 langtag="word-clientdownloads"><i class="fa fa-download"></i> 客户端下载</h5>
+                    <h5 langtag="word-clientdownloads"></h5>
                     <div class="ibox-tools">
                         <a class="collapse-link">
                             <i class="fa fa-chevron-up"></i>
@@ -14,34 +14,7 @@
                     </div>
                 </div>
                 <div class="ibox-content">
-                    <div class="text-center">
-                        <h2>NPS 客户端下载中心</h2>
-                        <p>轻松获取 NPS 客户端，开启您的内网穿透之旅</p>
-                        <p class="text-muted">我们提供命令行 (CLI) 和图形用户界面 (GUI) 两种客户端，满足不同用户需求</p>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <div class="ibox float-e-margins">
-                                <div class="ibox-title">
-                                    <h5><i class="fa fa-terminal"></i> 命令行客户端 (CLI)</h5>
-                                </div>
-                                <div class="ibox-content">
-                                    <p>轻量高效，适合服务器部署和高级用户，通过命令行进行灵活配置和管理。</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="ibox float-e-margins">
-                                <div class="ibox-title">
-                                    <h5><i class="fa fa-desktop"></i> 图形用户界面客户端 (GUI)</h5>
-                                </div>
-                                <div class="ibox-content">
-                                    <p>直观易用，提供友好的图形操作界面，让配置和管理更加便捷（目前主要支持 Windows 和 macOS）。</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <p>轻松获取 NPS 客户端，开启您的内网穿透之旅。我们提供命令行 (CLI) 和图形用户界面 (GUI) 两种客户端，满足不同用户需求。</p>
 
                     <div class="tabs-container">
                         <ul class="nav nav-tabs" role="tablist">
@@ -81,7 +54,7 @@
                                                 <tr>
                                                     <td><i class="fa fa-microchip"></i> amd64 (64位)</td>
                                                     <td>
-                                                        <a href="/linux_amd64_client.tar.gz" download class="btn btn-primary btn-sm">
+                                                        <a href="{{.web_base_url}}/linux_amd64_client.tar.gz" download class="btn btn-primary dim">
                                                             <i class="fa fa-download"></i> 下载 (amd64)
                                                         </a>
                                                     </td>
@@ -89,7 +62,7 @@
                                                 <tr>
                                                     <td><i class="fa fa-microchip"></i> arm64 (ARM 64位)</td>
                                                     <td>
-                                                        <a href="/linux_arm64_client.tar.gz" download class="btn btn-primary btn-sm">
+                                                        <a href="{{.web_base_url}}/linux_arm64_client.tar.gz" download class="btn btn-primary dim">
                                                             <i class="fa fa-download"></i> 下载 (arm64)
                                                         </a>
                                                     </td>
@@ -188,12 +161,12 @@ tar -zxvf linux_amd64_client.tar.gz</code></pre>
                                                 <tr>
                                                     <td><i class="fa fa-microchip"></i> amd64 (64位)</td>
                                                     <td>
-                                                        <a href="/windows_amd64_client.zip" download class="btn btn-primary btn-sm">
+                                                        <a href="{{.web_base_url}}/windows_amd64_client.zip" download class="btn btn-primary dim">
                                                             <i class="fa fa-download"></i> 下载 (amd64)
                                                         </a>
                                                     </td>
                                                     <td>
-                                                        <a href="/windows_amd64_gui_client.zip" download class="btn btn-info btn-sm">
+                                                        <a href="{{.web_base_url}}/windows_amd64_gui_client.zip" download class="btn btn-info dim">
                                                             <i class="fa fa-download"></i> 下载 GUI (amd64)
                                                         </a>
                                                     </td>
@@ -201,12 +174,12 @@ tar -zxvf linux_amd64_client.tar.gz</code></pre>
                                                 <tr>
                                                     <td><i class="fa fa-microchip"></i> arm64 (ARM 64位)</td>
                                                     <td>
-                                                        <a href="/windows_arm64_client.zip" download class="btn btn-primary btn-sm">
+                                                        <a href="{{.web_base_url}}/windows_arm64_client.zip" download class="btn btn-primary dim">
                                                             <i class="fa fa-download"></i> 下载 (arm64)
                                                         </a>
                                                     </td>
                                                     <td>
-                                                        <a href="/windows_arm64_gui_client.zip" download class="btn btn-info btn-sm">
+                                                        <a href="{{.web_base_url}}/windows_arm64_gui_client.zip" download class="btn btn-info dim">
                                                             <i class="fa fa-download"></i> 下载 GUI (arm64)
                                                         </a>
                                                     </td>
@@ -335,12 +308,12 @@ tar -zxvf linux_amd64_client.tar.gz</code></pre>
                                                 <tr>
                                                     <td><i class="fa fa-microchip"></i> amd64 (Intel 芯片)</td>
                                                     <td>
-                                                        <a href="/darwin_amd64_client.tar.gz" download class="btn btn-primary btn-sm">
+                                                        <a href="{{.web_base_url}}/darwin_amd64_client.tar.gz" download class="btn btn-primary dim">
                                                             <i class="fa fa-download"></i> 下载 (amd64)
                                                         </a>
                                                     </td>
                                                     <td>
-                                                        <a href="/darwin_amd64_gui_client.tar.gz" download class="btn btn-info btn-sm">
+                                                        <a href="{{.web_base_url}}/darwin_amd64_gui_client.tar.gz" download class="btn btn-info dim">
                                                             <i class="fa fa-download"></i> 下载 GUI (amd64)
                                                         </a>
                                                     </td>
@@ -348,12 +321,12 @@ tar -zxvf linux_amd64_client.tar.gz</code></pre>
                                                 <tr>
                                                     <td><i class="fa fa-microchip"></i> arm64 (Apple 芯片)</td>
                                                     <td>
-                                                        <a href="/darwin_arm64_client.tar.gz" download class="btn btn-primary btn-sm">
+                                                        <a href="{{.web_base_url}}/darwin_arm64_client.tar.gz" download class="btn btn-primary dim">
                                                             <i class="fa fa-download"></i> 下载 (arm64)
                                                         </a>
                                                     </td>
                                                     <td>
-                                                        <a href="/darwin_arm64_gui_client.tar.gz" download class="btn btn-info btn-sm">
+                                                        <a href="{{.web_base_url}}/darwin_arm64_gui_client.tar.gz" download class="btn btn-info dim">
                                                             <i class="fa fa-download"></i> 下载 GUI (arm64)
                                                         </a>
                                                     </td>
