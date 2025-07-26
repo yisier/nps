@@ -286,9 +286,157 @@
 		<zh-CN>下载</zh-CN>
 		<en-US>Downloads</en-US>
 	</lang>
+	<lang id="word-clientdownloads">
+		<zh-CN>客户端下载</zh-CN>
+		<en-US>Client Downloads</en-US>
+	</lang>
 	<lang id="word-host">
 		<zh-CN>主机</zh-CN>
 		<en-US>Host</en-US>
+	</lang>
+	<lang id="word-linux">
+		<zh-CN>Linux</zh-CN>
+		<en-US>Linux</en-US>
+	</lang>
+	<lang id="word-windows">
+		<zh-CN>Windows</zh-CN>
+		<en-US>Windows</en-US>
+	</lang>
+	<lang id="word-macos">
+		<zh-CN>macOS</zh-CN>
+		<en-US>macOS</en-US>
+	</lang>
+	<lang id="word-architecture">
+		<zh-CN>架构</zh-CN>
+		<en-US>Architecture</en-US>
+	</lang>
+	<lang id="word-cliclient">
+		<zh-CN>CLI 客户端</zh-CN>
+		<en-US>CLI Client</en-US>
+	</lang>
+	<lang id="word-guiclient">
+		<zh-CN>GUI 客户端</zh-CN>
+		<en-US>GUI Client</en-US>
+	</lang>
+	<lang id="word-amd64desc">
+		<zh-CN>amd64 (64位)</zh-CN>
+		<en-US>amd64 (64-bit)</en-US>
+	</lang>
+	<lang id="word-amd64desc-intel">
+		<zh-CN>amd64 (Intel 芯片)</zh-CN>
+		<en-US>amd64 (Intel chip)</en-US>
+	</lang>
+	<lang id="word-arm64desc">
+		<zh-CN>arm64 (ARM 64位)</zh-CN>
+		<en-US>arm64 (ARM 64-bit)</en-US>
+	</lang>
+	<lang id="word-arm64desc-apple">
+		<zh-CN>arm64 (Apple 芯片)</zh-CN>
+		<en-US>arm64 (Apple chip)</en-US>
+	</lang>
+	<lang id="word-download">
+		<zh-CN>下载</zh-CN>
+		<en-US>Download</en-US>
+	</lang>
+	<lang id="word-gui">
+		<zh-CN>GUI</zh-CN>
+		<en-US>GUI</en-US>
+	</lang>
+	<lang id="word-step-download">
+		<zh-CN>1. 下载客户端</zh-CN>
+		<en-US>1. Download Client</en-US>
+	</lang>
+	<lang id="word-step-extract">
+		<zh-CN>2. 解压客户端</zh-CN>
+		<en-US>2. Extract Client</en-US>
+	</lang>
+	<lang id="word-step-permission">
+		<zh-CN>3. 赋予执行权限</zh-CN>
+		<en-US>3. Grant Execution Permission</en-US>
+	</lang>
+	<lang id="word-step-run">
+		<zh-CN>4. 运行客户端</zh-CN>
+		<en-US>4. Run Client</en-US>
+	</lang>
+	<lang id="word-step-download-desc-linux">
+		<zh-CN>根据您的 Linux 系统处理器架构（通常是 <code>amd64</code> 或 <code>arm64</code>），点击上方表格中对应的"下载"按钮，将客户端压缩包保存到您的计算机（例如，下载到 <code>~/Downloads</code> 目录）。</zh-CN>
+		<en-US>Based on your Linux system processor architecture (usually <code>amd64</code> or <code>arm64</code>), click the corresponding "Download" button in the table above to save the client package to your computer (for example, download to the <code>~/Downloads</code> directory).</en-US>
+	</lang>
+	<lang id="word-step-extract-desc-linux">
+		<zh-CN>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件。请将 <code>linux_amd64_client.tar.gz</code> 替换为您实际下载的文件名：</zh-CN>
+		<en-US>Open Terminal, navigate to the directory where you downloaded the file. Then use the <code>tar</code> command to extract the file. Please replace <code>linux_amd64_client.tar.gz</code> with the actual file name you downloaded:</en-US>
+	</lang>
+	<lang id="word-step-permission-desc-linux">
+		<zh-CN>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</zh-CN>
+		<en-US>To be able to run <code>npc</code>, you need to add execution permissions to it:</en-US>
+	</lang>
+	<lang id="word-step-run-desc-linux">
+		<zh-CN>直接在终端中运行客户端：<pre><code class="language-bash">./npc</code></pre>首次运行 <code>npc</code> 时，它会提示您输入 NPS 服务器的地址（例如：<code>your_server_ip:8024</code>）和验证密钥（<code>vkey</code>）。请按照提示输入正确的信息。<strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</zh-CN>
+		<en-US>Run the client directly in the terminal:<pre><code class="language-bash">./npc</code></pre>When running <code>npc</code> for the first time, it will prompt you to enter the NPS server address (for example: <code>your_server_ip:8024</code>) and verification key (<code>vkey</code>). Please enter the correct information as prompted.<strong>Tip</strong>: You can also start the client through a configuration file. Please refer to the official documentation for details.</en-US>
+	</lang>
+	<lang id="word-step-download-desc-windows">
+		<zh-CN>根据您的 Windows 系统处理器架构，点击上方表格中对应的"下载"按钮，将客户端 ZIP 压缩包保存到您的计算机。</zh-CN>
+		<en-US>Based on your Windows system processor architecture, click the corresponding "Download" button in the table above to save the client ZIP package to your computer.</en-US>
+	</lang>
+	<lang id="word-step-extract-desc-windows">
+		<zh-CN>找到下载的 ZIP 文件，右键点击选择"全部提取"或使用您常用的解压工具（如 WinRAR, 7-Zip）将其解压到一个您方便的目录（例如：<code>C:\nps-client</code>）。解压后，您会得到一个名为 <code>npc.exe</code> 的可执行文件。</zh-CN>
+		<en-US>Find the downloaded ZIP file, right-click and select "Extract All" or use your preferred decompression tool (such as WinRAR, 7-Zip) to extract it to a convenient directory (for example: <code>C:\nps-client</code>). After extraction, you will get an executable file named <code>npc.exe</code>.</en-US>
+	</lang>
+	<lang id="word-step-run-desc-windows">
+		<zh-CN>打开命令提示符 (CMD) 或 PowerShell，导航到您解压客户端的目录：<pre><code class="language-cmd">cd C:\nps-client</code></pre>然后，运行客户端：<pre><code class="language-cmd">npc.exe</code></pre>首次运行 <code>npc.exe</code> 时，它会提示您输入 NPS 服务器的地址和验证密钥。请按照提示输入正确的信息。<strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</zh-CN>
+		<en-US>Open Command Prompt (CMD) or PowerShell, navigate to the directory where you extracted the client:<pre><code class="language-cmd">cd C:\nps-client</code></pre>Then, run the client:<pre><code class="language-cmd">npc.exe</code></pre>When running <code>npc.exe</code> for the first time, it will prompt you to enter the NPS server address and verification key. Please enter the correct information as prompted.<strong>Tip</strong>: You can also start the client through a configuration file. Please refer to the official documentation for details.</en-US>
+	</lang>
+	<lang id="word-step-download-desc-windows-gui">
+		<zh-CN>根据您的 Windows 系统处理器架构，点击上方表格中对应的"下载 GUI"按钮，将客户端 ZIP 压缩包保存到您的计算机。</zh-CN>
+		<en-US>Based on your Windows system processor architecture, click the corresponding "Download GUI" button in the table above to save the client ZIP package to your computer.</en-US>
+	</lang>
+	<lang id="word-step-extract-desc-windows-gui">
+		<zh-CN>找到下载的 ZIP 文件，右键点击选择"全部提取"或使用您常用的解压工具将其解压到一个您方便的目录。解压后，您会得到一个名为 <code>npc_gui.exe</code> 的可执行文件。</zh-CN>
+		<en-US>Find the downloaded ZIP file, right-click and select "Extract All" or use your preferred decompression tool to extract it to a convenient directory. After extraction, you will get an executable file named <code>npc_gui.exe</code>.</en-US>
+	</lang>
+	<lang id="word-step-run-desc-windows-gui">
+		<zh-CN>双击 <code>npc_gui.exe</code> 即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</zh-CN>
+		<en-US>Double-click <code>npc_gui.exe</code> to run the graphical interface client. The first run will guide you through the configuration of the server address and verification key. Follow the interface prompts to complete the operation.</en-US>
+	</lang>
+	<lang id="word-step-download-desc-macos">
+		<zh-CN>根据您的 macOS 系统处理器架构（Intel 芯片选择 <code>amd64</code>，Apple 芯片选择 <code>arm64</code>），点击上方表格中对应的"下载"按钮，将客户端压缩包保存到您的计算机。</zh-CN>
+		<en-US>Based on your macOS system processor architecture (select <code>amd64</code> for Intel chips, <code>arm64</code> for Apple chips), click the corresponding "Download" button in the table above to save the client package to your computer.</en-US>
+	</lang>
+	<lang id="word-step-extract-desc-macos">
+		<zh-CN>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件：</zh-CN>
+		<en-US>Open Terminal, navigate to the directory where you downloaded the file. Then use the <code>tar</code> command to extract the file:</en-US>
+	</lang>
+	<lang id="word-step-permission-desc-macos">
+		<zh-CN>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</zh-CN>
+		<en-US>To be able to run <code>npc</code>, you need to add execution permissions to it:</en-US>
+	</lang>
+	<lang id="word-step-run-desc-macos">
+		<zh-CN>直接在终端中运行客户端：<pre><code class="language-bash">./npc</code></pre>首次运行 <code>npc</code> 时，它会提示您输入 NPS 服务器的地址和验证密钥。请按照提示输入正确的信息。</zh-CN>
+		<en-US>Run the client directly in the terminal:<pre><code class="language-bash">./npc</code></pre>When running <code>npc</code> for the first time, it will prompt you to enter the NPS server address and verification key. Please enter the correct information as prompted.</en-US>
+	</lang>
+	<lang id="word-step-download-desc-macos-gui">
+		<zh-CN>根据您的 macOS 系统处理器架构，点击上方表格中对应的"下载 GUI"按钮，将客户端压缩包保存到您的计算机。</zh-CN>
+		<en-US>Based on your macOS system processor architecture, click the corresponding "Download GUI" button in the table above to save the client package to your computer.</en-US>
+	</lang>
+	<lang id="word-step-extract-desc-macos-gui">
+		<zh-CN>找到下载的压缩包，双击即可解压。解压后，您会得到一个名为 <code>npc_gui</code> 的应用程序。</zh-CN>
+		<en-US>Find the downloaded package and double-click to extract it. After extraction, you will get an application named <code>npc_gui</code>.</en-US>
+	</lang>
+	<lang id="word-step-run-desc-macos-gui">
+		<zh-CN>双击 <code>npc_gui</code> 应用程序即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</zh-CN>
+		<en-US>Double-click the <code>npc_gui</code> application to run the graphical interface client. The first run will guide you through the configuration of the server address and verification key. Follow the interface prompts to complete the operation.</en-US>
+	</lang>
+	<lang id="word-download-footer-desc">
+		<zh-CN>更多详细和高级的安装说明，请参考我们的官方</zh-CN>
+		<en-US>For more detailed and advanced installation instructions, please refer to our official</en-US>
+	</lang>
+	<lang id="word-documentation">
+		<zh-CN>文档</zh-CN>
+		<en-US>Documentation</en-US>
+	</lang>
+	<lang id="word-download-footer-help">
+		<zh-CN>如在下载或安装过程中遇到问题，请联系技术支持或查看FAQ。</zh-CN>
+		<en-US>If you encounter problems during download or installation, please contact technical support or check the FAQ.</en-US>
 	</lang>
 	<lang id="word-http">HTTP
 	</lang>
