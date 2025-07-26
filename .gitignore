@@ -1,3 +1,14 @@
 .idea
 nps
 npc
+*.log
+conf/*.json
+downloads/
+web/static/downloads/
+web/controllers/public.go
+# 编译生成的文件
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
