@@ -1,11 +1,9 @@
-<div class="wrapper wrapper-content">
+<div class="wrapper wrapper-content animated fadeInRight">
     <div class="row">
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <h3 langtag="word-clientdownloads">
-                        <i class="fa fa-download"></i> 客户端下载与安装指南
-                    </h3>
+                    <h5 langtag="word-clientdownloads"><i class="fa fa-download"></i> 客户端下载</h5>
                     <div class="ibox-tools">
                         <a class="collapse-link">
                             <i class="fa fa-chevron-up"></i>
@@ -16,51 +14,35 @@
                     </div>
                 </div>
                 <div class="ibox-content">
-                    <!-- Hero Section -->
-                    <div class="text-center animated fadeInDown">
-                        <div class="p-lg">
-                            <h1 class="font-bold text-navy">NPS 客户端下载中心</h1>
-                            <p class="lead text-muted">轻松获取 NPS 客户端，开启您的内网穿透之旅</p>
-                            <div class="m-t-md">
-                                <p class="text-muted">我们提供命令行 (CLI) 和图形用户界面 (GUI) 两种客户端，满足不同用户需求</p>
-                            </div>
-                        </div>
+                    <div class="text-center">
+                        <h2>NPS 客户端下载中心</h2>
+                        <p>轻松获取 NPS 客户端，开启您的内网穿透之旅</p>
+                        <p class="text-muted">我们提供命令行 (CLI) 和图形用户界面 (GUI) 两种客户端，满足不同用户需求</p>
                     </div>
 
-                    <div class="row m-b-lg animated fadeInUp">
-                        <div class="col-md-6">
-                            <div class="widget style1 navy-bg">
-                                <div class="row">
-                                    <div class="col-xs-4">
-                                        <i class="fa fa-terminal fa-5x"></i>
-                                    </div>
-                                    <div class="col-xs-8 text-right">
-                                        <span>命令行客户端</span>
-                                        <h2 class="font-bold">CLI</h2>
-                                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    <h5><i class="fa fa-terminal"></i> 命令行客户端 (CLI)</h5>
+                                </div>
+                                <div class="ibox-content">
+                                    <p>轻量高效，适合服务器部署和高级用户，通过命令行进行灵活配置和管理。</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="widget style1 lazur-bg">
-                                <div class="row">
-                                    <div class="col-xs-4">
-                                        <i class="fa fa-desktop fa-5x"></i>
-                                    </div>
-                                    <div class="col-xs-8 text-right">
-                                        <span>图形界面客户端</span>
-                                        <h2 class="font-bold">GUI</h2>
-                                    </div>
+                        <div class="col-lg-6">
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    <h5><i class="fa fa-desktop"></i> 图形用户界面客户端 (GUI)</h5>
+                                </div>
+                                <div class="ibox-content">
+                                    <p>直观易用，提供友好的图形操作界面，让配置和管理更加便捷（目前主要支持 Windows 和 macOS）。</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <h3 class="text-center m-t-xl m-b-lg animated fadeIn">
-                        <i class="fa fa-laptop"></i> 选择您的操作系统
-                    </h3>
-
-                    <!-- Tab Headers -->
                     <div class="tabs-container">
                         <ul class="nav nav-tabs" role="tablist">
                             <li class="active">
@@ -80,112 +62,105 @@
                             </li>
                         </ul>
 
-                        <!-- Tab Content -->
-                        <div class="tab-content animated fadeIn">
-                            <!-- Linux Tab Pane -->
-                            <div class="tab-pane fade in active" id="linux-tab" role="tabpanel">
+                        <div class="tab-content">
+                            <!-- Linux Tab -->
+                            <div class="tab-pane active" id="linux-tab" role="tabpanel">
                                 <div class="panel-body">
-                                    <div class="ibox float-e-margins m-t-md">
-                                        <div class="ibox-title">
-                                            <h4><i class="fa fa-download"></i> Linux 客户端下载</h4>
-                                        </div>
-                                        <div class="ibox-content">
-                                            <p class="text-muted">适用于 Linux 系统的 NPS 命令行客户端。目前暂无官方 GUI 版本。</p>
-                                            
-                                            <div class="table-responsive">
-                                                <table class="table table-striped table-hover">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>架构</th>
-                                                            <th>CLI 客户端</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td><i class="fa fa-microchip"></i> amd64 (64位)</td>
-                                                            <td>
-                                                                <a href="/linux_amd64_client.tar.gz" download class="btn btn-primary btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 (amd64)
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><i class="fa fa-microchip"></i> arm64 (ARM 64位)</td>
-                                                            <td>
-                                                                <a href="/linux_arm64_client.tar.gz" download class="btn btn-primary btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 (arm64)
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            
-                                            <div class="m-t-lg">
-                                                <h4><i class="fa fa-book"></i> Linux 安装与运行指南 (CLI)</h4>
-                                                <div class="panel-group" id="linux-accordion">
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#linux-accordion" href="#step1-linux">
-                                                                    <i class="fa fa-download"></i> 1. 下载客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step1-linux" class="panel-collapse collapse in">
-                                                            <div class="panel-body">
-                                                                <p>根据您的 Linux 系统处理器架构（通常是 <code>amd64</code> 或 <code>arm64</code>），点击上方表格中对应的"下载"按钮，将客户端压缩包保存到您的计算机（例如，下载到 <code>~/Downloads</code> 目录）。</p>
-                                                            </div>
-                                                        </div>
+                                    <h3>Linux 客户端下载</h3>
+                                    <p class="text-muted">适用于 Linux 系统的 NPS 命令行客户端。目前暂无官方 GUI 版本。</p>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>架构</th>
+                                                    <th>CLI 客户端</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> amd64 (64位)</td>
+                                                    <td>
+                                                        <a href="/linux_amd64_client.tar.gz" download class="btn btn-primary btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 (amd64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> arm64 (ARM 64位)</td>
+                                                    <td>
+                                                        <a href="/linux_arm64_client.tar.gz" download class="btn btn-primary btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 (arm64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="m-t-lg">
+                                        <h4>Linux 安装与运行指南 (CLI)</h4>
+                                        <div class="panel-group" id="linux-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#linux-accordion" href="#step1-linux">
+                                                            <i class="fa fa-download"></i> 1. 下载客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-linux" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p>根据您的 Linux 系统处理器架构（通常是 <code>amd64</code> 或 <code>arm64</code>），点击上方表格中对应的"下载"按钮，将客户端压缩包保存到您的计算机（例如，下载到 <code>~/Downloads</code> 目录）。</p>
                                                     </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#linux-accordion" href="#step2-linux">
-                                                                    <i class="fa fa-archive"></i> 2. 解压客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step2-linux" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件。请将 <code>linux_amd64_client.tar.gz</code> 替换为您实际下载的文件名：</p>
-                                                                <pre><code class="language-bash">cd ~/Downloads
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#linux-accordion" href="#step2-linux">
+                                                            <i class="fa fa-archive"></i> 2. 解压客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-linux" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件。请将 <code>linux_amd64_client.tar.gz</code> 替换为您实际下载的文件名：</p>
+                                                        <pre><code class="language-bash">cd ~/Downloads
 tar -zxvf linux_amd64_client.tar.gz</code></pre>
-                                                                <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
-                                                            </div>
-                                                        </div>
+                                                        <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
                                                     </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#linux-accordion" href="#step3-linux">
-                                                                    <i class="fa fa-key"></i> 3. 赋予执行权限
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step3-linux" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</p>
-                                                                <pre><code class="language-bash">chmod +x npc</code></pre>
-                                                            </div>
-                                                        </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#linux-accordion" href="#step3-linux">
+                                                            <i class="fa fa-key"></i> 3. 赋予执行权限
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-linux" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</p>
+                                                        <pre><code class="language-bash">chmod +x npc</code></pre>
                                                     </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#linux-accordion" href="#step4-linux">
-                                                                    <i class="fa fa-play-circle"></i> 4. 运行客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step4-linux" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>直接在终端中运行客户端：</p>
-                                                                <pre><code class="language-bash">./npc</code></pre>
-                                                                <p>首次运行 <code>npc</code> 时，它会提示您输入 NPS 服务器的地址（例如：<code>your_server_ip:8024</code>）和验证密钥（<code>vkey</code>）。请按照提示输入正确的信息。</p>
-                                                                <p><strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</p>
-                                                            </div>
-                                                        </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#linux-accordion" href="#step4-linux">
+                                                            <i class="fa fa-play-circle"></i> 4. 运行客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step4-linux" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>直接在终端中运行客户端：</p>
+                                                        <pre><code class="language-bash">./npc</code></pre>
+                                                        <p>首次运行 <code>npc</code> 时，它会提示您输入 NPS 服务器的地址（例如：<code>your_server_ip:8024</code>）和验证密钥（<code>vkey</code>）。请按照提示输入正确的信息。</p>
+                                                        <p><strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -194,151 +169,145 @@ tar -zxvf linux_amd64_client.tar.gz</code></pre>
                                 </div>
                             </div>
 
-                            <!-- Windows Tab Pane -->
-                            <div class="tab-pane fade" id="windows-tab" role="tabpanel">
+                            <!-- Windows Tab -->
+                            <div class="tab-pane" id="windows-tab" role="tabpanel">
                                 <div class="panel-body">
-                                    <div class="ibox float-e-margins m-t-md">
-                                        <div class="ibox-title">
-                                            <h4><i class="fa fa-download"></i> Windows 客户端下载</h4>
-                                        </div>
-                                        <div class="ibox-content">
-                                            <p class="text-muted">适用于 Windows 系统的 NPS 命令行 (CLI) 和图形用户界面 (GUI) 客户端。</p>
-                                            
-                                            <div class="table-responsive">
-                                                <table class="table table-striped table-hover">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>架构</th>
-                                                            <th>CLI 客户端</th>
-                                                            <th>GUI 客户端</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td><i class="fa fa-microchip"></i> amd64 (64位)</td>
-                                                            <td>
-                                                                <a href="/windows_amd64_client.zip" download class="btn btn-primary btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 (amd64)
-                                                                </a>
-                                                            </td>
-                                                            <td>
-                                                                <a href="/windows_amd64_gui_client.zip" download class="btn btn-info btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 GUI (amd64)
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><i class="fa fa-microchip"></i> arm64 (ARM 64位)</td>
-                                                            <td>
-                                                                <a href="/windows_arm64_client.zip" download class="btn btn-primary btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 (arm64)
-                                                                </a>
-                                                            </td>
-                                                            <td>
-                                                                <a href="/windows_arm64_gui_client.zip" download class="btn btn-info btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 GUI (arm64)
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            
-                                            <div class="m-t-lg">
-                                                <h4><i class="fa fa-book"></i> Windows 安装与运行指南 (CLI)</h4>
-                                                <div class="panel-group" id="windows-cli-accordion">
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step1-windows-cli">
-                                                                    <i class="fa fa-download"></i> 1. 下载客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step1-windows-cli" class="panel-collapse collapse in">
-                                                            <div class="panel-body">
-                                                                <p>根据您的 Windows 系统处理器架构，点击上方表格中对应的"下载"按钮，将客户端 ZIP 压缩包保存到您的计算机。</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step2-windows-cli">
-                                                                    <i class="fa fa-archive"></i> 2. 解压客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step2-windows-cli" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>找到下载的 ZIP 文件，右键点击选择"全部提取"或使用您常用的解压工具（如 WinRAR, 7-Zip）将其解压到一个您方便的目录（例如：<code>C:\nps-client</code>）。解压后，您会得到一个名为 <code>npc.exe</code> 的可执行文件。</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step3-windows-cli">
-                                                                    <i class="fa fa-play-circle"></i> 3. 运行客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step3-windows-cli" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>打开命令提示符 (CMD) 或 PowerShell，导航到您解压客户端的目录：</p>
-                                                                <pre><code class="language-cmd">cd C:\nps-client</code></pre>
-                                                                <p>然后，运行客户端：</p>
-                                                                <pre><code class="language-cmd">npc.exe</code></pre>
-                                                                <p>首次运行 <code>npc.exe</code> 时，它会提示您输入 NPS 服务器的地址和验证密钥。请按照提示输入正确的信息。</p>
-                                                                <p><strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</p>
-                                                            </div>
-                                                        </div>
+                                    <h3>Windows 客户端下载</h3>
+                                    <p class="text-muted">适用于 Windows 系统的 NPS 命令行 (CLI) 和图形用户界面 (GUI) 客户端。</p>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>架构</th>
+                                                    <th>CLI 客户端</th>
+                                                    <th>GUI 客户端</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> amd64 (64位)</td>
+                                                    <td>
+                                                        <a href="/windows_amd64_client.zip" download class="btn btn-primary btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 (amd64)
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/windows_amd64_gui_client.zip" download class="btn btn-info btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 GUI (amd64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> arm64 (ARM 64位)</td>
+                                                    <td>
+                                                        <a href="/windows_arm64_client.zip" download class="btn btn-primary btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 (arm64)
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/windows_arm64_gui_client.zip" download class="btn btn-info btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 GUI (arm64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="m-t-lg">
+                                        <h4>Windows 安装与运行指南 (CLI)</h4>
+                                        <div class="panel-group" id="windows-cli-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step1-windows-cli">
+                                                            <i class="fa fa-download"></i> 1. 下载客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-windows-cli" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p>根据您的 Windows 系统处理器架构，点击上方表格中对应的"下载"按钮，将客户端 ZIP 压缩包保存到您的计算机。</p>
                                                     </div>
                                                 </div>
-                                                
-                                                <h4 class="m-t-lg"><i class="fa fa-desktop"></i> Windows 安装与运行指南 (GUI)</h4>
-                                                <div class="panel-group" id="windows-gui-accordion">
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step1-windows-gui">
-                                                                    <i class="fa fa-download"></i> 1. 下载客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step1-windows-gui" class="panel-collapse collapse in">
-                                                            <div class="panel-body">
-                                                                <p>根据您的 Windows 系统处理器架构，点击上方表格中对应的"下载 GUI"按钮，将客户端 ZIP 压缩包保存到您的计算机。</p>
-                                                            </div>
-                                                        </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step2-windows-cli">
+                                                            <i class="fa fa-archive"></i> 2. 解压客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-windows-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>找到下载的 ZIP 文件，右键点击选择"全部提取"或使用您常用的解压工具（如 WinRAR, 7-Zip）将其解压到一个您方便的目录（例如：<code>C:\nps-client</code>）。解压后，您会得到一个名为 <code>npc.exe</code> 的可执行文件。</p>
                                                     </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step2-windows-gui">
-                                                                    <i class="fa fa-archive"></i> 2. 解压客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step2-windows-gui" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>找到下载的 ZIP 文件，右键点击选择"全部提取"或使用您常用的解压工具将其解压到一个您方便的目录。解压后，您会得到一个名为 <code>npc_gui.exe</code> 的可执行文件。</p>
-                                                            </div>
-                                                        </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step3-windows-cli">
+                                                            <i class="fa fa-play-circle"></i> 3. 运行客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-windows-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>打开命令提示符 (CMD) 或 PowerShell，导航到您解压客户端的目录：</p>
+                                                        <pre><code class="language-cmd">cd C:\nps-client</code></pre>
+                                                        <p>然后，运行客户端：</p>
+                                                        <pre><code class="language-cmd">npc.exe</code></pre>
+                                                        <p>首次运行 <code>npc.exe</code> 时，它会提示您输入 NPS 服务器的地址和验证密钥。请按照提示输入正确的信息。</p>
+                                                        <p><strong>提示</strong>：您也可以通过配置文件来启动客户端，具体请参考官方文档。</p>
                                                     </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step3-windows-gui">
-                                                                    <i class="fa fa-play-circle"></i> 3. 运行客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step3-windows-gui" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>双击 <code>npc_gui.exe</code> 即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</p>
-                                                            </div>
-                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <h4 class="m-t-lg">Windows 安装与运行指南 (GUI)</h4>
+                                        <div class="panel-group" id="windows-gui-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step1-windows-gui">
+                                                            <i class="fa fa-download"></i> 1. 下载客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-windows-gui" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p>根据您的 Windows 系统处理器架构，点击上方表格中对应的"下载 GUI"按钮，将客户端 ZIP 压缩包保存到您的计算机。</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step2-windows-gui">
+                                                            <i class="fa fa-archive"></i> 2. 解压客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-windows-gui" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>找到下载的 ZIP 文件，右键点击选择"全部提取"或使用您常用的解压工具将其解压到一个您方便的目录。解压后，您会得到一个名为 <code>npc_gui.exe</code> 的可执行文件。</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step3-windows-gui">
+                                                            <i class="fa fa-play-circle"></i> 3. 运行客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-windows-gui" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>双击 <code>npc_gui.exe</code> 即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -347,166 +316,160 @@ tar -zxvf linux_amd64_client.tar.gz</code></pre>
                                 </div>
                             </div>
 
-                            <!-- macOS Tab Pane -->
-                            <div class="tab-pane fade" id="macos-tab" role="tabpanel">
+                            <!-- macOS Tab -->
+                            <div class="tab-pane" id="macos-tab" role="tabpanel">
                                 <div class="panel-body">
-                                    <div class="ibox float-e-margins m-t-md">
-                                        <div class="ibox-title">
-                                            <h4><i class="fa fa-download"></i> macOS 客户端下载</h4>
-                                        </div>
-                                        <div class="ibox-content">
-                                            <p class="text-muted">适用于 macOS 系统的 NPS 命令行 (CLI) 和图形用户界面 (GUI) 客户端。</p>
-                                            
-                                            <div class="table-responsive">
-                                                <table class="table table-striped table-hover">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>架构</th>
-                                                            <th>CLI 客户端</th>
-                                                            <th>GUI 客户端</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td><i class="fa fa-microchip"></i> amd64 (Intel 芯片)</td>
-                                                            <td>
-                                                                <a href="/darwin_amd64_client.tar.gz" download class="btn btn-primary btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 (amd64)
-                                                                </a>
-                                                            </td>
-                                                            <td>
-                                                                <a href="/darwin_amd64_gui_client.tar.gz" download class="btn btn-info btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 GUI (amd64)
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><i class="fa fa-microchip"></i> arm64 (Apple 芯片)</td>
-                                                            <td>
-                                                                <a href="/darwin_arm64_client.tar.gz" download class="btn btn-primary btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 (arm64)
-                                                                </a>
-                                                            </td>
-                                                            <td>
-                                                                <a href="/darwin_arm64_gui_client.tar.gz" download class="btn btn-info btn-sm">
-                                                                    <i class="fa fa-download"></i> 下载 GUI (arm64)
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            
-                                            <div class="m-t-lg">
-                                                <h4><i class="fa fa-book"></i> macOS 安装与运行指南 (CLI)</h4>
-                                                <div class="panel-group" id="macos-cli-accordion">
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step1-macos-cli">
-                                                                    <i class="fa fa-download"></i> 1. 下载客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step1-macos-cli" class="panel-collapse collapse in">
-                                                            <div class="panel-body">
-                                                                <p>根据您的 macOS 系统处理器架构（Intel 芯片选择 <code>amd64</code>，Apple 芯片选择 <code>arm64</code>），点击上方表格中对应的"下载"按钮，将客户端压缩包保存到您的计算机。</p>
-                                                            </div>
-                                                        </div>
+                                    <h3>macOS 客户端下载</h3>
+                                    <p class="text-muted">适用于 macOS 系统的 NPS 命令行 (CLI) 和图形用户界面 (GUI) 客户端。</p>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>架构</th>
+                                                    <th>CLI 客户端</th>
+                                                    <th>GUI 客户端</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> amd64 (Intel 芯片)</td>
+                                                    <td>
+                                                        <a href="/darwin_amd64_client.tar.gz" download class="btn btn-primary btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 (amd64)
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/darwin_amd64_gui_client.tar.gz" download class="btn btn-info btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 GUI (amd64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> arm64 (Apple 芯片)</td>
+                                                    <td>
+                                                        <a href="/darwin_arm64_client.tar.gz" download class="btn btn-primary btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 (arm64)
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/darwin_arm64_gui_client.tar.gz" download class="btn btn-info btn-sm">
+                                                            <i class="fa fa-download"></i> 下载 GUI (arm64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="m-t-lg">
+                                        <h4>macOS 安装与运行指南 (CLI)</h4>
+                                        <div class="panel-group" id="macos-cli-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step1-macos-cli">
+                                                            <i class="fa fa-download"></i> 1. 下载客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-macos-cli" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p>根据您的 macOS 系统处理器架构（Intel 芯片选择 <code>amd64</code>，Apple 芯片选择 <code>arm64</code>），点击上方表格中对应的"下载"按钮，将客户端压缩包保存到您的计算机。</p>
                                                     </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step2-macos-cli">
-                                                                    <i class="fa fa-archive"></i> 2. 解压客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step2-macos-cli" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件：</p>
-                                                                <pre><code class="language-bash">cd ~/Downloads
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step2-macos-cli">
+                                                            <i class="fa fa-archive"></i> 2. 解压客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-macos-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>打开终端（Terminal），导航到您下载文件的目录。然后使用 <code>tar</code> 命令解压文件：</p>
+                                                        <pre><code class="language-bash">cd ~/Downloads
 tar -zxvf darwin_amd64_client.tar.gz</code></pre>
-                                                                <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step3-macos-cli">
-                                                                    <i class="fa fa-key"></i> 3. 赋予执行权限
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step3-macos-cli" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</p>
-                                                                <pre><code class="language-bash">chmod +x npc</code></pre>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step4-macos-cli">
-                                                                    <i class="fa fa-play-circle"></i> 4. 运行客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step4-macos-cli" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>直接在终端中运行客户端：</p>
-                                                                <pre><code class="language-bash">./npc</code></pre>
-                                                                <p>首次运行 <code>npc</code> 时，它会提示您输入 NPS 服务器的地址和验证密钥。请按照提示输入正确的信息。</p>
-                                                            </div>
-                                                        </div>
+                                                        <p>解压后，您会得到一个名为 <code>npc</code> 的可执行文件。</p>
                                                     </div>
                                                 </div>
-                                                
-                                                <h4 class="m-t-lg"><i class="fa fa-desktop"></i> macOS 安装与运行指南 (GUI)</h4>
-                                                <div class="panel-group" id="macos-gui-accordion">
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step1-macos-gui">
-                                                                    <i class="fa fa-download"></i> 1. 下载客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step1-macos-gui" class="panel-collapse collapse in">
-                                                            <div class="panel-body">
-                                                                <p>根据您的 macOS 系统处理器架构，点击上方表格中对应的"下载 GUI"按钮，将客户端压缩包保存到您的计算机。</p>
-                                                            </div>
-                                                        </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step3-macos-cli">
+                                                            <i class="fa fa-key"></i> 3. 赋予执行权限
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-macos-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>为了能够运行 <code>npc</code>，您需要为其添加执行权限：</p>
+                                                        <pre><code class="language-bash">chmod +x npc</code></pre>
                                                     </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step2-macos-gui">
-                                                                    <i class="fa fa-archive"></i> 2. 解压客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step2-macos-gui" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>找到下载的压缩包，双击即可解压。解压后，您会得到一个名为 <code>npc_gui</code> 的应用程序。</p>
-                                                            </div>
-                                                        </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step4-macos-cli">
+                                                            <i class="fa fa-play-circle"></i> 4. 运行客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step4-macos-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>直接在终端中运行客户端：</p>
+                                                        <pre><code class="language-bash">./npc</code></pre>
+                                                        <p>首次运行 <code>npc</code> 时，它会提示您输入 NPS 服务器的地址和验证密钥。请按照提示输入正确的信息。</p>
                                                     </div>
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h5 class="panel-title">
-                                                                <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step3-macos-gui">
-                                                                    <i class="fa fa-play-circle"></i> 3. 运行客户端
-                                                                </a>
-                                                            </h5>
-                                                        </div>
-                                                        <div id="step3-macos-gui" class="panel-collapse collapse">
-                                                            <div class="panel-body">
-                                                                <p>双击 <code>npc_gui</code> 应用程序即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</p>
-                                                            </div>
-                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <h4 class="m-t-lg">macOS 安装与运行指南 (GUI)</h4>
+                                        <div class="panel-group" id="macos-gui-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step1-macos-gui">
+                                                            <i class="fa fa-download"></i> 1. 下载客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-macos-gui" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p>根据您的 macOS 系统处理器架构，点击上方表格中对应的"下载 GUI"按钮，将客户端压缩包保存到您的计算机。</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step2-macos-gui">
+                                                            <i class="fa fa-archive"></i> 2. 解压客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-macos-gui" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>找到下载的压缩包，双击即可解压。解压后，您会得到一个名为 <code>npc_gui</code> 的应用程序。</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step3-macos-gui">
+                                                            <i class="fa fa-play-circle"></i> 3. 运行客户端
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-macos-gui" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p>双击 <code>npc_gui</code> 应用程序即可运行图形界面客户端。首次运行会引导您进行服务器地址和验证密钥的配置。按照界面提示进行操作即可。</p>
                                                     </div>
                                                 </div>
                                             </div>
