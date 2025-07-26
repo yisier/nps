@@ -17,3 +17,7 @@ web/static/downloads/
 
 # 临时配置文件
 web/controllers/public.go
+
+# 构建生成的文件
+dist/
+release/
