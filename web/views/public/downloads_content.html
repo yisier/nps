@@ -453,3 +453,22 @@ tar -zxvf darwin_amd64_client.tar.gz</code></pre>
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function () {
+        // 确保标签页切换功能正常工作
+        $('.nav-tabs a').on('click', function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+        });
+        
+        // 确保折叠面板功能正常工作
+        $('.panel-collapse').on('show.bs.collapse', function () {
+            $(this).siblings('.panel-heading').find('a i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        });
+        
+        $('.panel-collapse').on('hide.bs.collapse', function () {
+            $(this).siblings('.panel-heading').find('a i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        });
+    });
+</script>
