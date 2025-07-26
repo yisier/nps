@@ -438,6 +438,30 @@
 		<zh-CN>如在下载或安装过程中遇到问题，请联系技术支持或查看FAQ。</zh-CN>
 		<en-US>If you encounter problems during download or installation, please contact technical support or check the FAQ.</en-US>
 	</lang>
+	<lang id="word-download-intro">
+		<zh-CN>轻松获取 NPS 客户端，开启您的内网穿透之旅。我们提供命令行 (CLI) 和图形用户界面 (GUI) 两种客户端，满足不同用户需求。</zh-CN>
+		<en-US>Easily obtain the NPS client and start your intranet penetration journey. We provide both command-line (CLI) and graphical user interface (GUI) clients to meet different user needs.</en-US>
+	</lang>
+	<lang id="word-installguide-linux-cli">
+		<zh-CN>Linux 安装与运行指南 (CLI)</zh-CN>
+		<en-US>Linux Installation and Running Guide (CLI)</en-US>
+	</lang>
+	<lang id="word-installguide-windows-cli">
+		<zh-CN>Windows 安装与运行指南 (CLI)</zh-CN>
+		<en-US>Windows Installation and Running Guide (CLI)</en-US>
+	</lang>
+	<lang id="word-installguide-windows-gui">
+		<zh-CN>Windows 安装与运行指南 (GUI)</zh-CN>
+		<en-US>Windows Installation and Running Guide (GUI)</en-US>
+	</lang>
+	<lang id="word-installguide-macos-cli">
+		<zh-CN>macOS 安装与运行指南 (CLI)</zh-CN>
+		<en-US>macOS Installation and Running Guide (CLI)</en-US>
+	</lang>
+	<lang id="word-installguide-macos-gui">
+		<zh-CN>macOS 安装与运行指南 (GUI)</zh-CN>
+		<en-US>macOS Installation and Running Guide (GUI)</en-US>
+	</lang>
 	<lang id="word-http">HTTP
 	</lang>
 	<lang id="word-httpport">
