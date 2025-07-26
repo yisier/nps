@@ -1,0 +1,466 @@
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5 langtag="word-clientdownloads"></h5>
+                    <div class="ibox-tools">
+                        <a class="collapse-link">
+                            <i class="fa fa-chevron-up"></i>
+                        </a>
+                        <a class="close-link">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="ibox-content">
+                    <p langtag="word-download-intro"></p>
+                    
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="active">
+                                <a data-toggle="tab" href="#linux-tab">
+                                    <i class="fa fa-linux"></i> <span langtag="word-linux"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a data-toggle="tab" href="#windows-tab">
+                                    <i class="fa fa-windows"></i> <span langtag="word-windows"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a data-toggle="tab" href="#macos-tab">
+                                    <i class="fa fa-apple"></i> <span langtag="word-macos"></span>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <!-- Linux Tab -->
+                            <div class="tab-pane active" id="linux-tab" role="tabpanel">
+                                <div class="panel-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th langtag="word-architecture"></th>
+                                                    <th langtag="word-cliclient"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> <span langtag="word-amd64desc"></span></td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/linux_amd64_client.tar.gz" download class="btn btn-primary dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> (amd64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> <span langtag="word-arm64desc"></span></td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/linux_arm64_client.tar.gz" download class="btn btn-primary dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> (arm64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="m-t-lg">
+                                        <h4 langtag="word-installguide-linux-cli"></h4>
+                                        <div class="panel-group" id="linux-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#linux-accordion" href="#step1-linux">
+                                                            <i class="fa fa-download"></i> <span langtag="word-step-download"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-linux" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-download-desc-linux"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#linux-accordion" href="#step2-linux">
+                                                            <i class="fa fa-archive"></i> <span langtag="word-step-extract"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-linux" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-extract-desc-linux"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#linux-accordion" href="#step3-linux">
+                                                            <i class="fa fa-key"></i> <span langtag="word-step-permission"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-linux" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-permission-desc-linux"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#linux-accordion" href="#step4-linux">
+                                                            <i class="fa fa-play-circle"></i> <span langtag="word-step-run"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step4-linux" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-run-desc-linux"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Windows Tab -->
+                            <div class="tab-pane" id="windows-tab" role="tabpanel">
+                                <div class="panel-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th langtag="word-architecture"></th>
+                                                    <th langtag="word-cliclient"></th>
+                                                    <th langtag="word-guiclient"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> <span langtag="word-amd64desc"></span></td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/windows_amd64_client.zip" download class="btn btn-primary dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> (amd64)
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/windows_amd64_gui_client.zip" download class="btn btn-info dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> <span langtag="word-gui"></span> (amd64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> <span langtag="word-arm64desc"></span></td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/windows_arm64_client.zip" download class="btn btn-primary dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> (arm64)
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/windows_arm64_gui_client.zip" download class="btn btn-info dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> <span langtag="word-gui"></span> (arm64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="m-t-lg">
+                                        <h4 langtag="word-installguide-windows-cli"></h4>
+                                        <div class="panel-group" id="windows-cli-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step1-windows-cli">
+                                                            <i class="fa fa-download"></i> <span langtag="word-step-download"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-windows-cli" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-download-desc-windows"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step2-windows-cli">
+                                                            <i class="fa fa-archive"></i> <span langtag="word-step-extract"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-windows-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-extract-desc-windows"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-cli-accordion" href="#step3-windows-cli">
+                                                            <i class="fa fa-play-circle"></i> <span langtag="word-step-run"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-windows-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-run-desc-windows"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <h4 class="m-t-lg" langtag="word-installguide-windows-gui"></h4>
+                                        <div class="panel-group" id="windows-gui-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step1-windows-gui">
+                                                            <i class="fa fa-download"></i> <span langtag="word-step-download"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-windows-gui" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-download-desc-windows-gui"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step2-windows-gui">
+                                                            <i class="fa fa-archive"></i> <span langtag="word-step-extract"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-windows-gui" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-extract-desc-windows-gui"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#windows-gui-accordion" href="#step3-windows-gui">
+                                                            <i class="fa fa-play-circle"></i> <span langtag="word-step-run"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-windows-gui" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-run-desc-windows-gui"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- macOS Tab -->
+                            <div class="tab-pane" id="macos-tab" role="tabpanel">
+                                <div class="panel-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th langtag="word-architecture"></th>
+                                                    <th langtag="word-cliclient"></th>
+                                                    <th langtag="word-guiclient"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> <span langtag="word-amd64desc-intel"></span></td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/darwin_amd64_client.tar.gz" download class="btn btn-primary dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> (amd64)
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/darwin_amd64_gui_client.tar.gz" download class="btn btn-info dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> <span langtag="word-gui"></span> (amd64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fa fa-microchip"></i> <span langtag="word-arm64desc-apple"></span></td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/darwin_arm64_client.tar.gz" download class="btn btn-primary dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> (arm64)
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{.web_base_url}}/darwin_arm64_gui_client.tar.gz" download class="btn btn-info dim">
+                                                            <i class="fa fa-download"></i> <span langtag="word-download"></span> <span langtag="word-gui"></span> (arm64)
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="m-t-lg">
+                                        <h4 langtag="word-installguide-macos-cli"></h4>
+                                        <div class="panel-group" id="macos-cli-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step1-macos-cli">
+                                                            <i class="fa fa-download"></i> <span langtag="word-step-download"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-macos-cli" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-download-desc-macos"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step2-macos-cli">
+                                                            <i class="fa fa-archive"></i> <span langtag="word-step-extract"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-macos-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-extract-desc-macos"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step3-macos-cli">
+                                                            <i class="fa fa-key"></i> <span langtag="word-step-permission"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-macos-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-permission-desc-macos"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-cli-accordion" href="#step4-macos-cli">
+                                                            <i class="fa fa-play-circle"></i> <span langtag="word-step-run"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step4-macos-cli" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-run-desc-macos"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <h4 class="m-t-lg" langtag="word-installguide-macos-gui"></h4>
+                                        <div class="panel-group" id="macos-gui-accordion">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step1-macos-gui">
+                                                            <i class="fa fa-download"></i> <span langtag="word-step-download"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step1-macos-gui" class="panel-collapse collapse in">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-download-desc-macos-gui"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step2-macos-gui">
+                                                            <i class="fa fa-archive"></i> <span langtag="word-step-extract"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step2-macos-gui" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-extract-desc-macos-gui"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#macos-gui-accordion" href="#step3-macos-gui">
+                                                            <i class="fa fa-play-circle"></i> <span langtag="word-step-run"></span>
+                                                        </a>
+                                                    </h5>
+                                                </div>
+                                                <div id="step3-macos-gui" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+                                                        <p langtag="word-step-run-desc-macos-gui"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center m-t-xl">
+                        <p><span langtag="word-download-footer-desc"></span> <strong><a href="https://ehang.io/nps/#/install" target="_blank" langtag="word-documentation"></a></strong>。</p>
+                        <p class="text-muted" langtag="word-download-footer-help"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // 标签页切换功能
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            var target = $(e.target).attr("href"); // activated tab
+            console.log('切换到标签页: ' + target);
+        });
+        
+        // 确保折叠面板功能正常工作
+        $('.panel-collapse').on('show.bs.collapse', function () {
+            $(this).siblings('.panel-heading').find('a i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        });
+        
+        $('.panel-collapse').on('hide.bs.collapse', function () {
+            $(this).siblings('.panel-heading').find('a i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        });
+    });
+</script>
+
+<!-- 添加额外的CSS样式确保标签页正确显示 -->
+<style>
+    .tab-content > .tab-pane {
+        display: none;
+    }
+    .tab-content > .tab-pane.active {
+        display: block;
+    }
+</style>

@@ -104,8 +104,9 @@ func (s *Conn) GetShortLenContent() (b []byte, err error) {
 }
 
 func (s *Conn) GetShortContent(l int) (b []byte, err error) {
-	buf := make([]byte, l)
-	return buf, binary.Read(s, binary.LittleEndian, &buf)
+	buf := common.BufPoolCopy.Get().([]byte)
+	defer common.BufPoolCopy.Put(buf)
+	return buf[:l], binary.Read(s, binary.LittleEndian, &buf)
 }
 
 //读取指定长度内容
@@ -135,8 +136,9 @@ func (s *Conn) WriteLenContent(buf []byte) (err error) {
 
 //read flag
 func (s *Conn) ReadFlag() (string, error) {
-	buf := make([]byte, 4)
-	return string(buf), binary.Read(s, binary.LittleEndian, &buf)
+	buf := common.BufPoolCopy.Get().([]byte)
+	defer common.BufPoolCopy.Put(buf)
+	return string(buf[:4]), binary.Read(s, binary.LittleEndian, &buf)
 }
 
 //set alive
