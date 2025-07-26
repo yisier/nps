@@ -457,7 +457,7 @@ tar -zxvf darwin_amd64_client.tar.gz</code></pre>
 <script>
     $(document).ready(function () {
         // 确保标签页切换功能正常工作
-        $('.nav-tabs a').on('click', function (e) {
+        $('.nav-tabs a').click(function (e) {
             e.preventDefault();
             $(this).tab('show');
         });
@@ -470,5 +470,11 @@ tar -zxvf darwin_amd64_client.tar.gz</code></pre>
         $('.panel-collapse').on('hide.bs.collapse', function () {
             $(this).siblings('.panel-heading').find('a i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
         });
+    });
+    
+    // 添加额外的标签页切换处理逻辑
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var target = $(e.target).attr("href"); // activated tab
+        console.log('切换到标签页: ' + target);
     });
 </script>
