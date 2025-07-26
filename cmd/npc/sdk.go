@@ -43,6 +43,7 @@ func Logs() *C.char {
 	return C.CString(common.GetLogMsg())
 }
 
-func main() {
+func sdkMain() {
 	// Need a main function to make CGO compile package as C shared library
+	// Renamed from main to sdkMain to avoid conflict with npc.go
 }
