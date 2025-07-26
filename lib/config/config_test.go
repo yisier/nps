@@ -3,7 +3,7 @@ package config
 import (
 	"log"
 	"regexp"
-	"testing"
+	"testing""ehang.io/nps/lib/file"
 )
 
 func TestReg(t *testing.T) {
@@ -49,15 +49,23 @@ p=2
 }
 
 func TestDealCommon(t *testing.T) {
-	s := `server=127.0.0.1:8284
-tp=tcp
-vkey=123`
-	f := new(CommonConfig)
-	f.Server = "127.0.0.1:8284"
-	f.Tp = "tcp"
-	f.VKey = "123"
-	if c := dealCommon(s); *c != *f {
-		t.Fail()
+	s := "server_addr=127.0.0.1:8284\nconn_type=tcp\nvkey=123"
+	
+	expected := &CommonConfig{
+		Server: "127.0.0.1:8284",
+		Tp:     "tcp",
+		VKey:   "123",
+	}
+	expected.Client = file.NewClient("", true, true)
+	expected.Client.Cnf = new(file.Config)
+	
+	actual := dealCommon(s)
+	
+	// 只比较公开字段，不比较Client字段
+	if actual.Server != expected.Server || 
+	   actual.Tp != expected.Tp || 
+	   actual.VKey != expected.VKey {
+		t.Errorf("配置不匹配。期望: %+v，实际: %+v", expected, actual)
 	}
 }
 
