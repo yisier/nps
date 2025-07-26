@@ -1,14 +1,19 @@
+# IDE相关文件
 .idea
-nps
-npc
-*.log
-conf/*.json
-downloads/
-web/static/downloads/
-web/controllers/public.go
-# 编译生成的文件
+
+# 编译产物
 *.exe
 *.dll
 *.so
 *.dylib
 *.out
+
+# 日志文件
+*.log
+
+# 下载文件目录
+downloads/
+web/static/downloads/
+
+# 临时配置文件
+web/controllers/public.go
