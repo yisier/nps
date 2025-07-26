@@ -3,7 +3,7 @@ package config
 import (
 	"log"
 	"regexp"
-	"testing""ehang.io/nps/lib/file"
+	"testing"
 )
 
 func TestReg(t *testing.T) {
