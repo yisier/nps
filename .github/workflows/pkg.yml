@@ -21,8 +21,6 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # changelog 需要完整提交历史
 
       - name: Get dependencies
         run: |
@@ -44,28 +42,13 @@ jobs:
             echo "tag=${{ github.event.inputs.release_tag }}" >> $GITHUB_OUTPUT
           else
             echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Generate changelog
-        id: changelog
-        run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 --always $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
-          if [ -z "$LAST_TAG" ]; then
-            echo "No previous tag found, generating full commit log."
-            git log --pretty=format:"* %s (%h)" > CHANGELOG.txt
-          else
-            echo "Generating changelog from $LAST_TAG to ${{ steps.vars.outputs.tag }}"
-            git log ${LAST_TAG}..HEAD --pretty=format:"* %s (%h)" > CHANGELOG.txt
           fi
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          cat CHANGELOG.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release (with changelog)
+      - name: Create GitHub Release (if not exists)
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
           name: "Release ${{ steps.vars.outputs.tag }}"
-          body: ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false
           files: |
