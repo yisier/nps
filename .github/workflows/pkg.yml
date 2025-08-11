@@ -1,40 +1,73 @@
 name: Release
 
 on:
-  workflow_dispatch:
-  release:
+  workflow_dispatch:   # 手动触发
+    inputs:
+      release_tag:
+        description: 'Release Tag (例如 v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+  release:             # tag 发布时自动触发
     types: [published]
-    branches: [ master ]
 
 jobs:
-
   build_assets:
-
     runs-on: ubuntu-latest
     steps:
-
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
           go-version: 1.22
-        id: go
-      - name: Check out code into the Go module directory
+
+      - name: Check out code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # changelog 需要完整提交历史
+
       - name: Get dependencies
         run: |
           go get -v -t -d ./...
           if [ -f Gopkg.toml ]; then
-              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-              dep ensure
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
           fi
+
       - name: Build
         run: |
           chmod +x build.assets.sh
           ./build.assets.sh
-      - name: Upload
+
+      - name: Determine release tag
+        id: vars
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.release_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 --always $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tag found, generating full commit log."
+            git log --pretty=format:"* %s (%h)" > CHANGELOG.txt
+          else
+            echo "Generating changelog from $LAST_TAG to ${{ steps.vars.outputs.tag }}"
+            git log ${LAST_TAG}..HEAD --pretty=format:"* %s (%h)" > CHANGELOG.txt
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat CHANGELOG.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release (with changelog)
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: "Release ${{ steps.vars.outputs.tag }}"
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
           files: |
             freebsd_386_client.tar.gz
             freebsd_386_server.tar.gz
