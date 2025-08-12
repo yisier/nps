@@ -80,7 +80,7 @@
                 + '<b langtag="custom-word-commandclient"></b>: ' + "<code>./npc{{.win}} -server={{.npcDomain}}:{{.p}} -vkey=" + row.VerifyKey + " -type=" +{{.bridgeType}} +"</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
                 + '<b langtag="custom-word-commandclient-tls"></b>: ' + "<code>./npc{{.win}} -server={{.npcDomain}}:{{.tls_p}} -vkey=" + row.VerifyKey + " -tls_enable=true</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/><br/>"
                 + '<b langtag="custom-word-remote-init-tcp"></b>: ' + "<code>" +{{.npcInitShell}} +" -s {{.npcDomain}}:{{.p}} -vkey=" + row.VerifyKey + " --tcp </code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
-                + '<b langtag="custom-word-remote-init-tcp"></b>: ' + "<code>" +{{.npcInitShell}} +" -s {{.npcDomain}}:{{.p}} -vkey=" + row.VerifyKey + " --tls </code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
+                + '<b langtag="custom-word-remote-init-tcp"></b>: ' + "<code>" +{{.npcInitShell}} +" -s {{.npcDomain}}:{{.tls_p}} -vkey=" + row.VerifyKey + " --tls </code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
                 + '<b langtag="custom-word-remote-uninstall"></b>: ' + "<code>" +{{.npcUninstallShell}} +"</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button>"
         },
         //表格的列
