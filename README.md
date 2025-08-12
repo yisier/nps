@@ -2,6 +2,32 @@
 
 [README](https://github.com/ehang-io/nps/blob/master/README.md)|[中文文档](https://github.com/ehang-io/nps/blob/master/README_zh.md)
 
+# 新增功能
+- 新增自定义NPC客户端域名字段
+- 新增自定义NPC初始化shell脚本字段
+- 新增自定义NPC装卸shell脚本字段
+```
+# 自定义NPC客户端域名字段
+npc_domain=xxxxxx.daa.io
+# 自定义NPC初始化shell脚本字段
+npc_init_shell="wget --no-check-certificate --no-cache --timestamping -qO- https://xxxxx.com/remote_vm_init_npc.sh | bash -s -- "
+# 自定义NPC装卸shell脚本字段
+npc_uninstall_shell="wget --no-check-certificate --no-cache --timestamping -qO- https://xxxxx.com/remote_vm_init_npc.sh | bash -s -- --uninstall"
+```
+
+
+# 开发配置
+## 方式1：直接运行源码（推荐开发时使用）
+```
+go run cmd/nps/nps.go
+```
+## 方式2：编译二进制文件（推荐生产环境使用）
+```
+go build cmd/nps/nps.go  # 构建
+./nps.exe                # 运行
+```
+
+
 # 说明
 由于nps已经有二年多的时间没有更新了，存留了不少bug和未完善的功能。
 

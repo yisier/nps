@@ -76,7 +76,12 @@
                 + '<b langtag="word-quicklycommand"></b>: <span>' + encodeToBase64('{{.ip}}:{{.p}} ' + row.VerifyKey)   + '</span>&emsp;<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button><br/>'
                 + '<b langtag="word-tlsquicklycommand"></b>: <span>' + encodeToBase64('{{.ip}}:{{.tls_p}} ' + row.VerifyKey + ' -tls_enable=true')   + '</span>&emsp;<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button><br/>'
                 + '<b langtag="word-commandclient"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.VerifyKey + " -type=" +{{.bridgeType}} +"</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
-                + '<b langtag="word-commandclient-tls"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.VerifyKey + " -tls_enable=true</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button>"
+                + '<b langtag="word-commandclient-tls"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.VerifyKey + " -tls_enable=true</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/><br/>"
+                + '<b langtag="custom-word-commandclient"></b>: ' + "<code>./npc{{.win}} -server={{.npcDomain}}:{{.p}} -vkey=" + row.VerifyKey + " -type=" +{{.bridgeType}} +"</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
+                + '<b langtag="custom-word-commandclient-tls"></b>: ' + "<code>./npc{{.win}} -server={{.npcDomain}}:{{.tls_p}} -vkey=" + row.VerifyKey + " -tls_enable=true</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/><br/>"
+                + '<b langtag="custom-word-remote-init-tcp"></b>: ' + "<code>" +{{.npcInitShell}} +" -s {{.npcDomain}}:{{.p}} -vkey=" + row.VerifyKey + " --tcp </code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
+                + '<b langtag="custom-word-remote-init-tcp"></b>: ' + "<code>" +{{.npcInitShell}} +" -s {{.npcDomain}}:{{.p}} -vkey=" + row.VerifyKey + " --tls </code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"
+                + '<b langtag="custom-word-remote-uninstall"></b>: ' + "<code>" +{{.npcUninstallShell}} +"</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button>"
         },
         //表格的列
         columns: [
@@ -181,23 +186,17 @@
                 halign: 'center',
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
-                    btn_group = '<div class="btn-group">'
-
+                    var btn_group = '<div class="btn-group">';
                     {{if eq true .isAdmin}}
                     if (row.Status) {
-                        btn_group += '<a onclick="submitform(\'stop\', \'{{.web_base_url}}/client/changestatus\', {\'id\':' + row.Id
-                        btn_group += ', \'status\': 0})" class="btn btn-outline btn-warning"><i class="fa fa-pause"></i></a>'
+                        btn_group += '<a onclick="submitform(\'stop\', \'{{.web_base_url}}/client/changestatus\', {\'id\':' + row.Id + ', \'status\': 0})" class="btn btn-outline btn-warning"><i class="fa fa-pause"></i></a>';
                     } else {
-                        btn_group += '<a onclick="submitform(\'start\', \'{{.web_base_url}}/client/changestatus\', {\'id\':' + row.Id
-                        btn_group += ', \'status\': 1})" class="btn btn-outline btn-primary"><i class="fa fa-play"></i></a>'
+                        btn_group += '<a onclick="submitform(\'start\', \'{{.web_base_url}}/client/changestatus\', {\'id\':' + row.Id + ', \'status\': 1})" class="btn btn-outline btn-primary"><i class="fa fa-play"></i></a>';
                     }
-                    btn_group += '<a onclick="submitform(\'delete\', \'{{.web_base_url}}/client/del\', {\'id\':' + row.Id
-                    btn_group += '})" class="btn btn-outline btn-danger"><i class="fa fa-trash"></i></a>'
+                    btn_group += '<a onclick="submitform(\'delete\', \'{{.web_base_url}}/client/del\', {\'id\':' + row.Id + '})" class="btn btn-outline btn-danger"><i class="fa fa-trash"></i></a>';
                     {{end}}
-
-                    btn_group += '<a href="{{.web_base_url}}/client/edit?id=' + row.Id
-                    btn_group += '" class="btn btn-outline btn-success"><i class="fa fa-edit"></i></a></div>'
-                    return btn_group
+                    btn_group += '<a href="{{.web_base_url}}/client/edit?id=' + row.Id + '" class="btn btn-outline btn-success"><i class="fa fa-edit"></i></a></div>';
+                    return btn_group;
                 }
             },
             {

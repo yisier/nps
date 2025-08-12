@@ -204,13 +204,39 @@
 	</lang>
 
 	<lang id="word-commandclient">
-		<zh-CN>客户端命令</zh-CN>
-		<en-US>Command</en-US>
+		<zh-CN>TCP 客户端命令</zh-CN>
+		<en-US>TCP Command</en-US>
 	</lang>
 	<lang id="word-commandclient-tls">
 		<zh-CN>TLS 启动命令</zh-CN>
 		<en-US>TLS Command</en-US>
 	</lang>
+
+
+	<lang id="custom-word-commandclient">
+		<zh-CN>(域名)TCP 客户端命令</zh-CN>
+		<en-US>(Domain)TCP Command</en-US>
+
+	</lang>
+	<lang id="custom-word-commandclient-tls">
+		<zh-CN>(域名)TLS 启动命令</zh-CN>
+		<en-US>(域名)TLS Command</en-US>
+	</lang>
+
+	<lang id="custom-word-remote-init-tcp">
+		<zh-CN>(远程) TCP 一键初始化</zh-CN>
+		<en-US>(Remote) TCP Init</en-US>
+	</lang>
+	<lang id="custom-word-remote-init-tls">
+		<zh-CN>(远程) TLS 一键初始化</zh-CN>
+		<en-US>(Remote) TLS Init</en-US>
+	</lang>
+	<lang id="custom-word-remote-uninstall">
+		<zh-CN>(远程) 一键卸载</zh-CN>
+		<en-US>(Remote) Uninstall</en-US>
+	</lang>
+	
+	
 
 
 
