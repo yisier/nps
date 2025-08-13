@@ -7,6 +7,14 @@
 - 新增自定义NPC初始化shell脚本字段
 - 新增自定义NPC装卸shell脚本字段
 ```
+# WebSocket bridge settings
+ws_enable=true
+ws_bridge_port=8026
+
+# WebSocket Secure bridge settings
+wss_enable=true
+wss_bridge_port=8027
+
 # 自定义NPC客户端域名字段
 npc_domain=xxxxxx.daa.io
 # 自定义NPC初始化shell脚本字段

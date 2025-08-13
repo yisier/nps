@@ -10,6 +10,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/golang/snappy v0.0.3
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.0
 	github.com/kardianos/service v1.2.0
 	github.com/panjf2000/ants/v2 v2.4.2
 	github.com/pires/go-proxyproto v0.8.0

@@ -3,7 +3,6 @@ package bridge
 import (
 	"crypto/tls"
 	_ "crypto/tls"
-	"ehang.io/nps/lib/nps_mux"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"ehang.io/nps/lib/nps_mux"
 
 	"ehang.io/nps/lib/common"
 	"ehang.io/nps/lib/conn"
@@ -74,13 +75,15 @@ func NewTunnel(tunnelPort int, tunnelType string, ipVerify bool, runList sync.Ma
 
 func (s *Bridge) StartTunnel() error {
 	go s.ping()
+
+	// 启动主要的桥接监听器（TCP或KCP）
 	if s.tunnelType == "kcp" {
 		logs.Info("server start, the bridge type is %s, the bridge port is %d", s.tunnelType, s.TunnelPort)
 		return conn.NewKcpListenerAndProcess(beego.AppConfig.String("bridge_ip")+":"+beego.AppConfig.String("bridge_port"), func(c net.Conn) {
 			s.cliProcess(conn.NewConn(c))
 		})
 	} else {
-
+		// 启动TCP桥接监听器
 		go func() {
 			listener, err := connection.GetBridgeListener(s.tunnelType)
 			if err != nil {
@@ -93,12 +96,10 @@ func (s *Bridge) StartTunnel() error {
 			})
 		}()
 
-		// tls
+		// TLS桥接监听器
 		if ServerTlsEnable {
 			go func() {
-				// 监听TLS 端口
 				tlsBridgePort := beego.AppConfig.DefaultInt("tls_bridge_port", 8025)
-
 				logs.Info("tls server start, the bridge type is %s, the tls bridge port is %d", "tcp", tlsBridgePort)
 				tlsListener, tlsErr := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(beego.AppConfig.String("bridge_ip")), tlsBridgePort, ""})
 				if tlsErr != nil {
@@ -112,6 +113,62 @@ func (s *Bridge) StartTunnel() error {
 			}()
 		}
 	}
+
+	// WebSocket桥接监听器
+	if wsEnable, _ := beego.AppConfig.Bool("ws_enable"); wsEnable {
+		go func() {
+			wsBridgePort := beego.AppConfig.DefaultString("ws_bridge_port", "8026")
+			addr := beego.AppConfig.String("bridge_ip") + ":" + wsBridgePort
+			logs.Info("WebSocket server start, the bridge type is ws, the bridge port is %s", addr)
+
+			listener, err := conn.NewWebSocketListener(addr, nil)
+			if err != nil {
+				logs.Error("WebSocket listener create error:", err)
+				return
+			}
+
+			// 启动WebSocket监听器
+			go func() {
+				if err := listener.(*conn.WebSocketListener).Start(); err != nil {
+					logs.Error("WebSocket listener start error:", err)
+				}
+			}()
+
+			// 接受连接
+			conn.Accept(listener, func(c net.Conn) {
+				s.cliProcess(conn.NewConn(c))
+			})
+		}()
+	}
+
+	// WebSocket Secure桥接监听器
+	if wssEnable, _ := beego.AppConfig.Bool("wss_enable"); wssEnable {
+		go func() {
+			wssBridgePort := beego.AppConfig.DefaultString("wss_bridge_port", "8027")
+			addr := beego.AppConfig.String("bridge_ip") + ":" + wssBridgePort
+			logs.Info("WebSocket Secure server start, the bridge type is wss, the bridge port is %s", addr)
+
+			tlsConfig := &tls.Config{Certificates: []tls.Certificate{crypt.GetCert()}}
+			listener, err := conn.NewWebSocketListener(addr, tlsConfig)
+			if err != nil {
+				logs.Error("WebSocket Secure listener create error:", err)
+				return
+			}
+
+			// 启动WSS监听器
+			go func() {
+				if err := listener.(*conn.WebSocketListener).Start(); err != nil {
+					logs.Error("WebSocket Secure listener start error:", err)
+				}
+			}()
+
+			// 接受连接
+			conn.Accept(listener, func(c net.Conn) {
+				s.cliProcess(conn.NewConn(c))
+			})
+		}()
+	}
+
 	return nil
 }
 
@@ -191,32 +248,46 @@ func (s *Bridge) verifySuccess(c *conn.Conn) {
 
 func (s *Bridge) cliProcess(c *conn.Conn) {
 	//read test flag
-	if _, err := c.GetShortContent(3); err != nil {
+	if testFlag, err := c.GetShortContent(3); err != nil {
 		logs.Info("The client %s connect error", c.Conn.RemoteAddr(), err.Error())
 		return
+	} else {
+		logs.Info("[DEBUG] Received test flag from %s: %s (expected: TST)", c.Conn.RemoteAddr(), string(testFlag))
 	}
 	//version check
-	if b, err := c.GetShortLenContent(); err != nil || string(b) != version.GetVersion() {
-		//logs.Info("The client %s version does not match", c.Conn.RemoteAddr())
-		//c.Close()
-		//return
+	if b, err := c.GetShortLenContent(); err != nil {
+		logs.Info("[DEBUG] Failed to read core version from %s: %s", c.Conn.RemoteAddr(), err.Error())
+		c.Close()
+		return
+	} else {
+		logs.Info("[DEBUG] Received core version from %s: %s (expected: %s)", c.Conn.RemoteAddr(), string(b), version.GetVersion())
+		if string(b) != version.GetVersion() {
+			logs.Info("[DEBUG] Version mismatch but continuing anyway")
+		}
 	}
 	//version get
 	var vs []byte
 	var err error
 	if vs, err = c.GetShortLenContent(); err != nil {
-		logs.Info("get client %s version error", err.Error())
+		logs.Info("[DEBUG] Failed to read client version from %s: %s", c.Conn.RemoteAddr(), err.Error())
 		c.Close()
 		return
+	} else {
+		logs.Info("[DEBUG] Received client version from %s: %s", c.Conn.RemoteAddr(), string(vs))
 	}
 	//write server version to client
-	c.Write([]byte(crypt.Md5(version.GetVersion())))
+	serverVersionHash := crypt.Md5(version.GetVersion())
+	logs.Info("[DEBUG] Sending server version hash to %s: %s", c.Conn.RemoteAddr(), serverVersionHash)
+	c.Write([]byte(serverVersionHash))
 	c.SetReadDeadlineBySecond(5)
 	var buf []byte
 	//get vKey from client
 	if buf, err = c.GetShortContent(32); err != nil {
+		logs.Info("[DEBUG] Failed to read vKey from %s: %s", c.Conn.RemoteAddr(), err.Error())
 		c.Close()
 		return
+	} else {
+		logs.Info("[DEBUG] Received vKey from %s: %s", c.Conn.RemoteAddr(), string(buf))
 	}
 	//verify
 	id, err := file.GetDb().GetIdByVerifyKey(string(buf), c.Conn.RemoteAddr().String())

@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"ehang.io/nps/lib/crypt"
 	"flag"
 	"fmt"
 	"os"
@@ -11,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"ehang.io/nps/lib/crypt"
 
 	"ehang.io/nps/client"
 	"ehang.io/nps/lib/common"
@@ -29,7 +30,7 @@ var (
 	configPath     = flag.String("config", "", "Configuration file path")
 	verifyKey      = flag.String("vkey", "", "Authentication key")
 	logType        = flag.String("log", "stdout", "Log output mode（stdout|file）")
-	connType       = flag.String("type", "tcp", "Connection type with the server（kcp|tcp）")
+	connType       = flag.String("type", "tcp", "Connection type with the server（kcp|tcp|ws|wss）")
 	proxyUrl       = flag.String("proxy", "", "proxy socks5 url(eg:socks5://111:222@127.0.0.1:9007)")
 	logLevel       = flag.String("log_level", "7", "log level 0~7")
 	registerTime   = flag.Int("time", 2, "register time long /h")
@@ -234,9 +235,11 @@ func run() {
 	if *verifyKey == "" {
 		*verifyKey, _ = env["NPC_SERVER_VKEY"]
 	}
-	if *verifyKey != "" && *serverAddr != "" && *configPath == "" {
+
+	// 优先使用命令行参数模式
+	if *verifyKey != "" && *serverAddr != "" {
 		client.SetTlsEnable(*tlsEnable)
-		logs.Info("the version of client is %s, the core version of client is %s,tls enable is %t", version.VERSION, version.GetVersion(), client.GetTlsEnable())
+		logs.Info("the version of client is %s, the core version of client is %s,tls enable is %t, conn type is %s", version.VERSION, version.GetVersion(), client.GetTlsEnable(), *connType)
 
 		vkeys := strings.Split(*verifyKey, `,`)
 		for _, key := range vkeys {
@@ -252,6 +255,7 @@ func run() {
 		}
 
 	} else {
+		// 如果没有指定配置文件路径，使用默认路径
 		if *configPath == "" {
 			*configPath = common.GetConfigPath()
 		}
@@ -345,25 +349,38 @@ func startNpcServer(startCmd string) {
 	var serAddr string
 	var vkey string
 	var tls string
+	var connTypeLocal string = *connType
 	array := strings.Fields(startCmd)
 	serAddr = array[0]
 	vkey = array[1]
 	if len(array) > 2 {
 		tls = array[2]
+		// 检查是否指定了连接类型
+		if strings.Contains(tls, "-type=") {
+			connTypeLocal = strings.Replace(tls, "-type=", "", -1)
+			tls = ""
+		}
 	}
+	if len(array) > 3 {
+		// 处理第四个参数可能是连接类型
+		if strings.Contains(array[3], "-type=") {
+			connTypeLocal = strings.Replace(array[3], "-type=", "", -1)
+		}
+	}
+
 	go func() {
 		for {
 			if tls == "-tls_enable=true" {
 				client.SetTlsEnable(true)
-				logs.Info("start cmd:-server=" + serAddr + " -vkey=" + vkey + " " + tls)
-				logs.Info("the version of client is %s, the core version of client is %s,tls enable is %t", version.VERSION, version.GetVersion(), client.GetTlsEnable())
+				logs.Info("start cmd:-server=" + serAddr + " -vkey=" + vkey + " " + tls + " -type=" + connTypeLocal)
+				logs.Info("the version of client is %s, the core version of client is %s,tls enable is %t, conn type is %s", version.VERSION, version.GetVersion(), client.GetTlsEnable(), connTypeLocal)
 			} else {
 				client.SetTlsEnable(false)
-				logs.Info("start cmd:-server=" + serAddr + " -vkey=" + vkey)
-				logs.Info("the version of client is %s, the core version of client is %s", version.VERSION, version.GetVersion())
+				logs.Info("start cmd:-server=" + serAddr + " -vkey=" + vkey + " -type=" + connTypeLocal)
+				logs.Info("the version of client is %s, the core version of client is %s, conn type is %s", version.VERSION, version.GetVersion(), connTypeLocal)
 			}
 
-			client.NewRPClient(serAddr, vkey, *connType, *proxyUrl, nil, *disconnectTime).Start()
+			client.NewRPClient(serAddr, vkey, connTypeLocal, *proxyUrl, nil, *disconnectTime).Start()
 			logs.Info("Client closed! It will be reconnected in five seconds")
 			time.Sleep(time.Second * 5)
 		}
@@ -441,6 +458,7 @@ func systemPro(flag string, serAddr string, vkey string) {
 	case "1":
 		svcConfig.Arguments = append(svcConfig.Arguments, "-server="+serAddr)
 		svcConfig.Arguments = append(svcConfig.Arguments, "-vkey="+vkey)
+		svcConfig.Arguments = append(svcConfig.Arguments, "-type="+*connType)
 		svcConfig.Arguments = append(svcConfig.Arguments, "-debug=false")
 
 		*logPath = common.GetNpcLogPath()

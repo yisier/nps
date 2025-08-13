@@ -195,6 +195,7 @@ re:
 
 // Create a new connection with the server and verify it
 func NewConn(tp string, vkey string, server string, connType string, proxyUrl string) (*conn.Conn, error) {
+	logs.Info("NewConn called with tp=%s, server=%s", tp, server)
 	var err error
 	var connection net.Conn
 	var sess *kcp.UDPSession
@@ -242,6 +243,15 @@ func NewConn(tp string, vkey string, server string, connType string, proxyUrl st
 			//_, err = header.WriteTo(connection)
 			//_, err = io.WriteString(connection, "HELO")
 		}
+	} else if tp == "ws" || tp == "wss" {
+		// WebSocket连接支持
+		logs.Info("Creating WebSocket connection to %s, wss=%t", server, tp == "wss")
+		connection, err = conn.NewWebSocketConn(server, tp == "wss")
+		if err != nil {
+			logs.Error("WebSocket connection failed: %s", err.Error())
+		} else {
+			logs.Info("WebSocket connection created successfully")
+		}
 	} else {
 		sess, err = kcp.DialWithOptions(server, nil, 10, 3)
 		if err == nil {
@@ -252,7 +262,12 @@ func NewConn(tp string, vkey string, server string, connType string, proxyUrl st
 	if err != nil {
 		return nil, err
 	}
-	connection.SetDeadline(time.Now().Add(time.Second * 10))
+	// WebSocket 连接需要更长的超时时间
+	if tp == "ws" || tp == "wss" {
+		connection.SetDeadline(time.Now().Add(time.Second * 60))
+	} else {
+		connection.SetDeadline(time.Now().Add(time.Second * 10))
+	}
 	defer connection.SetDeadline(time.Time{})
 	c := conn.NewConn(connection)
 	if _, err := c.Write([]byte(common.CONN_TEST)); err != nil {
