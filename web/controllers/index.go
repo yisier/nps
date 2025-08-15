@@ -323,6 +323,11 @@ func (s *IndexController) AddHost() {
 			CertFilePath: s.getEscapeString("cert_file_path"),
 			AutoHttps:    s.GetBoolNoErr("AutoHttps"),
 		}
+
+		if h.Scheme == "http" {
+			h.AutoHttps = false
+		}
+
 		var err error
 		if h.Client, err = file.GetDb().GetClient(s.GetIntNoErr("client_id")); err != nil {
 			s.AjaxErr("add error the client can not be found")
@@ -379,6 +384,11 @@ func (s *IndexController) EditHost() {
 			h.CertFilePath = s.getEscapeString("cert_file_path")
 			h.Target.LocalProxy = s.GetBoolNoErr("local_proxy")
 			h.AutoHttps = s.GetBoolNoErr("AutoHttps")
+
+			if h.Scheme == "http" {
+				h.AutoHttps = false
+			}
+
 			file.GetDb().JsonDb.StoreHostToJsonFile()
 		}
 		s.AjaxOk("modified success")

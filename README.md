@@ -27,6 +27,12 @@ https://natnps.com/
 
 
 # 更新日志  
+- 2025-08-15  v0.26.26  
+  修复：
+  - windows注册服务 使用tls无法连接 [269](https://github.com/yisier/nps/issues/269)
+  - 域名解析自动HTTPS逻辑bug [273](https://github.com/yisier/nps/issues/273)
+
+
 - 2025-05-28  v0.26.25  
   新增：
   - nps增加`nps(.exe) -server` 命令，用于管理NPS服务，安装和卸载服务在 Linux 下需要有 sudo 权限，Windows 下需要有管理员权限。  
