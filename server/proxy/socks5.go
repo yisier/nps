@@ -61,9 +61,10 @@ func (s *Sock5ModeServer) handleRequest(c net.Conn) {
 		| 1  |  1  | X'00' |  1   | Variable |    2     |
 		+----+-----+-------+------+----------+----------+
 	*/
-	header := make([]byte, 3)
+	header := common.BufPoolCopy.Get().([]byte)
+	defer common.BufPoolCopy.Put(header)
 
-	_, err := io.ReadFull(c, header)
+	_, err := io.ReadFull(c, header[:3])
 
 	if err != nil {
 		logs.Warn("illegal request", err)
@@ -98,17 +99,19 @@ func (s *Sock5ModeServer) sendReply(c net.Conn, rep uint8) {
 	ipBytes := net.ParseIP(localHost).To4()
 	nPort, _ := strconv.Atoi(localPort)
 	reply = append(reply, ipBytes...)
-	portBytes := make([]byte, 2)
+	portBytes := common.BufPoolCopy.Get().([]byte)
+	defer common.BufPoolCopy.Put(portBytes)
 	binary.BigEndian.PutUint16(portBytes, uint16(nPort))
-	reply = append(reply, portBytes...)
+	reply = append(reply, portBytes[:2]...)
 
 	c.Write(reply)
 }
 
 // do conn
 func (s *Sock5ModeServer) doConnect(c net.Conn, command uint8) {
-	addrType := make([]byte, 1)
-	c.Read(addrType)
+	addrType := common.BufPoolCopy.Get().([]byte)
+	defer common.BufPoolCopy.Put(addrType)
+	c.Read(addrType[:1])
 	var host string
 	switch addrType[0] {
 	case ipV4:
@@ -175,8 +178,9 @@ func (s *Sock5ModeServer) sendUdpReply(writeConn net.Conn, c net.Conn, rep uint8
 
 func (s *Sock5ModeServer) handleUDP(c net.Conn) {
 	defer c.Close()
-	addrType := make([]byte, 1)
-	c.Read(addrType)
+	addrType := common.BufPoolCopy.Get().([]byte)
+	defer common.BufPoolCopy.Put(addrType)
+	c.Read(addrType[:1])
 	var host string
 	switch addrType[0] {
 	case ipV4:
@@ -200,7 +204,7 @@ func (s *Sock5ModeServer) handleUDP(c net.Conn) {
 	//读取端口
 	var port uint16
 	binary.Read(c, binary.BigEndian, &port)
-	logs.Warn(host, string(port))
+	logs.Warn(host, strconv.Itoa(int(port)))
 	replyAddr, err := net.ResolveUDPAddr("udp", s.task.ServerIp+":0")
 	if err != nil {
 		logs.Error("build local reply addr error", err)
@@ -282,8 +286,9 @@ func (s *Sock5ModeServer) handleUDP(c net.Conn) {
 
 // new conn
 func (s *Sock5ModeServer) handleConn(c net.Conn) {
-	buf := make([]byte, 2)
-	if _, err := io.ReadFull(c, buf); err != nil {
+	buf := common.BufPoolCopy.Get().([]byte)
+	defer common.BufPoolCopy.Put(buf)
+	if _, err := io.ReadFull(c, buf[:2]); err != nil {
 		logs.Warn("negotiation err", err)
 		c.Close()
 		return
@@ -304,7 +309,7 @@ func (s *Sock5ModeServer) handleConn(c net.Conn) {
 	}
 	if (s.task.Client.Cnf.U != "" && s.task.Client.Cnf.P != "") || (s.task.MultiAccount != nil && len(s.task.MultiAccount.AccountMap) > 0) {
 		buf[1] = UserPassAuth
-		c.Write(buf)
+		c.Write(buf[:2])
 		if err := s.Auth(c); err != nil {
 			c.Close()
 			logs.Warn("Validation failed:", err)
@@ -312,7 +317,7 @@ func (s *Sock5ModeServer) handleConn(c net.Conn) {
 		}
 	} else {
 		buf[1] = 0
-		c.Write(buf)
+		c.Write(buf[:2])
 	}
 	s.handleRequest(c)
 }

@@ -360,7 +360,8 @@ func handleP2PUdp(localAddr, rAddr, md5Password, role string) (remoteAddress str
 	}
 	var remoteAddr1, remoteAddr2, remoteAddr3 string
 	for {
-		buf := make([]byte, 1024)
+		buf := common.BufPool.Get().([]byte)
+		defer common.BufPool.Put(buf)
 		if n, addr, er := localConn.ReadFromUDP(buf); er != nil {
 			err = er
 			return
@@ -452,7 +453,8 @@ func sendP2PTestMsg(localConn *net.UDPConn, remoteAddr1, remoteAddr2, remoteAddr
 
 	}
 
-	buf := make([]byte, 10)
+	buf := common.BufPoolCopy.Get().([]byte)
+	defer common.BufPoolCopy.Put(buf)
 	for {
 		localConn.SetReadDeadline(time.Now().Add(time.Second * 10))
 		n, addr, err := localConn.ReadFromUDP(buf)
