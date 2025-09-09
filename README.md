@@ -1,9 +1,9 @@
 # NPS
 
-[README](https://github.com/ehang-io/nps/blob/master/README.md)|[中文文档](https://github.com/ehang-io/nps/blob/master/README_zh.md)
+[新特性文档](https://dqg9t9eulqq.feishu.cn/wiki/FmVVwDcEGiTZxekYJl5ccuFanlg?from=from_copylink)
 
 # 说明
-由于nps已经有二年多的时间没有更新了，存留了不少bug和未完善的功能。
+由于nps已经停更多年，存留了不少bug和未完善的功能。
 
 此版本基于 nps 0.26.10的基础上二次开发而来。
 
