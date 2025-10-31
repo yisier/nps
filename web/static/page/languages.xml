@@ -599,6 +599,12 @@
 		<zh-CN>唯一值，不填将自动生成</zh-CN>
 		<en-US>Unique, non-filling will be generated automatically</en-US>
 	</lang>
+
+	<lang id="info-ipwhitepass">
+		<zh-CN>IP授权密码，不在IP白名单的访问将被跳转到IP授权页面，输入正确的授权密码，即可完成添加IP。</zh-CN>
+		<en-US>IP White Password, access that is not in the IP white list will be redirected to the IP authorization page, enter the correct authorization password, and you can complete the addition of IP.</en-US>
+	</lang>
+
 	<lang id="info-casefile">
 		<zh-CN>通提供一个公网可访问的本地文件服务，此模式仅客户端使用配置文件模式方可启动。</zh-CN>
 		<en-US>Provide a local file service accessible to the public network, which can only be started by the client using the profile mode.</en-US>
@@ -732,6 +738,12 @@
 		<en-US>Empty means to be unrestricted</en-US>
 	</lang>
 
+	<lang id="info-input-whitepass">
+		<zh-CN>留空表示不跳转IP授权页面</zh-CN>
+		<en-US>Empty means not to jump to the IP authorization page</en-US>
+	</lang>
+
+
 
 	<lang id="word-blackiplist">
 		<zh-CN>IP黑名单（防暴力破解）</zh-CN>
@@ -768,6 +780,21 @@
 	<lang id="word-lastonlinetime">
 		<zh-CN>上次在线时间</zh-CN>
 		<en-US>Last Online Time</en-US>
+	</lang>
+
+	<lang id="word-ipwhite">
+		<zh-CN>启用IP白名单</zh-CN>
+		<en-US> Enable IP White </en-US>
+	</lang>
+
+	<lang id="word-ipwhitepass">
+		<zh-CN>IP白名单授权密码</zh-CN>
+		<en-US>IP White Password </en-US>
+	</lang>
+
+	<lang id="word-ipwhitelist">
+		<zh-CN>IP白名单</zh-CN>
+		<en-US>IP White List </en-US>
 	</lang>
 
 	<confirm>

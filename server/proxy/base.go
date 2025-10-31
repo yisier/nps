@@ -29,6 +29,7 @@ type BaseServer struct {
 	bridge       NetBridge
 	task         *file.Tunnel
 	errorContent []byte
+	errorCode    int
 	sync.Mutex
 }
 

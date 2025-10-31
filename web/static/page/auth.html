@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, user-scalable=0, minimal-ui">
+    <title>NPS访问验证</title>
+    <style>
+        html {
+            padding: 30px 10px;
+            font-size: 20px;
+            line-height: 1.4;
+            color: #737373;
+            background: #ddd;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        html,
+        input {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            max-width: 500px;
+            _width: 500px;
+            padding: 30px 20px 50px;
+            /* background-color: white; */
+            margin: 40px auto;
+            -webkit-border-radius: 6px;
+            -moz-border-radius: 6px;
+            border-radius: 6px;
+            -webkit-box-shadow: 0 0px 2px rgba(0, 0, 0, 0.05);
+            -moz-box-shadow: 0 0px 2px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            margin: 0 10px;
+            font-size: 50px;
+            text-align: center;
+        }
+
+        h1 span {
+            color: #bbb;
+        }
+
+        h3 {
+            margin: 1.5em 0 0.5em;
+        }
+
+        p {
+            margin: 1em 0;
+        }
+
+        ul {
+            padding: 0 0 0 40px;
+            margin: 1em 0;
+        }
+
+        .container {
+            max-width: 380px;
+            _width: 380px;
+            margin: 0 auto;
+        }
+
+
+        html .login-wrap {
+            position: relative;
+            /* margin: 180px auto; */
+            background: #ecf0f1;
+            /* width: 350px; */
+            border-radius: 5px;
+            box-shadow: 3px 3px 10px #333;
+            padding: 15px;
+        }
+
+        html .login-wrap h2 {
+            text-align: center;
+            /* font-weight: 200; */
+            font-size: 1.6em;
+            margin-top: 20px;
+            color: #34495e;
+            height: 50px;
+        }
+
+        html .login-wrap .form {
+            padding-top: 20px;
+        }
+
+
+        html .login-wrap .form input[type="text"],
+        html .login-wrap .form input[type="password"],
+        html .login-wrap .form button {
+            width: 80%;
+            margin-left: 10%;
+            margin-bottom: 25px;
+            height: 40px;
+            border-radius: 5px;
+            outline: 0;
+            -moz-outline-style: none;
+        }
+
+
+        html .login-wrap .form input[type="text"],
+        html .login-wrap .form input[type="password"] {
+            border: 1px solid #bbb;
+            padding: 0 0 0 10px;
+            font-size: 14px;
+        }
+
+        html .login-wrap .form input[type="text"]:focus,
+        html .login-wrap .form input[type="password"]:focus {
+            border: 1px solid #3498db;
+        }
+
+
+        html .login-wrap .form a {
+            text-align: center;
+            font-size: 12px;
+            color: #3498db;
+        }
+
+
+        html .login-wrap .form a {
+            text-align: center;
+            font-size: 12px;
+            color: #3498db;
+        }
+
+        html .login-wrap .form a p {
+            padding-bottom: 10px;
+        }
+
+        html .login-wrap .form button {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: 200;
+            cursor: pointer;
+            transition: box-shadow .4s ease;
+        }
+
+        html .login-wrap .form button:hover {
+            box-shadow: 1px 1px 5px #555;
+        }
+
+        html .login-wrap .form button:active {
+            box-shadow: 1px 1px 7px #222;
+        }
+
+
+        html .login-wrap:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: -webkit-linear-gradient(left, #27ae60 0%, #27ae60 20%, #8e44ad 20%, #8e44ad 40%, #3498db 40%, #3498db 60%, #e74c3c 60%, #e74c3c 80%, #f1c40f 80%, #f1c40f 100%);
+            background: -moz-linear-gradient(left, #27ae60 0%, #27ae60 20%, #8e44ad 20%, #8e44ad 40%, #3498db 40%, #3498db 60%, #e74c3c 60%, #e74c3c 80%, #f1c40f 80%, #f1c40f 100%);
+            height: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tips {
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .ip-addr {
+            font-weight: bolder;
+        }
+
+        .error {
+            text-align: center;
+            color: red;
+        }
+
+    </style>
+</head>
+
+<body>
+<div hidden id="vkey">${vkey}</div>
+<div hidden id="port">${port}</div>
+<div class="container">
+    <div class="login-wrap">
+        <h2>访问验证</h2>
+        <div class="tips">当前 IP (<span class="ip-addr" id="ip_addr">${ip}</span>) 未经授权, 已禁止访问</div>
+        <div class="form">
+            <input type="text" id="pwd" placeholder="请输入访问密码" name="pw">
+            <button onclick="submitAuth()"> 提交验证 </button>
+            <div hidden id="error" class="error"></div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+    function submitAuth() {
+        var pwd = document.getElementById("pwd").value
+        var vkey = document.getElementById("vkey").innerText
+        var ip = document.getElementById("ip_addr").innerText
+        var port = document.getElementById("port").innerText
+
+        if (pwd === '' || pwd == null){
+            document.getElementById("error").hidden = false;
+            document.getElementById("error").innerHTML = "请输入授权秘钥"
+        }
+
+        const xhr = new XMLHttpRequest()
+        xhr.addEventListener("readystatechange", function () {
+            // debugger
+            if (xhr.response != null && xhr.response !== '') {
+                var resp = JSON.parse(xhr.response);
+                console.log(resp)
+                if (resp.success !== true) {
+                    document.getElementById("error").hidden = false;
+                    document.getElementById("error").innerHTML = resp.message
+                }else{
+                    location.reload();
+                }
+
+            }
+            console.log(xhr.response)
+        })
+
+        var host = window.location.hostname
+        xhr.open("get", "//" + host + ':' + port + "/auth/ipwhiteauth?vkey=" + vkey + "&ip=" + ip + "&pass=" + pwd)
+        xhr.send()
+    }
+</script>
+
+</html>

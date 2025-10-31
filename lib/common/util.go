@@ -310,6 +310,17 @@ func IsBlackIp(ipPort, vkey string, blackIpList []string) bool {
 	return false
 }
 
+// 判断访问地址是否在白名单内
+func IsAuthIp(ipPort, vkey string, authIpList []string) bool {
+	ip := GetIpByAddr(ipPort)
+
+	if in(ip, authIpList) {
+		return false
+	}
+	logs.Error("IP地址[" + ip + "]不在隧道[" + vkey + "]白名单列表内")
+	return true
+}
+
 func CopyBuffer(dst io.Writer, src io.Reader, label ...string) (written int64, err error) {
 	buf := CopyBuff.Get()
 	defer CopyBuff.Put(buf)

@@ -317,6 +317,24 @@ func (s *DbUtils) GetClientIdByVkey(vkey string) (id int, err error) {
 	return
 }
 
+func (s *DbUtils) GetClientByVkey(vkey string) (c *Client, err error) {
+	var exist bool
+	s.JsonDb.Clients.Range(func(key, value interface{}) bool {
+		v := value.(*Client)
+		if v.VerifyKey == vkey {
+			exist = true
+			c = v
+			return false
+		}
+		return true
+	})
+	if exist {
+		return
+	}
+	err = errors.New("未找到客户端")
+	return
+}
+
 func (s *DbUtils) GetHostById(id int) (h *Host, err error) {
 	if v, ok := s.JsonDb.Hosts.Load(id); ok {
 		h = v.(*Host)

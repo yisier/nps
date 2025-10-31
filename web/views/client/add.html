@@ -88,22 +88,49 @@
                             </select>
                         </div>
                     </div>
-                    <div class="form-group" id="compress">
-                        <label class="control-label font-bold" langtag="word-compress"></label>
+<!--                    <div class="form-group" id="compress">-->
+<!--                        <label class="control-label font-bold" langtag="word-compress"></label>-->
+<!--                        <div class="col-sm-10">-->
+<!--                            <select class="form-control" name="compress">-->
+<!--                                <option value="0" langtag="word-no"></option>-->
+<!--                                <option value="1" langtag="word-yes"></option>-->
+<!--                            </select>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="form-group" id="compress">-->
+<!--                        <label class="control-label font-bold" langtag="word-crypt"></label>-->
+<!--                        <div class="col-sm-10">-->
+<!--                            <select class="form-control" name="crypt">-->
+<!--                                <option value="0" langtag="word-no"></option>-->
+<!--                                <option value="1" langtag="word-yes"></option>-->
+<!--                            </select>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                    <div class="form-group" id="ip_white">
+                        <label class="control-label font-bold" langtag="word-ipwhite"></label>
                         <div class="col-sm-10">
-                            <select class="form-control" name="compress">
+                            <select class="form-control" name="ipwhite">
                                 <option value="0" langtag="word-no"></option>
                                 <option value="1" langtag="word-yes"></option>
                             </select>
                         </div>
                     </div>
-                    <div class="form-group" id="compress">
-                        <label class="control-label font-bold" langtag="word-crypt"></label>
+
+
+                    <div class="form-group" id="Ip_white_pass" style="display: none;">
+                        <label class="control-label font-bold" langtag="word-ipwhitepass"></label>
                         <div class="col-sm-10">
-                            <select class="form-control" name="crypt">
-                                <option value="0" langtag="word-no"></option>
-                                <option value="1" langtag="word-yes"></option>
-                            </select>
+                            <input class="form-control" type="text" name="ipwhitepass" placeholder="" langtag="info-input-whitepass">
+                            <span class="help-block m-b-none" langtag="info-ipwhitepass"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="ip_white_list" style="display: none;">
+                        <label class="control-label font-bold" langtag="word-ipwhitelist"></label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control" rows="4" type="text" name="ipwhitelist" placeholder="" langtag="info-suchasblackiplist">{{.BlackIpList}}</textarea>
+                            <span class="help-block m-b-none" langtag="info-descblackiplist"></span>
                         </div>
                     </div>
 
@@ -128,3 +155,20 @@
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // IP白名单选择change事件
+    $('select[name="ipwhite"]').change(function() {
+        if ($(this).val() == '1') {
+            $('#Ip_white_pass').show();
+            $('#ip_white_list').show();
+            $('#black_ip_list').hide();
+        } else {
+            $('#Ip_white_pass').hide();
+            $('#ip_white_list').hide();
+            $('#black_ip_list').show();
+        }
+    });
+});
+</script>

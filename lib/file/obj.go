@@ -54,6 +54,9 @@ type Client struct {
 	BlackIpList     []string
 	CreateTime      string
 	LastOnlineTime  string
+	IpWhite         bool     // 是否启用ip白名单
+	IpWhitePass     string   // ip授权密码
+	IpWhiteList     []string // ip白名单
 	sync.RWMutex
 }
 
@@ -149,7 +152,6 @@ type Tunnel struct {
 	Remark       string
 	TargetAddr   string
 	NoStore      bool
-	IsHttp       bool
 	LocalPath    string
 	StripPre     string
 	ProtoVersion string

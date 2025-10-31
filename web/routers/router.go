@@ -14,6 +14,7 @@ func Init() {
 			beego.NSAutoRouter(&controllers.LoginController{}),
 			beego.NSAutoRouter(&controllers.ClientController{}),
 			beego.NSAutoRouter(&controllers.AuthController{}),
+			beego.NSRouter("/auth/ipwhiteauth", &controllers.AuthController{}, "*:IpWhiteAuth"),
 			beego.NSAutoRouter(&controllers.GlobalController{}),
 		)
 		beego.AddNamespace(ns)
@@ -23,6 +24,7 @@ func Init() {
 		beego.AutoRouter(&controllers.LoginController{})
 		beego.AutoRouter(&controllers.ClientController{})
 		beego.AutoRouter(&controllers.AuthController{})
+		beego.Router("/auth/ipwhiteauth", &controllers.AuthController{}, "*:IpWhiteAuth")
 		beego.AutoRouter(&controllers.GlobalController{})
 
 	}

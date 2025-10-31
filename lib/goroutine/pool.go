@@ -3,10 +3,13 @@ package goroutine
 import (
 	"ehang.io/nps/lib/common"
 	"ehang.io/nps/lib/file"
+	"fmt"
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/panjf2000/ants/v2"
 	"io"
 	"net"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -51,24 +54,18 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 		}
 		nr, er := src.Read(buf)
 
-		//if len(pr)>0 && pr[0] && nr > 50 {
-		//	logs.Warn(string(buf[:50]))
-		//}
-
 		if task != nil {
-			task.IsHttp = false
-			firstLine := string(buf[0:nr])
-			if len(firstLine) > 3 {
-				method := firstLine[0:3]
-				if method != "" && (method == "HTT" || method == "GET" || method == "POS" || method == "HEA" || method == "PUT" || method == "DEL") {
-					if method != "HTT" {
-						heads := strings.Split(firstLine, "\r\n")
-						if len(heads) >= 2 {
-							logs.Info("HTTP Request method %s, %s, remote address %s, target %s", heads[0], heads[1], remote, task.Target.TargetStr)
-						}
-					}
+			if task.Client.IpWhite && task.Client.IpWhitePass != "" {
+				if common.IsAuthIp(remote, task.Client.VerifyKey, task.Client.IpWhiteList) {
+					errorContent, _ := common.ReadAllFromFile(filepath.Join(common.GetRunPath(), "web", "static", "page", "auth.html"))
+					authHtml := string(errorContent)
+					authHtml = strings.ReplaceAll(authHtml, "${ip}", common.GetIpByAddr(remote))
+					authHtml = strings.ReplaceAll(authHtml, "${vkey}", task.Client.VerifyKey)
+					authHtml = strings.ReplaceAll(authHtml, "${port}", beego.AppConfig.String("web_port"))
 
-					task.IsHttp = true
+					response := fmt.Sprintf("HTTP/1.1 401 Unauthorized\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s", len(authHtml), authHtml)
+					dst.Write([]byte(response))
+					break
 				}
 			}
 		}

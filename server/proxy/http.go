@@ -10,6 +10,7 @@ import (
 	"ehang.io/nps/lib/file"
 	"ehang.io/nps/lib/goroutine"
 	"ehang.io/nps/server/connection"
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"io"
 	"net"
@@ -194,6 +195,19 @@ reset:
 	if targetAddr, err = host.Target.GetRandomTarget(); err != nil {
 		logs.Warn(err.Error())
 		return
+	}
+
+	if host.Client.IpWhite && host.Client.IpWhitePass != "" {
+		if common.IsAuthIp(c.RemoteAddr().String(), host.Client.VerifyKey, host.Client.IpWhiteList) {
+			errorContent, _ := common.ReadAllFromFile(filepath.Join(common.GetRunPath(), "web", "static", "page", "auth.html"))
+			authHtml := string(errorContent)
+			authHtml = strings.ReplaceAll(authHtml, "${ip}", common.GetIpByAddr(c.RemoteAddr().String()))
+			authHtml = strings.ReplaceAll(authHtml, "${vkey}", host.Client.VerifyKey)
+			authHtml = strings.ReplaceAll(authHtml, "${port}", beego.AppConfig.String("web_port"))
+			s.errorContent, err = []byte(authHtml), err
+			s.errorCode = 401
+			return
+		}
 	}
 
 	// 判断访问地址是否在黑名单内

@@ -35,4 +35,7 @@ WWW-Authenticate: Basic realm="easyProxy"
 	ConnectionFailBytes = `HTTP/1.1 404 Not Found
 
 `
+	Unauthorized = `HTTP/1.1 401 Unauthorized
+
+`
 )
