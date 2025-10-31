@@ -1,13 +1,14 @@
 package controllers
 
 import (
+	"strings"
+	"time"
+
 	"ehang.io/nps/lib/common"
 	"ehang.io/nps/lib/file"
 	"ehang.io/nps/lib/rate"
 	"ehang.io/nps/server"
 	"github.com/astaxie/beego"
-	"strings"
-	"time"
 )
 
 type ClientController struct {
@@ -167,6 +168,10 @@ func (s *ClientController) Edit() {
 func RemoveRepeatedElement(arr []string) (newArr []string) {
 	newArr = make([]string, 0)
 	for i := 0; i < len(arr); i++ {
+		// 过滤空IP
+		if strings.TrimSpace(arr[i]) == "" {
+			continue
+		}
 		repeat := false
 		for j := i + 1; j < len(arr); j++ {
 			if arr[i] == arr[j] {

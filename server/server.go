@@ -329,7 +329,6 @@ func GetClientList(start, length int, search, sort, order string, clientId int) 
 }
 
 func dealClientData() {
-	//logs.Info("dealClientData.........")
 
 	file.GetDb().JsonDb.Clients.Range(func(key, value interface{}) bool {
 		v := value.(*file.Client)
@@ -340,34 +339,7 @@ func dealClientData() {
 		} else {
 			v.IsConnect = false
 		}
-		//v.Flow.InletFlow = 0
-		//v.Flow.ExportFlow = 0
-		//if len(file.GetDb().JsonDb.Hosts) == 0 {
-		//
-		//}
-		//var inflow int64 = 0
-		//var outflow int64 = 0
-		//file.GetDb().JsonDb.Hosts.Range(func(key, value interface{}) bool {
-		//	h := value.(*file.Host)
-		//	if h.Client.Id == v.Id {
-		//		inflow  += h.Flow.InletFlow
-		//		outflow += h.Flow.ExportFlow
-		//	}
-		//	return true
-		//})
-		//file.GetDb().JsonDb.Tasks.Range(func(key, value interface{}) bool {
-		//	t := value.(*file.Tunnel)
-		//	if t.Client.Id == v.Id {
-		//		inflow  += t.Flow.InletFlow
-		//		outflow += t.Flow.ExportFlow
-		//	}
-		//	return true
-		//})
-		//
-		//if inflow >0 || outflow >0{
-		//	v.Flow.InletFlow = inflow
-		//	v.Flow.ExportFlow = outflow
-		//}
+
 		return true
 	})
 	return
