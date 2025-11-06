@@ -1,6 +1,8 @@
 module ehang.io/nps
 
-go 1.22
+go 1.24.0
+
+toolchain go1.24.9
 
 require (
 	fyne.io/fyne/v2 v2.0.2
@@ -17,6 +19,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.23.10
 	github.com/xtaci/kcp-go v5.4.20+incompatible
 	golang.org/x/net v0.23.0
+	golang.org/x/time v0.14.0
 )
 
 require (

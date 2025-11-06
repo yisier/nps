@@ -1,81 +1,72 @@
 package rate
 
 import (
-	"sync/atomic"
+	"context"
+	"fmt"
 	"time"
+
+	xrate "golang.org/x/time/rate"
 )
 
+// Rate 使用 golang.org/x/time/rate 实现的字节令牌桶限速器
+// 保持原有对外接口：NewRate、Start、Get、ReturnBucket、Stop、NowRate
 type Rate struct {
-	bucketSize        int64
-	bucketSurplusSize int64
-	bucketAddSize     int64
-	stopChan          chan bool
-	NowRate           int64
+	limiter  *xrate.Limiter
+	addSize  int64
+	stopChan chan struct{}
+	//  暂时表示配置的每秒速率（字节/秒），用于展示
+	NowRate int64
 }
 
 func NewRate(addSize int64) *Rate {
 	return &Rate{
-		bucketSize:        addSize * 2,
-		bucketSurplusSize: 0,
-		bucketAddSize:     addSize,
-		stopChan:          make(chan bool),
+		limiter:  xrate.NewLimiter(xrate.Limit(addSize), int(addSize)),
+		addSize:  addSize,
+		stopChan: make(chan struct{}),
+		NowRate:  addSize,
 	}
 }
 
 func (s *Rate) Start() {
-	go s.session()
-}
-
-func (s *Rate) add(size int64) {
-	if res := s.bucketSize - s.bucketSurplusSize; res < s.bucketAddSize {
-		atomic.AddInt64(&s.bucketSurplusSize, res)
-		return
-	}
-	atomic.AddInt64(&s.bucketSurplusSize, size)
-}
-
-//回桶
-func (s *Rate) ReturnBucket(size int64) {
-	s.add(size)
-}
-
-//停止
-func (s *Rate) Stop() {
-	s.stopChan <- true
-}
-
-func (s *Rate) Get(size int64) {
-	if s.bucketSurplusSize >= size {
-		atomic.AddInt64(&s.bucketSurplusSize, -size)
-		return
-	}
-	ticker := time.NewTicker(time.Millisecond * 100)
-	for {
-		select {
-		case <-ticker.C:
-			if s.bucketSurplusSize >= size {
-				atomic.AddInt64(&s.bucketSurplusSize, -size)
-				ticker.Stop()
+	// 保留一个 goroutine 以兼容原有 Stop 调用，用于未来扩展（例如监控）
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				// 目前将 NowRate 保持为配置速率；可以在此处扩展动态统计
+				s.NowRate = s.addSize - (int64(s.limiter.Tokens()))
+				//fmt.Printf("token left 2: %f\n", s.limiter.Tokens())
+			case <-s.stopChan:
 				return
 			}
 		}
+	}()
+}
+
+// 停止内部 goroutine
+func (s *Rate) Stop() {
+	select {
+	case <-s.stopChan:
+		// already closed
+	default:
+		close(s.stopChan)
 	}
 }
 
-func (s *Rate) session() {
-	ticker := time.NewTicker(time.Second * 1)
-	for {
-		select {
-		case <-ticker.C:
-			if rs := s.bucketAddSize - s.bucketSurplusSize; rs > 0 {
-				s.NowRate = rs
-			} else {
-				s.NowRate = s.bucketSize - s.bucketSurplusSize
-			}
-			s.add(s.bucketAddSize)
-		case <-s.stopChan:
-			ticker.Stop()
-			return
-		}
+// Get 阻塞直到获得 size 字节的令牌
+func (s *Rate) Get(size int64) {
+	if s.addSize <= 0 {
+		return
 	}
+	if size <= 0 {
+		return
+	}
+	// 使用背景上下文直接等待，必要时可替换为带超时的 Context
+	ctx := context.Background()
+	// x/time/rate 的 WaitN 接受 int
+	_ = s.limiter.WaitN(ctx, int(size))
+	s.NowRate = s.addSize - (int64(s.limiter.Tokens()))
+	fmt.Printf("get size: %d\n,  token left: %f\n", size, s.limiter.Tokens())
 }

@@ -154,7 +154,7 @@ func (s *ClientController) Edit() {
 				c.Rate = rate.NewRate(int64(c.RateLimit * 1024))
 				c.Rate.Start()
 			} else {
-				c.Rate = rate.NewRate(int64(2 << 23))
+				c.Rate = rate.NewRate((2 << 23) * 1024)
 				c.Rate.Start()
 			}
 

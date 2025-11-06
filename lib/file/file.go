@@ -66,7 +66,7 @@ func (s *JsonDb) LoadClientFromJsonFile() {
 		if post.RateLimit > 0 {
 			post.Rate = rate.NewRate(int64(post.RateLimit * 1024))
 		} else {
-			post.Rate = rate.NewRate(int64(2 << 23))
+			post.Rate = rate.NewRate((2 << 23) * 1024)
 		}
 		post.Rate.Start()
 		post.NowConn = 0
