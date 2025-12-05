@@ -83,7 +83,7 @@ func (s *BaseController) display(tpl ...string) {
 	s.Data["ip"] = common.GetIpByAddr(ip)
 
 	global := file.GetDb().GetGlobal()
-	if global.ServerUrl != "" && global.ServerUrl != ip {
+	if global != nil && global.ServerUrl != "" && global.ServerUrl != ip {
 		// 替换掉 http:// 或者 https://
 		ip = global.ServerUrl
 		ip = strings.ReplaceAll(ip, "http://", "")
