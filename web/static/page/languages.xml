@@ -762,8 +762,8 @@
 	</lang>
 
 	<lang id="info-servertips">
-		<zh-CN>客户端命令地址显示、隧道访问显示、白名单IP认证地址</zh-CN>
-		<en-US>Server URL, Tunnel Access, White IP Authentication URL</en-US>
+		<zh-CN>客户端命令地址显示、隧道访问显示</zh-CN>
+		<en-US>Server URL, Tunnel Access</en-US>
 	</lang>
 
 	<lang id="info-suchasblackiplist">

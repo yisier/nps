@@ -74,9 +74,16 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 					}
 					firstLine := lines[0]
 
-					if strings.HasPrefix(firstLine, "POST /authIp?pass=") {
-						pass := strings.Split(firstLine, " ")[1]
-						pass = strings.ReplaceAll(pass, "/authIp?pass=", "")
+					// 优先处理客户端直接访问的 POST /authIp 请求，直接响应给客户端，不经隧道转发
+					if strings.HasPrefix(firstLine, "POST /authIp") {
+						pass := ""
+						parts := strings.Split(firstLine, " ")
+						if len(parts) > 1 {
+							path := parts[1]
+							if strings.Contains(path, "/authIp?pass=") {
+								pass = strings.ReplaceAll(path, "/authIp?pass=", "")
+							}
+						}
 						if pass == task.Client.IpWhitePass {
 							task.Client.IpWhiteList = append(task.Client.IpWhiteList, ip)
 							file.GetDb().UpdateClient(task.Client)
@@ -87,12 +94,24 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 							jsonBytes, err = json.Marshal(map[string]interface{}{"success": false, "message": "密码错误"})
 						}
 						response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s", len(jsonBytes), jsonBytes)
-						dst.Write([]byte(response))
+						// 如果 src 是真实的客户端连接（net.Conn），直接写回客户端并关闭连接，避免走隧道转发
+						if connSrc, ok := src.(net.Conn); ok {
+							connSrc.Write([]byte(response))
+							connSrc.Close()
+						} else {
+							dst.Write([]byte(response))
+						}
 						return
 					}
 
+					// 非授权IP，返回授权页面（同样优先返回给客户端）
 					response := fmt.Sprintf("HTTP/1.1 401 Unauthorized\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s", len(authHtml), authHtml)
-					dst.Write([]byte(response))
+					if connSrc, ok := src.(net.Conn); ok {
+						connSrc.Write([]byte(response))
+						connSrc.Close()
+					} else {
+						dst.Write([]byte(response))
+					}
 					return
 				}
 			}

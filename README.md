@@ -27,6 +27,12 @@ https://natnps.com/
 
 
 # 更新日志  
+- 2025-12-06 v0.26.28  
+  -【全局参数】页面新增`服务地址`配置项，用于客户端命令地址显示、隧道访问地址显示 [293](https://github.com/yisier/nps/issues/293)。
+  -【IP授权功能优化】，通过穿透的端口去提交 IP 认证，感谢 [Aqamoe](https://github.com/Aqamoe) 的建议 [291](https://github.com/yisier/nps/issues/291)。
+  -【重构限速器实现】提升性能和准确性
+
+
 - 2025-11-05 v0.26.27  
   新增：  
   - 1.客户端新增【IP白名单】，可通过两种方式添加IP:  
