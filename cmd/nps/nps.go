@@ -430,7 +430,7 @@ func run() {
 		os.Exit(0)
 	}
 
-	logs.Info("日志路径111：" + *npsLogPath)
+	logs.Info("日志路径：" + *npsLogPath)
 	logs.Info("the config path is:" + common.GetRunPath())
 	logs.Info("the version of server is %s ,allow client core version to be %s,tls enable is %t", version.VERSION, version.GetVersion(), bridge.ServerTlsEnable)
 	connection.InitConnectionService()

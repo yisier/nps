@@ -176,20 +176,19 @@
             text-align: center;
             color: red;
         }
-
     </style>
 </head>
 
 <body>
-<div hidden id="vkey">${vkey}</div>
 <div hidden id="port">${port}</div>
+
 <div class="container">
     <div class="login-wrap">
         <h2>访问验证</h2>
         <div class="tips">当前 IP (<span class="ip-addr" id="ip_addr">${ip}</span>) 未经授权, 已禁止访问</div>
         <div class="form">
             <input type="text" id="pwd" placeholder="请输入访问密码" name="pw">
-            <button onclick="submitAuth()"> 提交验证 </button>
+            <button onclick="submitAuth()"> 提交验证</button>
             <div hidden id="error" class="error"></div>
         </div>
     </div>
@@ -199,15 +198,11 @@
 <script>
     function submitAuth() {
         var pwd = document.getElementById("pwd").value
-        var vkey = document.getElementById("vkey").innerText
-        var ip = document.getElementById("ip_addr").innerText
-        var port = document.getElementById("port").innerText
 
-        if (pwd === '' || pwd == null){
+        if (pwd === '' || pwd == null) {
             document.getElementById("error").hidden = false;
             document.getElementById("error").innerHTML = "请输入授权秘钥"
         }
-
         const xhr = new XMLHttpRequest()
         xhr.addEventListener("readystatechange", function () {
             // debugger
@@ -217,16 +212,14 @@
                 if (resp.success !== true) {
                     document.getElementById("error").hidden = false;
                     document.getElementById("error").innerHTML = resp.message
-                }else{
+                } else {
                     location.reload();
                 }
 
             }
             console.log(xhr.response)
         })
-
-        var host = window.location.hostname
-        xhr.open("get", "//" + host + ':' + port + "/auth/ipwhiteauth?vkey=" + vkey + "&ip=" + ip + "&pass=" + pwd)
+        xhr.open("post", "/authIp?pass=" + pwd)
         xhr.send()
     }
 </script>

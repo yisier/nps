@@ -756,6 +756,16 @@
 		<en-US>Global IP Black List</en-US>
 	</lang>
 
+	<lang id="word-serverurl">
+		<zh-CN>服务地址</zh-CN>
+		<en-US>Server</en-US>
+	</lang>
+
+	<lang id="info-servertips">
+		<zh-CN>客户端命令地址显示、隧道访问显示、白名单IP认证地址</zh-CN>
+		<en-US>Server URL, Tunnel Access, White IP Authentication URL</en-US>
+	</lang>
+
 	<lang id="info-suchasblackiplist">
 		<zh-CN>例如&#10;10.1.50.203&#10;10.1.50.202</zh-CN>
 		<en-US>such as&#10;10.1.50.203&#10;10.1.50.202</en-US>

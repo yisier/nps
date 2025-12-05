@@ -23,21 +23,20 @@ func (s *GlobalController) Index() {
 		return
 	}
 	s.Data["globalBlackIpList"] = strings.Join(global.BlackIpList, "\r\n")
+	s.Data["serverUrl"] = global.ServerUrl
 }
 
-//添加全局黑名单IP
+// 添加全局参数
 func (s *GlobalController) Save() {
-	//global, err := file.GetDb().GetGlobal()
-	//if err != nil {
-	//	return
-	//}
 	if s.Ctx.Request.Method == "GET" {
 		s.Data["menu"] = "global"
 		s.SetInfo("save global")
 		s.display()
 	} else {
 
-		t := &file.Glob{BlackIpList: RemoveRepeatedElement(strings.Split(s.getEscapeString("globalBlackIpList"), "\r\n"))}
+		t := &file.Glob{
+			BlackIpList: RemoveRepeatedElement(strings.Split(s.getEscapeString("globalBlackIpList"), "\r\n")),
+			ServerUrl:   s.getEscapeString("serverUrl")}
 
 		if err := file.GetDb().SaveGlobal(t); err != nil {
 			s.AjaxErr(err.Error())

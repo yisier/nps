@@ -159,14 +159,14 @@ func (https *HttpsServer) cert(host *file.Host, c net.Conn, rb []byte, certFileU
 					}
 					https.httpsListenerMap.Delete(value)
 					https.hostIdCertMap.Delete(key)
-					logs.Info("Listener 已释放")
+					logs.Debug("Listener 已释放")
 				}
 			}
 		}
 		return true
 	})
 
-	logs.Info("当前 Listener 连接数量", i)
+	logs.Debug("当前 Listener 连接数量", i)
 
 	if cert, ok := https.hostIdCertMap.Load(host.Id); ok {
 		if cert == certFileUrl {

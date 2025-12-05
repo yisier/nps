@@ -1,6 +1,7 @@
 package file
 
 import (
+	"crypto/md5"
 	"errors"
 	"fmt"
 	"net/http"
@@ -321,7 +322,7 @@ func (s *DbUtils) GetClientByVkey(vkey string) (c *Client, err error) {
 	var exist bool
 	s.JsonDb.Clients.Range(func(key, value interface{}) bool {
 		v := value.(*Client)
-		if v.VerifyKey == vkey {
+		if fmt.Sprintf("%x", md5.Sum([]byte(v.VerifyKey))) == vkey {
 			exist = true
 			c = v
 			return false

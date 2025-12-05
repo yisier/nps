@@ -1,10 +1,12 @@
 package controllers
 
 import (
-	"ehang.io/nps/lib/file"
 	"encoding/hex"
+	"github.com/astaxie/beego/logs"
 	"html"
 	"time"
+
+	"ehang.io/nps/lib/file"
 
 	"ehang.io/nps/lib/crypt"
 	"github.com/astaxie/beego"
@@ -52,22 +54,30 @@ func (s *AuthController) IpWhiteAuth() {
 	ip := s.getEscapeString("ip")
 	password := s.getEscapeString("pass")
 
-	if vkey == "" || ip == "" || password == "" {
+	if vkey == "" || password == "" {
 		s.Data["json"] = map[string]interface{}{"success": false, "message": "参数错误"}
 		s.ServeJSON()
 		return
+	}
+
+	// 如果未提供 ip，则使用请求中的客户端 IP（支持代理头）
+	if ip == "" {
+		ip = s.Ctx.Input.IP()
+		ip = html.EscapeString(ip)
 	}
 
 	c, err := file.GetDb().GetClientByVkey(vkey)
 	if err != nil {
 		s.Data["json"] = map[string]interface{}{"success": false, "message": "客户端密钥错误"}
 		s.ServeJSON()
+		logs.Error("客户端IP白名单认证失败,客户端密钥错误:vkey [%s] ip [%s] password [%s]", vkey, ip, password)
 		return
 	}
 
 	if c.IpWhitePass != password {
 		s.Data["json"] = map[string]interface{}{"success": false, "message": "授权密码错误"}
 		s.ServeJSON()
+		logs.Error("客户端IP白名单认证失败,授权密码错误:vkey [%s] ip [%s] password [%s]", vkey, ip, password)
 		return
 	}
 
@@ -86,6 +96,9 @@ func (s *AuthController) IpWhiteAuth() {
 
 	s.Data["json"] = map[string]interface{}{"success": true, "message": "授权成功"}
 	s.ServeJSON()
+
+	logs.Info("客户端IP白名单认证授权成功:vkey [%s] ip [%s] password [%s]", vkey, ip, password)
+
 }
 
 func (s *AuthController) getEscapeString(key string) string {

@@ -1,17 +1,18 @@
 package goroutine
 
 import (
-	"ehang.io/nps/lib/common"
-	"ehang.io/nps/lib/file"
+	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
-	"github.com/panjf2000/ants/v2"
 	"io"
 	"net"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"ehang.io/nps/lib/common"
+	"ehang.io/nps/lib/file"
+	"github.com/astaxie/beego/logs"
+	"github.com/panjf2000/ants/v2"
 )
 
 type connGroup struct {
@@ -56,16 +57,43 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 
 		if task != nil {
 			if task.Client.IpWhite && task.Client.IpWhitePass != "" {
+
 				if common.IsAuthIp(remote, task.Client.VerifyKey, task.Client.IpWhiteList) {
+					ip := common.GetIpByAddr(remote)
+					var jsonBytes []byte
+
 					errorContent, _ := common.ReadAllFromFile(filepath.Join(common.GetRunPath(), "web", "static", "page", "auth.html"))
 					authHtml := string(errorContent)
-					authHtml = strings.ReplaceAll(authHtml, "${ip}", common.GetIpByAddr(remote))
-					authHtml = strings.ReplaceAll(authHtml, "${vkey}", task.Client.VerifyKey)
-					authHtml = strings.ReplaceAll(authHtml, "${port}", beego.AppConfig.String("web_port"))
+					authHtml = strings.ReplaceAll(authHtml, "${ip}", ip)
+
+					fullRequest := string(buf[0:nr])
+					// 获取HTTP请求的第一行
+					lines := strings.Split(fullRequest, "\r\n")
+					if len(lines) == 0 {
+						lines = strings.Split(fullRequest, "\n")
+					}
+					firstLine := lines[0]
+
+					if strings.HasPrefix(firstLine, "POST /authIp?pass=") {
+						pass := strings.Split(firstLine, " ")[1]
+						pass = strings.ReplaceAll(pass, "/authIp?pass=", "")
+						if pass == task.Client.IpWhitePass {
+							task.Client.IpWhiteList = append(task.Client.IpWhiteList, ip)
+							file.GetDb().UpdateClient(task.Client)
+							logs.Info("客户端IP白名单认证授权成功:vkey [%s] ip [%s] password [%s]", task.Client.VerifyKey, ip, pass)
+							jsonBytes, err = json.Marshal(map[string]interface{}{"success": true, "message": "授权成功"})
+						} else {
+							logs.Error("客户端IP白名单认证授权密码错误:vkey [%s] ip [%s] password [%s]", task.Client.VerifyKey, ip, pass)
+							jsonBytes, err = json.Marshal(map[string]interface{}{"success": false, "message": "密码错误"})
+						}
+						response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s", len(jsonBytes), jsonBytes)
+						dst.Write([]byte(response))
+						return
+					}
 
 					response := fmt.Sprintf("HTTP/1.1 401 Unauthorized\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s", len(authHtml), authHtml)
 					dst.Write([]byte(response))
-					break
+					return
 				}
 			}
 		}
@@ -78,7 +106,7 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 					flow.Add(int64(nw), int64(nw))
 					// <<20 = 1024 * 1024
 					if flow.FlowLimit > 0 && (flow.FlowLimit<<20) < (flow.ExportFlow+flow.InletFlow) {
-						logs.Info("流量已经超出.........")
+						logs.Error("隧道[%s]流量已经超出", task.Client.VerifyKey)
 						break
 					}
 				}
@@ -98,7 +126,6 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 			break
 		}
 	}
-	//return written, err
 	return err
 }
 
@@ -108,6 +135,7 @@ func copyConnGroup(group interface{}) {
 	if !ok {
 		return
 	}
+
 	var err error
 	err = CopyBuffer(cg.dst, cg.src, cg.flow, cg.task, cg.remote)
 	if err != nil {

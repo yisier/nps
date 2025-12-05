@@ -10,7 +10,7 @@ import (
 	"ehang.io/nps/lib/file"
 	"ehang.io/nps/lib/goroutine"
 	"ehang.io/nps/server/connection"
-	"github.com/astaxie/beego"
+	"encoding/json"
 	"github.com/astaxie/beego/logs"
 	"io"
 	"net"
@@ -199,11 +199,37 @@ reset:
 
 	if host.Client.IpWhite && host.Client.IpWhitePass != "" {
 		if common.IsAuthIp(c.RemoteAddr().String(), host.Client.VerifyKey, host.Client.IpWhiteList) {
+
+			if r.URL.Path == "/authIp" {
+				rawQuery := r.URL.RawQuery
+
+				var jsonBytes []byte
+				ip := common.GetIpByAddr(c.RemoteAddr().String())
+
+				if strings.Contains(rawQuery, "pass=") {
+					// 截取 = 后面的值
+					pass := strings.Split(rawQuery, "pass=")[1]
+					if pass == host.Client.IpWhitePass {
+						host.Client.IpWhiteList = append(host.Client.IpWhiteList, ip)
+						file.GetDb().UpdateClient(host.Client)
+						logs.Info("客户端IP白名单认证授权成功:vkey [%s] ip [%s] password [%s]", host.Client.VerifyKey, ip, pass)
+						jsonBytes, err = json.Marshal(map[string]interface{}{"success": true, "message": "授权成功"})
+					} else {
+						logs.Error("客户端IP白名单认证授权密码错误:vkey [%s] ip [%s] password [%s]", host.Client.VerifyKey, ip, pass)
+						jsonBytes, err = json.Marshal(map[string]interface{}{"success": false, "message": "密码错误"})
+					}
+				} else {
+					logs.Error("客户端IP白名单认证授权密码错误:vkey [%s] ip [%s]", host.Client.VerifyKey, ip)
+					jsonBytes, err = json.Marshal(map[string]interface{}{"success": false, "message": "参数错误"})
+				}
+				s.errorContent, err = jsonBytes, err
+				s.errorCode = 200
+				return
+			}
+
 			errorContent, _ := common.ReadAllFromFile(filepath.Join(common.GetRunPath(), "web", "static", "page", "auth.html"))
 			authHtml := string(errorContent)
 			authHtml = strings.ReplaceAll(authHtml, "${ip}", common.GetIpByAddr(c.RemoteAddr().String()))
-			authHtml = strings.ReplaceAll(authHtml, "${vkey}", host.Client.VerifyKey)
-			authHtml = strings.ReplaceAll(authHtml, "${port}", beego.AppConfig.String("web_port"))
 			s.errorContent, err = []byte(authHtml), err
 			s.errorCode = 401
 			return

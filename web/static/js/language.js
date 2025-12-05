@@ -59,7 +59,7 @@
 	$.fn.cloudLang = function () {
 		$.ajax({
 			type: 'GET',
-			url: window.nps.web_base_url + '/static/page/languages.xml?v=20250107',
+			url: window.nps.web_base_url + '/static/page/languages.xml?v=202512051',
 			dataType: 'xml',
 			success: function (xml) {
 				languages['content'] = xml2json($(xml).children())['content'];
