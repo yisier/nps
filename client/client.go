@@ -3,14 +3,15 @@ package client
 import (
 	"bufio"
 	"bytes"
-	"ehang.io/nps/lib/nps_mux"
-	"github.com/pires/go-proxyproto"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"ehang.io/nps/lib/nps_mux"
+	"github.com/pires/go-proxyproto"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/xtaci/kcp-go"
@@ -47,6 +48,11 @@ func NewRPClient(svraddr string, vKey string, bridgeConnType string, proxyUrl st
 		disconnectTime: disconnectTime,
 		once:           sync.Once{},
 	}
+}
+
+// IsConnected 返回客户端是否已成功连接到服务器
+func (s *TRPClient) IsConnected() bool {
+	return s.signal != nil
 }
 
 var NowStatus int

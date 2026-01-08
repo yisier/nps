@@ -6,6 +6,8 @@ export namespace main {
 	    key: string;
 	    tls: boolean;
 	    running: boolean;
+	    error: string;
+	    status: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new ShortClient(source);
@@ -18,6 +20,8 @@ export namespace main {
 	        this.key = source["key"];
 	        this.tls = source["tls"];
 	        this.running = source["running"];
+	        this.error = source["error"];
+	        this.status = source["status"];
 	    }
 	}
 

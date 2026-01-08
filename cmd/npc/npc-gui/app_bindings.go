@@ -24,7 +24,9 @@ type ShortClient struct {
 	Addr    string `json:"addr"`
 	Key     string `json:"key"`
 	TLS     bool   `json:"tls"`
-	Running bool   `json:"running"`
+	Running bool   `json:"running"` // 兼容旧版本，实际用Status
+	Error   string `json:"error"`   // 连接错误信息
+	Status  string `json:"status"`  // 连接状态: "stopped", "connecting", "connected"
 }
 
 var (
@@ -34,6 +36,10 @@ var (
 	// 改为用 context 管理内置客户端，而不是外部进程
 	running           = make(map[string]context.CancelFunc)
 	clients           = make(map[string]*client.TRPClient)
+	clientErrors      = make(map[string]string) // 存储客户端连接错误信息
+	clientConnected   = make(map[string]bool)   // 存储客户端连接状态 (true=connected)
+	clientAttempted   = make(map[string]bool)   // 存储客户端是否尝试过连接
+	statusMu          sync.Mutex                // 状态锁
 	runningMu         sync.Mutex
 	disconnectTimeout = 60
 	connType          = "tcp"
@@ -102,14 +108,10 @@ func findShortcutIndex(name, addr, key string) int {
 	return -1
 }
 
-func (a *App) AddShortcut(arg interface{}) error {
-	// accept a map or struct from frontend
-	b, err := json.Marshal(arg)
-	if err != nil {
-		return err
-	}
+func (a *App) AddShortcut(arg string) error {
+	// accept a JSON string from frontend
 	var sc ShortClient
-	if err := json.Unmarshal(b, &sc); err != nil {
+	if err := json.Unmarshal([]byte(arg), &sc); err != nil {
 		return err
 	}
 	addShortcut(sc)
@@ -160,12 +162,33 @@ func (a *App) GetShortcuts() ([]ShortClient, error) {
 	// populate running state
 	res := make([]ShortClient, len(shortcuts))
 	runningMu.Lock()
+	statusMu.Lock()
 	defer runningMu.Unlock()
+	defer statusMu.Unlock()
+
 	for i, sc := range shortcuts {
 		key := sc.Addr + "|" + sc.Key
 		sc.Running = false
+		sc.Status = "stopped"
+		sc.Error = ""
+
+		// 检查客户端是否在 running map 中
 		if _, ok := running[key]; ok {
-			sc.Running = true
+			// 客户端正在运行（或重连中）
+			if isConnected, ok := clientConnected[key]; ok && isConnected {
+				// 连接成功
+				sc.Status = "connected"
+				sc.Running = true
+			} else if _, attempted := clientAttempted[key]; attempted {
+				// 尝试过连接但失败，显示为"连接中"（正在重连）
+				sc.Status = "connecting"
+				if errMsg, ok := clientErrors[key]; ok && errMsg != "" {
+					sc.Error = errMsg
+				}
+			} else {
+				// 刚启动，还未尝试连接
+				sc.Status = "connecting"
+			}
 		}
 		res[i] = sc
 	}
@@ -185,6 +208,11 @@ func (a *App) RemoveShortcut(name, addr, key string) error {
 			delete(clients, id)
 		}
 	}
+	statusMu.Lock()
+	delete(clientErrors, id)
+	delete(clientConnected, id)
+	delete(clientAttempted, id)
+	statusMu.Unlock()
 	runningMu.Unlock()
 
 	// remove from slice
@@ -205,11 +233,11 @@ func (a *App) RemoveShortcut(name, addr, key string) error {
 	return nil
 }
 
-func (a *App) TestConnection(input interface{}) (bool, error) {
-	s, ok := input.(string)
-	if !ok || s == "" {
+func (a *App) TestConnection(input string) (bool, error) {
+	if input == "" {
 		return false, errors.New("输入密钥不能为空")
 	}
+	s := input
 	// use environment NPC_SERVER_ADDR if set, fallback to localhost
 	server := os.Getenv("NPC_SERVER_ADDR")
 	if server == "" {
@@ -248,6 +276,12 @@ func (a *App) ToggleClient(name, addr, key string, tls bool, runningState bool) 
 			logs.Info("Starting NPC client: %s", id)
 			ctx, cancel := context.WithCancel(context.Background())
 			running[id] = cancel
+			// 清除之前的状态
+			statusMu.Lock()
+			delete(clientErrors, id)
+			clientConnected[id] = false
+			delete(clientAttempted, id)
+			statusMu.Unlock()
 			go startNpcClientWithContext(ctx, id, addr, key, tls)
 		} else {
 			logs.Info("Client already running: %s", id)
@@ -258,6 +292,12 @@ func (a *App) ToggleClient(name, addr, key string, tls bool, runningState bool) 
 			logs.Info("Stopping NPC client: %s", id)
 			cancel()
 			delete(running, id)
+			// 清除状态
+			statusMu.Lock()
+			delete(clientErrors, id)
+			delete(clientConnected, id)
+			delete(clientAttempted, id)
+			statusMu.Unlock()
 			// 也要关闭客户端
 			if rpcClient, ok := clients[id]; ok {
 				rpcClient.Close()
@@ -289,6 +329,11 @@ func startNpcClientWithContext(ctx context.Context, id, server, vkey string, tls
 		select {
 		case <-ctx.Done():
 			logs.Info("停止 NPC 客户端: %s", id)
+			statusMu.Lock()
+			delete(clientConnected, id)
+			delete(clientAttempted, id)
+			delete(clientErrors, id)
+			statusMu.Unlock()
 			runningMu.Lock()
 			if rpcClient, ok := clients[id]; ok {
 				rpcClient.Close()
@@ -300,32 +345,42 @@ func startNpcClientWithContext(ctx context.Context, id, server, vkey string, tls
 		}
 
 		logs.Info("连接服务器: %s", id)
+
+		// 重置连接状态，准备新的连接尝试
+		statusMu.Lock()
+		clientConnected[id] = false
+		statusMu.Unlock()
+
 		rpcClient := client.NewRPClient(server, vkey, connType, "", nil, disconnectTimeout)
 
-		// 将客户端保存到全局 map，以便在需要时关闭
+		// 将客户端保存到全局 map
 		runningMu.Lock()
 		clients[id] = rpcClient
 		runningMu.Unlock()
 
-		// 在后台监听 context 取消事件，以便立即关闭连接
-		ctxDone := make(chan struct{})
+		// 启动连接监听器（每次重连都启动）
+		go monitorFirstConnection(ctx, id, rpcClient)
+
+		// 在后台监听 context 取消事件
 		go func() {
 			select {
 			case <-ctx.Done():
 				logs.Info("Context 已取消，关闭客户端: %s", id)
 				rpcClient.Close()
-				close(ctxDone)
 			}
 		}()
 
 		rpcClient.Start()
 
-		logs.Info("客户端已关闭: %s，将在 5 秒后重新连接", id)
-
-		// 检查 context 是否已取消，以及是否需要重连
+		// 检查 context 是否已取消
 		select {
 		case <-ctx.Done():
 			logs.Info("停止 NPC 客户端: %s", id)
+			statusMu.Lock()
+			delete(clientConnected, id)
+			delete(clientAttempted, id)
+			delete(clientErrors, id)
+			statusMu.Unlock()
 			runningMu.Lock()
 			if rpcClient, ok := clients[id]; ok {
 				rpcClient.Close()
@@ -339,7 +394,56 @@ func startNpcClientWithContext(ctx context.Context, id, server, vkey string, tls
 	}
 }
 
-// startNpcProcess 已弃用，保留供后向兼容性
+// monitorFirstConnection 监听连接的结果，持续检查连接状态
+func monitorFirstConnection(ctx context.Context, id string, rpcClient *client.TRPClient) {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
+	initialTimeout := time.After(5 * time.Second)
+	connected := false
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-initialTimeout:
+			if !connected {
+				statusMu.Lock()
+				clientAttempted[id] = true // 标记为已尝试
+				clientConnected[id] = false
+				clientErrors[id] = "连接服务器失败，正在重新连接..."
+				statusMu.Unlock()
+				logs.Error("连接服务器失败 (timeout): %s，将自动重连", id)
+			}
+			// 即使超时，也继续监听连接状态变化
+		case <-ticker.C:
+			// 检查连接是否成功
+			isNowConnected := rpcClient.IsConnected()
+			if isNowConnected {
+				if !connected {
+					statusMu.Lock()
+					clientAttempted[id] = true
+					clientConnected[id] = true
+					delete(clientErrors, id)
+					statusMu.Unlock()
+					logs.Info("客户端连接成功: %s", id)
+					connected = true
+				}
+			} else {
+				// 如果已连接但现在断开，标记为断开状态
+				if connected {
+					statusMu.Lock()
+					clientConnected[id] = false
+					clientErrors[id] = "连接已断开，正在重新连接..."
+					statusMu.Unlock()
+					logs.Warn("客户端连接已断开: %s", id)
+					connected = false
+				}
+			}
+		}
+	}
+}
+
 // startNpcProcess finds the npc executable and starts it with server/vkey args.
 
 // findNpcBinary 已弃用 - npc 现在作为程序内置组件运行

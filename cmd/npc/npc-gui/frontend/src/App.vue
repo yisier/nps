@@ -65,18 +65,27 @@
                 <span class="label">TLS:</span>
                 <span class="value">{{ client.tls ? '是' : '否' }}</span>
               </div>
+              <div v-if="client.error && client.running" class="info-row error-message">
+                <span class="label">错误:</span>
+                <span class="value">{{ client.error }}</span>
+              </div>
             </div>
 
             <div class="card-footer">
               <label class="toggle-switch">
                 <input
                   type="checkbox"
-                  :checked="client.running"
+                  :checked="client.status !== 'stopped'"
                   @change="toggleClient(client)"
                 />
                 <span class="toggle-slider"></span>
-                <span class="toggle-label">{{ client.running ? '运行中' : '已停止' }}</span>
+                <span class="toggle-label">
+                  {{ getStatusLabel(client.status) }}
+                </span>
               </label>
+              <div v-if="client.error && client.status !== 'stopped'" class="status-error">
+                {{ client.error }}
+              </div>
             </div>
           </div>
         </div>
@@ -115,6 +124,7 @@ export default {
     const clients = ref([])
     const commandInput = ref('')
     const message = ref(null)
+    const toggleStates = ref({}) // 记录正在切换的客户端，防止快速重复切换
 
     // 从直接导入获取 Wails API（使用 let 以便在浏览器中可替换为 mock）
     let GetShortcuts = AppAPI.GetShortcuts
@@ -265,23 +275,40 @@ export default {
     }
 
     const toggleClient = async (client) => {
-      const newState = !client.running
-      console.log('Toggling client:', { name: client.name, newState })
+      const clientId = `${client.addr}|${client.key}`
+      
+      // 如果正在切换中，忽略这次点击
+      if (toggleStates.value[clientId]) {
+        console.log('Client is already toggling, ignoring this click')
+        return
+      }
+      
+      // 根据status判断切换状态
+      const isCurrentlyRunning = client.status !== 'stopped'
+      const newState = !isCurrentlyRunning
+      console.log('Toggling client:', { name: client.name, currentStatus: client.status, newState })
+      
+      // 标记为正在切换中
+      toggleStates.value[clientId] = true
       
       try {
         await ToggleClient(client.name, client.addr, client.key, client.tls, newState)
         console.log('ToggleClient succeeded')
-        // Only update state after successful call
-        client.running = newState
+        
+        // 稍后重新加载状态，让后端返回最新的状态
+        await new Promise(resolve => setTimeout(resolve, 500))
+        await loadClients()
+        
         showMessage(newState ? '已启动' : '已停止', 'success')
-        // Reload to get server-side state
-        setTimeout(() => {
-          loadClients()
-        }, 500)
       } catch (error) {
         console.error('Toggle client error:', error)
         const errMsg = extractErrorMessage(error)
         showMessage(`${newState ? '启动' : '停止'}失败: ${errMsg}`, 'error')
+        // 确保UI状态回滚到原来的状态
+        await loadClients()
+      } finally {
+        // 清除切换标记
+        delete toggleStates.value[clientId]
       }
     }
 
@@ -290,6 +317,18 @@ export default {
       setTimeout(() => {
         message.value = null
       }, 3000)
+    }
+
+    const getStatusLabel = (status) => {
+      switch (status) {
+        case 'connected':
+          return '✓ 已连接'
+        case 'connecting':
+          return '⟳ 连接中'
+        case 'stopped':
+        default:
+          return '⊘ 已停止'
+      }
     }
 
     onMounted(() => {
@@ -315,6 +354,7 @@ export default {
       addConnection,
       removeClient,
       toggleClient,
+      getStatusLabel,
     }
   },
 }
@@ -530,6 +570,14 @@ export default {
   margin-bottom: 0;
 }
 
+.info-row.error-message {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+  padding: 8px;
+  border-radius: 4px;
+  border-left: 3px solid #e74c3c;
+}
+
 .label {
   color: #a8b5c8;
   min-width: 50px;
@@ -553,6 +601,17 @@ export default {
   padding: 12px 15px;
   background: #0f1419;
   border-top: 1px solid #2d3e54;
+}
+
+.status-error {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  background: rgba(231, 76, 60, 0.1);
+  border-left: 3px solid #e74c3c;
+  color: #e74c3c;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 /* Toggle Switch */
