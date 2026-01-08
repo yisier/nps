@@ -1,0 +1,47 @@
+package main
+
+import (
+	"embed"
+	"io/fs"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+//go:embed all:frontend/dist
+var embeddedFiles embed.FS
+
+func main() {
+	app := NewApp()
+
+	// Asset server expects the FS root to contain index.html — create a sub FS
+	assets, err := fs.Sub(embeddedFiles, "frontend/dist")
+	if err != nil {
+		panic(err)
+	}
+
+	runErr := wails.Run(&options.App{
+		Title:  "NPS 客户端",
+		Width:  1000,
+		Height: 600,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		OnShutdown:       app.shutdown,
+		Bind: []interface{}{
+			app,
+		},
+		Windows: &windows.Options{
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+		},
+	})
+
+	if runErr != nil {
+		panic(runErr)
+	}
+}

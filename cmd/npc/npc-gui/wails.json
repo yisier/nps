@@ -1,0 +1,31 @@
+{
+  "name": "NPS 客户端",
+  "outputtype": "desktop",
+  "frontend": {
+    "dir": "frontend",
+    "packageManager": "yarn",
+    "install": "yarn install",
+    "build": "yarn run build",
+    "dev": "yarn run dev",
+    "dev:serverUrl": "http://localhost:34115"
+  },
+  "author": {
+    "name": "NPS Team"
+  },
+  "info": {
+    "productName": "NPS Client",
+    "productVersion": "1.0.0",
+    "companyName": "NPS",
+    "copyright": "Copyright © 2024 NPS"
+  },
+  "build": {
+    "nsis": {
+      "oneShotInstaller": true,
+      "allowToChangeInstallationDirectory": true
+    },
+    "windows": {
+      "icon": "build/windows/icon.ico"
+    },
+    "buildTags": "npcgui"
+  }
+}

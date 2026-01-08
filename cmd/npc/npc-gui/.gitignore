@@ -1,0 +1,27 @@
+# 编译输出
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+
+# 依赖包
+node_modules/
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 构建临时文件
+*.tmp
+build/windows/
+dist/
