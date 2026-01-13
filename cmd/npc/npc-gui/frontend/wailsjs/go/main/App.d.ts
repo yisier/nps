@@ -6,6 +6,10 @@ export function AddShortcut(arg1:string):Promise<void>;
 
 export function AddShortcutFromBase64(arg1:string):Promise<void>;
 
+export function ClearConnectionLogs(arg1:string):Promise<void>;
+
+export function GetConnectionLogs(arg1:string):Promise<Array<main.ConnectionLog>>;
+
 export function GetShortcuts():Promise<Array<main.ShortClient>>;
 
 export function RemoveShortcut(arg1:string,arg2:string,arg3:string):Promise<void>;

@@ -92,9 +92,31 @@
       </div>
 
       <div v-else-if="activeView === 'logs'" class="view logs-view">
+        <div class="logs-header">
+          <div class="logs-controls">
+            <label>选择客户端：</label>
+            <select v-model="selectedClientId" class="client-select">
+              <option value="">-- 全部客户端 --</option>
+              <option v-for="client in clients" :key="`${client.addr}|${client.key}`" :value="`${client.addr}|${client.key}`">
+                {{ client.name }} ({{ client.addr }})
+              </option>
+            </select>
+            <button class="btn btn-secondary" @click="clearLogs">清空日志</button>
+            <button v-if="!autoScroll" class="btn btn-secondary btn-scroll-to-bottom" @click="scrollToBottom">
+              ↓ 回到底部
+            </button>
+          </div>
+        </div>
+        
         <div class="logs-container">
-          <div class="log-content">
-            <p>日志功能开发中...</p>
+          <div class="log-content" ref="logContentRef" @scroll="onLogScroll">
+            <div v-if="filteredLogs.length === 0" class="empty-logs">
+              <p>暂无日志记录</p>
+            </div>
+            <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-item', `log-${log.type}`]">
+              <span class="log-timestamp">{{ log.timestamp }}</span>
+              <span class="log-message">{{ log.message }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -113,7 +135,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 // 直接导入 Wails 生成的 API 绑定
 import * as AppAPI from '../wailsjs/go/main/App.js'
 
@@ -124,7 +146,13 @@ export default {
     const clients = ref([])
     const commandInput = ref('')
     const message = ref(null)
+    const selectedClientId = ref('')
+    const allLogs = ref([])
+    const logContentRef = ref(null)
+    const autoScroll = ref(true)
     const toggleStates = ref({}) // 记录正在切换的客户端，防止快速重复切换
+    const logCache = ref({}) // 缓存每个客户端的日志，格式: { clientId: lastSeenLogHash }
+    let isLoadingLogs = false // 防止并发加载日志
 
     // 从直接导入获取 Wails API（使用 let 以便在浏览器中可替换为 mock）
     let GetShortcuts = AppAPI.GetShortcuts
@@ -132,6 +160,8 @@ export default {
     let RemoveShortcut = AppAPI.RemoveShortcut
     let ToggleClient = AppAPI.ToggleClient
     let TestConnection = AppAPI.TestConnection
+    let GetConnectionLogs = AppAPI.GetConnectionLogs
+    let ClearConnectionLogs = AppAPI.ClearConnectionLogs
 
     // 在普通浏览器里运行时 Wails API 可能不存在，提供简单 mock 方便调试 UI
     if (!AppAPI || typeof AppAPI.GetShortcuts !== 'function') {
@@ -155,6 +185,16 @@ export default {
       }
       TestConnection = async (input) => {
         console.log('mock TestConnection', input)
+        return
+      }
+      GetConnectionLogs = async (clientId) => {
+        console.log('mock GetConnectionLogs', clientId)
+        return [
+          { timestamp: '2024-01-09 10:30:15', message: 'Mock 日志消息', type: 'info', clientId: clientId }
+        ]
+      }
+      ClearConnectionLogs = async (clientId) => {
+        console.log('mock ClearConnectionLogs', clientId)
         return
       }
     }
@@ -331,6 +371,182 @@ export default {
       }
     }
 
+    const loadLogs = async () => {
+      // 防止并发加载
+      if (isLoadingLogs) {
+        console.debug('日志已在加载中，跳过本次请求')
+        return
+      }
+      
+      isLoadingLogs = true
+      try {
+        console.log('loadLogs called, selectedClientId=', selectedClientId.value)
+        let newLogs = []
+        
+        if (selectedClientId.value) {
+          console.log('加载特定客户端日志:', selectedClientId.value)
+          const logs = await GetConnectionLogs(selectedClientId.value)
+          console.log('GetConnectionLogs 返回:', logs ? logs.length + ' 条日志' : '0 条日志')
+          newLogs = logs || []
+        } else {
+          // 获取所有客户端的日志
+          console.log('加载所有客户端日志，总共', clients.value.length, '个客户端')
+          let allClientLogs = []
+          for (const client of clients.value) {
+            const clientId = `${client.addr}|${client.key}`
+            console.log('加载客户端日志:', clientId)
+            const logs = await GetConnectionLogs(clientId)
+            console.log('该客户端返回:', logs ? logs.length + ' 条日志' : '0 条日志')
+            if (logs) {
+              allClientLogs = allClientLogs.concat(logs)
+            }
+          }
+          newLogs = allClientLogs
+        }
+
+        console.log('本次加载新日志数:', newLogs.length)
+
+        // 创建当前日志的唯一标识集合（用于去重）
+        const existingKeys = new Set()
+        allLogs.value.forEach(log => {
+          const logKey = `${log.timestamp}|${log.message}|${log.clientId}`
+          existingKeys.add(logKey)
+        })
+
+        // 筛选出新增的日志
+        const addedLogs = []
+        newLogs.forEach(log => {
+          const logKey = `${log.timestamp}|${log.message}|${log.clientId}`
+          if (!existingKeys.has(logKey)) {
+            addedLogs.push(log)
+            existingKeys.add(logKey)
+          }
+        })
+
+        console.log('新增日志数:', addedLogs.length)
+
+        // 将新增日志添加到现有日志的末尾
+        if (addedLogs.length > 0) {
+          allLogs.value = allLogs.value.concat(addedLogs)
+          
+          // 定期进行完整排序，确保顺序正确（每10条新日志排一次）
+          if (allLogs.value.length % 10 === 0) {
+            allLogs.value.sort((a, b) => {
+              // 先按客户端ID排序，再按时间戳排序，最后按消息内容排序
+              if (a.clientId !== b.clientId) {
+                return a.clientId.localeCompare(b.clientId)
+              }
+              if (a.timestamp !== b.timestamp) {
+                return a.timestamp.localeCompare(b.timestamp)
+              }
+              return a.message.localeCompare(b.message)
+            })
+          }
+        }
+        
+        // 限制日志数量，避免内存溢出（最多保留10000条）
+        if (allLogs.value.length > 10000) {
+          // 保留最新的10000条
+          allLogs.value = allLogs.value.slice(allLogs.value.length - 10000)
+        }
+      } catch (error) {
+        console.error('加载日志失败:', error)
+      } finally {
+        isLoadingLogs = false
+      }
+    }
+
+    const filteredLogs = computed(() => {
+      // 只在选择了特定客户端时过滤，否则显示所有日志
+      if (selectedClientId.value) {
+        // 使用缓存避免频繁创建新数组
+        return allLogs.value.filter(log => log.clientId === selectedClientId.value)
+      }
+      return allLogs.value
+    })
+
+    const clearLogs = async () => {
+      if (!confirm('确定要清空日志吗？')) return
+      try {
+        if (selectedClientId.value) {
+          await ClearConnectionLogs(selectedClientId.value)
+        } else {
+          // 清空所有客户端的日志
+          for (const client of clients.value) {
+            const clientId = `${client.addr}|${client.key}`
+            await ClearConnectionLogs(clientId)
+          }
+        }
+        allLogs.value = []
+        showMessage('日志已清空', 'success')
+      } catch (error) {
+        console.error('清空日志失败:', error)
+        showMessage('清空日志失败', 'error')
+      }
+    }
+
+    // 检查是否在底部
+    const isAtBottom = () => {
+      if (!logContentRef.value) return true
+      const { scrollTop, scrollHeight, clientHeight } = logContentRef.value
+      // 允许5px的误差
+      return scrollHeight - scrollTop - clientHeight <= 5
+    }
+
+    // 滚动到底部
+    const scrollToBottom = () => {
+      nextTick(() => {
+        if (logContentRef.value) {
+          logContentRef.value.scrollTop = logContentRef.value.scrollHeight
+          autoScroll.value = true
+        }
+      })
+    }
+
+    // 用户滚动时检测是否还在底部
+    const onLogScroll = () => {
+      if (!isAtBottom()) {
+        // 用户已滚上去，禁用自动滚动
+        autoScroll.value = false
+      } else {
+        // 用户在底部，启用自动滚动
+        autoScroll.value = true
+      }
+    }
+
+    // 监听日志内容变化，仅在用户在底部时自动滚动
+    // 使用 immediate: false 和防抖逻辑避免频繁更新
+    let scrollTimeout = null
+    watch(filteredLogs, () => {
+      // 清除之前的延时
+      if (scrollTimeout) clearTimeout(scrollTimeout)
+      
+      // 延迟 50ms 后执行滚动，避免频繁触发
+      scrollTimeout = setTimeout(() => {
+        if (autoScroll.value) {
+          scrollToBottom()
+        }
+      }, 50)
+    })
+
+    // 监听日志view激活，定期刷新日志
+    let logRefreshInterval = null
+    watch(activeView, (newView) => {
+      // 清除旧的刷新间隔
+      if (logRefreshInterval) {
+        clearInterval(logRefreshInterval)
+        logRefreshInterval = null
+      }
+      
+      if (newView === 'logs') {
+        loadLogs()
+        // 设置日志刷新间隔为 3 秒，减少频率避免页面频繁闪烁
+        logRefreshInterval = setInterval(() => {
+          loadLogs()
+        }, 3000)
+      }
+    })
+
     onMounted(() => {
       // 直接初始化，因为 API 是静态导入的
       initWails()
@@ -339,10 +555,21 @@ export default {
       const refreshInterval = setInterval(() => {
         loadClients()
       }, 2000)
+
+      // 如果初始视图是日志，则加载日志
+      if (activeView.value === 'logs') {
+        loadLogs()
+        logRefreshInterval = setInterval(() => {
+          loadLogs()
+        }, 3000)
+      }
       
       // Cleanup interval on unmount
       return () => {
         clearInterval(refreshInterval)
+        if (logRefreshInterval) {
+          clearInterval(logRefreshInterval)
+        }
       }
     })
 
@@ -351,10 +578,20 @@ export default {
       clients,
       commandInput,
       message,
+      selectedClientId,
+      allLogs,
+      logContentRef,
+      autoScroll,
+      filteredLogs,
       addConnection,
       removeClient,
       toggleClient,
       getStatusLabel,
+      clearLogs,
+      loadLogs,
+      onLogScroll,
+      scrollToBottom,
+      isAtBottom,
     }
   },
 }
@@ -487,6 +724,29 @@ export default {
 
 .btn-primary:active {
   transform: translateY(0);
+}
+
+.btn-secondary {
+  background: #2d3e54;
+  color: #e8eef7;
+}
+
+.btn-secondary:hover {
+  background: #3a4d66;
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-scroll-to-bottom {
+  background: #f39c12;
+  color: white;
+}
+
+.btn-scroll-to-bottom:hover {
+  background: #e67e22;
 }
 
 /* Clients Grid */
@@ -665,20 +925,128 @@ export default {
 .logs-view {
   display: flex;
   flex-direction: column;
+  gap: 15px;
 }
 
-.logs-container {
-  flex: 1;
-  background: #1a2332;
+.logs-header {
+  background: #0f1419;
   border: 1px solid #2d3e54;
   border-radius: 8px;
   padding: 15px;
 }
 
+.logs-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logs-controls label {
+  font-size: 14px;
+  color: #a8b5c8;
+  font-weight: 500;
+}
+
+.client-select {
+  padding: 8px 12px;
+  background: #1a2332;
+  border: 1px solid #2d3e54;
+  border-radius: 6px;
+  color: #e8eef7;
+  font-size: 13px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 200px;
+}
+
+.client-select:hover {
+  border-color: #3a4d66;
+}
+
+.client-select:focus {
+  outline: none;
+  border-color: #4a5d76;
+  box-shadow: 0 0 0 2px rgba(74, 93, 118, 0.2);
+}
+
+.logs-container {
+  flex: 1;
+  background: #0f1419;
+  border: 1px solid #2d3e54;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+}
+
 .log-content {
+  flex: 1;
   font-family: 'Monaco', 'Courier New', monospace;
   font-size: 13px;
   color: #a8b5c8;
+  overflow-y: auto;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.empty-logs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #5a6d7f;
+  font-style: italic;
+}
+
+.log-item {
+  padding: 6px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.log-timestamp {
+  color: #5a6d7f;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.log-message {
+  color: #a8b5c8;
+  flex: 1;
+}
+
+.log-info .log-timestamp {
+  color: #5a9fd4;
+}
+
+.log-info .log-message {
+  color: #a8b5c8;
+}
+
+.log-success .log-timestamp {
+  color: #2ecc71;
+}
+
+.log-success .log-message {
+  color: #2ecc71;
+}
+
+.log-warning .log-timestamp {
+  color: #f39c12;
+}
+
+.log-warning .log-message {
+  color: #f39c12;
+}
+
+.log-error .log-timestamp {
+  color: #e74c3c;
+}
+
+.log-error .log-message {
+  color: #e74c3c;
 }
 
 /* Settings View */

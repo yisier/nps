@@ -1,5 +1,23 @@
 export namespace main {
 	
+	export class ConnectionLog {
+	    timestamp: string;
+	    message: string;
+	    type: string;
+	    clientId: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ConnectionLog(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.timestamp = source["timestamp"];
+	        this.message = source["message"];
+	        this.type = source["type"];
+	        this.clientId = source["clientId"];
+	    }
+	}
 	export class ShortClient {
 	    name: string;
 	    addr: string;

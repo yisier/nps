@@ -10,6 +10,14 @@ export function AddShortcutFromBase64(arg1) {
   return window['go']['main']['App']['AddShortcutFromBase64'](arg1);
 }
 
+export function ClearConnectionLogs(arg1) {
+  return window['go']['main']['App']['ClearConnectionLogs'](arg1);
+}
+
+export function GetConnectionLogs(arg1) {
+  return window['go']['main']['App']['GetConnectionLogs'](arg1);
+}
+
 export function GetShortcuts() {
   return window['go']['main']['App']['GetShortcuts']();
 }
