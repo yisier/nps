@@ -18,6 +18,22 @@ export namespace main {
 	        this.clientId = source["clientId"];
 	    }
 	}
+	export class GuiSettings {
+	    startupEnabled: boolean;
+	    rememberClientState: boolean;
+	    logDir: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new GuiSettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.startupEnabled = source["startupEnabled"];
+	        this.rememberClientState = source["rememberClientState"];
+	        this.logDir = source["logDir"];
+	    }
+	}
 	export class ShortClient {
 	    name: string;
 	    addr: string;

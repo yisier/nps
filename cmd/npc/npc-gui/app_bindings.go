@@ -147,6 +147,19 @@ func closeClientLogger(id string) {
 
 func (a *App) shutdown(ctx context.Context) {}
 
+// 持久化文件结构（向后兼容旧的仅数组格式）
+type GuiSettings struct {
+	StartupEnabled      bool   `json:"startupEnabled"`
+	RememberClientState bool   `json:"rememberClientState"`
+	LogDir              string `json:"logDir"`
+}
+
+type PersistentStore struct {
+	Shortcuts    []ShortClient     `json:"shortcuts"`
+	Settings     GuiSettings       `json:"settings,omitempty"`
+	ClientStates map[string]string `json:"clientStates,omitempty"`
+}
+
 func getStoragePath() string {
 	dir, err := os.UserConfigDir()
 	if err != nil {
@@ -155,6 +168,41 @@ func getStoragePath() string {
 	cfgDir := filepath.Join(dir, "nps")
 	_ = os.MkdirAll(cfgDir, 0o755)
 	return filepath.Join(cfgDir, "npc_shortcuts.json")
+}
+
+// 读取持久化 store，向后兼容：如果是数组则解析为 shortcuts
+func loadPersistentStore() (PersistentStore, error) {
+	p := getStoragePath()
+	b, err := os.ReadFile(p)
+	if err != nil {
+		return PersistentStore{}, err
+	}
+
+	// 尝试解析为对象结构
+	var store PersistentStore
+	if err := json.Unmarshal(b, &store); err == nil {
+		// 如果文件是对象但没有 shortcuts 字段，ensure empty slice
+		if store.Shortcuts == nil {
+			store.Shortcuts = []ShortClient{}
+		}
+		return store, nil
+	}
+
+	// 兼容旧格式：直接是 ShortClient 数组
+	var arr []ShortClient
+	if err := json.Unmarshal(b, &arr); err == nil {
+		return PersistentStore{Shortcuts: arr}, nil
+	}
+
+	return PersistentStore{}, errors.New("invalid storage format")
+}
+
+// 保存整个 store，保持 settings 与 clientStates
+func savePersistentStoreLocked(store PersistentStore) {
+	p := getStoragePath()
+	if data, err := json.MarshalIndent(store, "", "  "); err == nil {
+		_ = os.WriteFile(p, data, 0o644)
+	}
 }
 
 func loadShortcuts() {
@@ -166,6 +214,18 @@ func loadShortcuts() {
 		shortcuts = []ShortClient{}
 		return
 	}
+
+	// 先尝试解析为对象格式
+	var store PersistentStore
+	if err := json.Unmarshal(b, &store); err == nil {
+		shortcuts = store.Shortcuts
+		if shortcuts == nil {
+			shortcuts = []ShortClient{}
+		}
+		return
+	}
+
+	// 兼容旧格式：直接是 ShortClient 数组
 	var s []ShortClient
 	if err := json.Unmarshal(b, &s); err != nil {
 		shortcuts = []ShortClient{}
@@ -182,11 +242,68 @@ func saveShortcuts() {
 
 func saveShortcutsLocked() {
 	p := getStoragePath()
-	if data, err := json.MarshalIndent(shortcuts, "", "  "); err == nil {
-		_ = os.WriteFile(p, data, 0o644)
+
+	var store PersistentStore
+	// 尝试读取已有 store 以保留 settings/clientStates
+	if b, err := os.ReadFile(p); err == nil {
+		_ = json.Unmarshal(b, &store) // ignore errors, we'll overwrite shortcuts
 	}
+	store.Shortcuts = shortcuts
+	savePersistentStoreLocked(store)
 }
 
+// 以下为对 settings 与 clientStates 的访问方法（供前端调用）
+func (a *App) GetGuiSettings() (GuiSettings, error) {
+	store, err := loadPersistentStore()
+	if err != nil {
+		// 返回默认值
+		return GuiSettings{StartupEnabled: true, RememberClientState: true, LogDir: getLogsPath()}, nil
+	}
+	// 合并默认值
+	s := store.Settings
+	if s.LogDir == "" {
+		s.LogDir = getLogsPath()
+	}
+	// 默认都为 true
+	if !s.StartupEnabled && !s.RememberClientState && s.LogDir == "" {
+		s.StartupEnabled = true
+		s.RememberClientState = true
+	}
+	return s, nil
+}
+
+func (a *App) SaveGuiSettings(s GuiSettings) error {
+	shortcutsMu.Lock()
+	defer shortcutsMu.Unlock()
+	store, _ := loadPersistentStore()
+	store.Settings = s
+	// 如果 LogDir 为空，填充默认
+	if store.Settings.LogDir == "" {
+		store.Settings.LogDir = getLogsPath()
+	}
+	savePersistentStoreLocked(store)
+	return nil
+}
+
+func (a *App) GetClientStates() (map[string]string, error) {
+	store, err := loadPersistentStore()
+	if err != nil {
+		return map[string]string{}, nil
+	}
+	if store.ClientStates == nil {
+		return map[string]string{}, nil
+	}
+	return store.ClientStates, nil
+}
+
+func (a *App) SaveClientStates(m map[string]string) error {
+	shortcutsMu.Lock()
+	defer shortcutsMu.Unlock()
+	store, _ := loadPersistentStore()
+	store.ClientStates = m
+	savePersistentStoreLocked(store)
+	return nil
+}
 func addShortcut(sc ShortClient) {
 	shortcutsMu.Lock()
 	shortcuts = append(shortcuts, sc)

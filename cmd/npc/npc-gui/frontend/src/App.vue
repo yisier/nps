@@ -123,7 +123,32 @@
 
       <div v-else-if="activeView === 'settings'" class="view settings-view">
         <div class="settings-container">
-          <p>设置功能开发中...</p>
+          <h3 style="margin-bottom:16px">设置</h3>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <label style="flex:1;color:#a8b5c8">开机启动</label>
+            <label class="toggle-switch">
+              <input type="checkbox" v-model="startupEnabled" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <label style="flex:1;color:#a8b5c8">记住客户端状态</label>
+            <label class="toggle-switch">
+              <input type="checkbox" v-model="rememberClientState" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+            <label style="flex:1;color:#a8b5c8">日志目录</label>
+            <input v-model="logDir" type="text" style="padding:8px;border-radius:6px;border:1px solid #2d3e54;background:#1a2332;color:#e8eef7;min-width:320px" />
+          </div>
+
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <button class="btn btn-secondary" @click="loadSettings">重置</button>
+            <button class="btn btn-primary" @click="saveSettings">保存</button>
+          </div>
         </div>
       </div>
 
@@ -154,6 +179,114 @@ export default {
     const logCache = ref({}) // 缓存每个客户端的日志，格式: { clientId: lastSeenLogHash }
     let isLoadingLogs = false // 防止并发加载日志
 
+    // Settings
+    const startupEnabled = ref(true)
+    const rememberClientState = ref(true)
+    const logDir = ref('')
+
+    const SETTINGS_KEY = 'npc_settings'
+    const CLIENT_STATES_KEY = 'npc_client_states'
+
+    const detectDefaultLogDir = () => {
+      try {
+        const platform = navigator.platform || navigator.userAgent || ''
+        if (/Win/i.test(platform)) return 'C:\\ProgramData\\nps\\logs'
+        if (/Mac/i.test(platform)) return '/Library/Logs/nps'
+        if (/Linux/i.test(platform)) return '/var/log/nps'
+      } catch (e) {
+        // fallback
+      }
+      return ''
+    }
+
+    const loadSettings = async () => {
+      try {
+        if (typeof GetGuiSettings === 'function') {
+          const s = await GetGuiSettings()
+          startupEnabled.value = typeof s.startupEnabled === 'boolean' ? s.startupEnabled : true
+          rememberClientState.value = typeof s.rememberClientState === 'boolean' ? s.rememberClientState : true
+          logDir.value = typeof s.logDir === 'string' && s.logDir ? s.logDir : detectDefaultLogDir()
+          return
+        }
+      } catch (e) {
+        console.warn('GetGuiSettings failed, fallback to localStorage', e)
+      }
+
+      // fallback: localStorage or defaults
+      try {
+        const raw = localStorage.getItem(SETTINGS_KEY)
+        if (raw) {
+          const s = JSON.parse(raw)
+          startupEnabled.value = typeof s.startupEnabled === 'boolean' ? s.startupEnabled : true
+          rememberClientState.value = typeof s.rememberClientState === 'boolean' ? s.rememberClientState : true
+          logDir.value = typeof s.logDir === 'string' && s.logDir ? s.logDir : detectDefaultLogDir()
+        } else {
+          // defaults
+          startupEnabled.value = true
+          rememberClientState.value = true
+          logDir.value = detectDefaultLogDir()
+        }
+      } catch (e) {
+        startupEnabled.value = true
+        rememberClientState.value = true
+        logDir.value = detectDefaultLogDir()
+      }
+    }
+
+    const saveSettings = async () => {
+      try {
+        const s = { startupEnabled: !!startupEnabled.value, rememberClientState: !!rememberClientState.value, logDir: logDir.value }
+
+        // 优先使用后端绑定保存
+        if (typeof SaveGuiSettings === 'function') {
+          await SaveGuiSettings(s)
+        } else {
+          localStorage.setItem(SETTINGS_KEY, JSON.stringify(s))
+        }
+
+        // 保存 client 状态（如果开启）
+        if (rememberClientState.value) {
+          const map = {}
+          clients.value.forEach(c => {
+            const id = `${c.addr}|${c.key}`
+            map[id] = c.status || 'stopped'
+          })
+          if (typeof SaveClientStates === 'function') {
+            await SaveClientStates(map)
+          } else {
+            localStorage.setItem(CLIENT_STATES_KEY, JSON.stringify(map))
+          }
+        }
+
+        showMessage('设置已保存', 'success')
+      } catch (e) {
+        console.error('保存设置失败', e)
+        showMessage('保存设置失败', 'error')
+      }
+    }
+
+    const applyRememberedClientStates = async () => {
+      if (!rememberClientState.value) return
+      try {
+        const raw = localStorage.getItem(CLIENT_STATES_KEY)
+        if (!raw) return
+        const map = JSON.parse(raw)
+        for (const c of clients.value) {
+          const id = `${c.addr}|${c.key}`
+          if (map[id] === 'connected' && c.status !== 'connected') {
+            try {
+              await ToggleClient(c.name, c.addr, c.key, c.tls, true)
+              await new Promise(r => setTimeout(r, 300))
+            } catch (e) {
+              console.warn('恢复客户端状态失败', id, e)
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('applyRememberedClientStates error', e)
+      }
+    }
+
     // 从直接导入获取 Wails API（使用 let 以便在浏览器中可替换为 mock）
     let GetShortcuts = AppAPI.GetShortcuts
     let AddShortcutFromBase64 = AppAPI.AddShortcutFromBase64
@@ -164,6 +297,12 @@ export default {
     let ClearConnectionLogs = AppAPI.ClearConnectionLogs
 
     // 在普通浏览器里运行时 Wails API 可能不存在，提供简单 mock 方便调试 UI
+    // 同时尝试绑定新的设置 & clientStates API
+    let GetGuiSettings = AppAPI.GetGuiSettings
+    let SaveGuiSettings = AppAPI.SaveGuiSettings
+    let GetClientStates = AppAPI.GetClientStates
+    let SaveClientStates = AppAPI.SaveClientStates
+
     if (!AppAPI || typeof AppAPI.GetShortcuts !== 'function') {
       console.warn('Wails App API not available — using mock implementations for browser debugging')
       GetShortcuts = async () => {
@@ -197,6 +336,11 @@ export default {
         console.log('mock ClearConnectionLogs', clientId)
         return
       }
+
+      GetGuiSettings = async () => ({ startupEnabled: true, rememberClientState: true, logDir: '' })
+      SaveGuiSettings = async (s) => { console.log('mock SaveGuiSettings', s); return }
+      GetClientStates = async () => { return {} }
+      SaveClientStates = async (m) => { console.log('mock SaveClientStates', m); return }
     }
 
     const initWails = async () => {
@@ -218,6 +362,44 @@ export default {
         }
         const result = await GetShortcuts()
         clients.value = result || []
+        // 如果启用了记住客户端状态，尝试恢复已记住的连接（优先使用后端保存的 clientStates）
+        try {
+          if (rememberClientState.value) {
+            let map = null
+            if (typeof GetClientStates === 'function') {
+              try {
+                map = await GetClientStates()
+              } catch (e) {
+                console.warn('GetClientStates failed, fallback to localStorage', e)
+              }
+            }
+            if (!map) {
+              const raw = localStorage.getItem(CLIENT_STATES_KEY)
+              if (raw) {
+                map = JSON.parse(raw)
+              }
+            }
+
+            if (map) {
+              for (const c of clients.value) {
+                const id = `${c.addr}|${c.key}`
+                if (map[id] === 'connected' && c.status !== 'connected') {
+                  try {
+                    await ToggleClient(c.name, c.addr, c.key, c.tls, true)
+                    await new Promise(r => setTimeout(r, 300))
+                  } catch (e) {
+                    console.warn('恢复客户端状态失败', id, e)
+                  }
+                }
+              }
+              // 刷新一次客户端列表以获取最新状态
+              const refreshed = await GetShortcuts()
+              clients.value = refreshed || clients.value
+            }
+          }
+        } catch (e) {
+          console.warn('恢复客户端状态过程发生错误', e)
+        }
       } catch (error) {
         console.error('加载客户端失败:', error)
         const errMsg = extractErrorMessage(error)
@@ -338,7 +520,21 @@ export default {
         // 稍后重新加载状态，让后端返回最新的状态
         await new Promise(resolve => setTimeout(resolve, 500))
         await loadClients()
-        
+
+        // 如果启用了记住客户端状态，保存当前状态到本地
+        try {
+          if (rememberClientState.value) {
+            const map = {}
+            clients.value.forEach(c => {
+              const id = `${c.addr}|${c.key}`
+              map[id] = c.status || 'stopped'
+            })
+            localStorage.setItem(CLIENT_STATES_KEY, JSON.stringify(map))
+          }
+        } catch (e) {
+          console.warn('保存客户端状态失败', e)
+        }
+
         showMessage(newState ? '已启动' : '已停止', 'success')
       } catch (error) {
         console.error('Toggle client error:', error)
@@ -548,7 +744,8 @@ export default {
     })
 
     onMounted(() => {
-      // 直接初始化，因为 API 是静态导入的
+      // 先加载本地设置，再初始化 Wails
+      loadSettings()
       initWails()
       
       // 每 2 秒自动刷新客户端状态，保持与服务器同步
@@ -583,6 +780,12 @@ export default {
       logContentRef,
       autoScroll,
       filteredLogs,
+      // settings
+      startupEnabled,
+      rememberClientState,
+      logDir,
+      loadSettings,
+      saveSettings,
       addConnection,
       removeClient,
       toggleClient,

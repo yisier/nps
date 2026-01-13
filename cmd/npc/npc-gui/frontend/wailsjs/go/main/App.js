@@ -14,8 +14,16 @@ export function ClearConnectionLogs(arg1) {
   return window['go']['main']['App']['ClearConnectionLogs'](arg1);
 }
 
+export function GetClientStates() {
+  return window['go']['main']['App']['GetClientStates']();
+}
+
 export function GetConnectionLogs(arg1) {
   return window['go']['main']['App']['GetConnectionLogs'](arg1);
+}
+
+export function GetGuiSettings() {
+  return window['go']['main']['App']['GetGuiSettings']();
 }
 
 export function GetShortcuts() {
@@ -24,6 +32,14 @@ export function GetShortcuts() {
 
 export function RemoveShortcut(arg1, arg2, arg3) {
   return window['go']['main']['App']['RemoveShortcut'](arg1, arg2, arg3);
+}
+
+export function SaveClientStates(arg1) {
+  return window['go']['main']['App']['SaveClientStates'](arg1);
+}
+
+export function SaveGuiSettings(arg1) {
+  return window['go']['main']['App']['SaveGuiSettings'](arg1);
 }
 
 export function TestConnection(arg1) {
