@@ -142,11 +142,14 @@
 
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
             <label style="flex:1;color:#a8b5c8">日志目录</label>
-            <input v-model="logDir" type="text" style="padding:8px;border-radius:6px;border:1px solid #2d3e54;background:#1a2332;color:#e8eef7;min-width:320px" />
+            <div style="display:flex;gap:8px;align-items:center">
+              <input v-model="logDir" type="text" style="padding:8px;border-radius:6px;border:1px solid #2d3e54;background:#1a2332;color:#e8eef7;min-width:320px" readonly />
+              <button class="btn btn-secondary" @click="selectLogDirectory" style="white-space:nowrap">浏览...</button>
+            </div>
           </div>
 
           <div style="display:flex;gap:12px;justify-content:flex-end">
-            <button class="btn btn-secondary" @click="loadSettings">重置</button>
+            <button class="btn btn-secondary" @click="resetSettings">重置</button>
             <button class="btn btn-primary" @click="saveSettings">保存</button>
           </div>
         </div>
@@ -178,6 +181,7 @@ export default {
     const toggleStates = ref({}) // 记录正在切换的客户端，防止快速重复切换
     const logCache = ref({}) // 缓存每个客户端的日志，格式: { clientId: lastSeenLogHash }
     let isLoadingLogs = false // 防止并发加载日志
+    let hasRestoredClientStates = false // 标记是否已恢复过客户端状态（只在首次加载时恢复一次）
 
     // Settings
     const startupEnabled = ref(true)
@@ -187,12 +191,28 @@ export default {
     const SETTINGS_KEY = 'npc_settings'
     const CLIENT_STATES_KEY = 'npc_client_states'
 
-    const detectDefaultLogDir = () => {
+    const detectDefaultLogDir = async () => {
+      try {
+        // 优先从后端获取默认路径
+        if (typeof GetDefaultLogDir === 'function') {
+          const defaultPath = await GetDefaultLogDir()
+          if (defaultPath) {
+            return defaultPath
+          }
+        }
+      } catch (e) {
+        console.warn('GetDefaultLogDir failed, using fallback', e)
+      }
+
+      // Fallback: 基于平台猜测路径
       try {
         const platform = navigator.platform || navigator.userAgent || ''
-        if (/Win/i.test(platform)) return 'C:\\ProgramData\\nps\\logs'
-        if (/Mac/i.test(platform)) return '/Library/Logs/nps'
-        if (/Linux/i.test(platform)) return '/var/log/nps'
+        if (/Win/i.test(platform)) {
+          // Windows: 使用 AppData\Roaming\npc\logs
+          return 'C:\\Users\\' + (process.env.USERNAME || 'User') + '\\AppData\\Roaming\\npc\\logs'
+        }
+        if (/Mac/i.test(platform)) return '~/Library/Application Support/npc/logs'
+        if (/Linux/i.test(platform)) return '~/.config/npc/logs'
       } catch (e) {
         // fallback
       }
@@ -205,7 +225,7 @@ export default {
           const s = await GetGuiSettings()
           startupEnabled.value = typeof s.startupEnabled === 'boolean' ? s.startupEnabled : true
           rememberClientState.value = typeof s.rememberClientState === 'boolean' ? s.rememberClientState : true
-          logDir.value = typeof s.logDir === 'string' && s.logDir ? s.logDir : detectDefaultLogDir()
+          logDir.value = typeof s.logDir === 'string' && s.logDir ? s.logDir : await detectDefaultLogDir()
           return
         }
       } catch (e) {
@@ -219,18 +239,26 @@ export default {
           const s = JSON.parse(raw)
           startupEnabled.value = typeof s.startupEnabled === 'boolean' ? s.startupEnabled : true
           rememberClientState.value = typeof s.rememberClientState === 'boolean' ? s.rememberClientState : true
-          logDir.value = typeof s.logDir === 'string' && s.logDir ? s.logDir : detectDefaultLogDir()
+          logDir.value = typeof s.logDir === 'string' && s.logDir ? s.logDir : await detectDefaultLogDir()
         } else {
           // defaults
           startupEnabled.value = true
           rememberClientState.value = true
-          logDir.value = detectDefaultLogDir()
+          logDir.value = await detectDefaultLogDir()
         }
       } catch (e) {
         startupEnabled.value = true
         rememberClientState.value = true
-        logDir.value = detectDefaultLogDir()
+        logDir.value = await detectDefaultLogDir()
       }
+    }
+
+    const resetSettings = async () => {
+      // 重置到默认值
+      startupEnabled.value = true
+      rememberClientState.value = true
+      logDir.value = await detectDefaultLogDir()
+      showMessage('已重置为默认值', 'success')
     }
 
     const saveSettings = async () => {
@@ -265,25 +293,30 @@ export default {
       }
     }
 
-    const applyRememberedClientStates = async () => {
-      if (!rememberClientState.value) return
+    const selectLogDirectory = async () => {
       try {
-        const raw = localStorage.getItem(CLIENT_STATES_KEY)
-        if (!raw) return
-        const map = JSON.parse(raw)
-        for (const c of clients.value) {
-          const id = `${c.addr}|${c.key}`
-          if (map[id] === 'connected' && c.status !== 'connected') {
-            try {
-              await ToggleClient(c.name, c.addr, c.key, c.tls, true)
-              await new Promise(r => setTimeout(r, 300))
-            } catch (e) {
-              console.warn('恢复客户端状态失败', id, e)
-            }
+        console.log('selectLogDirectory 被调用')
+        console.log('SelectDirectory 类型:', typeof SelectDirectory)
+
+        if (typeof SelectDirectory === 'function') {
+          console.log('准备调用 SelectDirectory')
+          const selectedPath = await SelectDirectory()
+          console.log('选择的路径:', selectedPath)
+
+          if (selectedPath && selectedPath.trim() !== '') {
+            logDir.value = selectedPath
+            showMessage('目录已选择', 'success')
+          } else {
+            console.log('用户取消了选择或返回空路径')
+            // 用户取消了选择，不显示错误消息
           }
+        } else {
+          console.warn('SelectDirectory 不是函数')
+          showMessage('目录选择功能不可用', 'error')
         }
       } catch (e) {
-        console.warn('applyRememberedClientStates error', e)
+        console.error('选择目录失败:', e)
+        showMessage('选择目录失败: ' + e.message, 'error')
       }
     }
 
@@ -302,6 +335,8 @@ export default {
     let SaveGuiSettings = AppAPI.SaveGuiSettings
     let GetClientStates = AppAPI.GetClientStates
     let SaveClientStates = AppAPI.SaveClientStates
+    let SelectDirectory = AppAPI.SelectDirectory
+    let GetDefaultLogDir = AppAPI.GetDefaultLogDir
 
     if (!AppAPI || typeof AppAPI.GetShortcuts !== 'function') {
       console.warn('Wails App API not available — using mock implementations for browser debugging')
@@ -341,6 +376,8 @@ export default {
       SaveGuiSettings = async (s) => { console.log('mock SaveGuiSettings', s); return }
       GetClientStates = async () => { return {} }
       SaveClientStates = async (m) => { console.log('mock SaveClientStates', m); return }
+      SelectDirectory = async () => { console.log('mock SelectDirectory'); return '/mock/selected/path' }
+      GetDefaultLogDir = async () => { console.log('mock GetDefaultLogDir'); return 'C:\\Users\\User\\AppData\\Roaming\\npc\\logs' }
     }
 
     const initWails = async () => {
@@ -362,9 +399,13 @@ export default {
         }
         const result = await GetShortcuts()
         clients.value = result || []
-        // 如果启用了记住客户端状态，尝试恢复已记住的连接（优先使用后端保存的 clientStates）
-        try {
-          if (rememberClientState.value) {
+
+        // 只在首次加载时恢复客户端状态，避免后续刷新时重复恢复
+        if (!hasRestoredClientStates && rememberClientState.value) {
+          hasRestoredClientStates = true
+          console.log('首次加载，尝试恢复客户端状态...')
+
+          try {
             let map = null
             if (typeof GetClientStates === 'function') {
               try {
@@ -384,6 +425,7 @@ export default {
               for (const c of clients.value) {
                 const id = `${c.addr}|${c.key}`
                 if (map[id] === 'connected' && c.status !== 'connected') {
+                  console.log('恢复客户端连接:', c.name)
                   try {
                     await ToggleClient(c.name, c.addr, c.key, c.tls, true)
                     await new Promise(r => setTimeout(r, 300))
@@ -396,9 +438,9 @@ export default {
               const refreshed = await GetShortcuts()
               clients.value = refreshed || clients.value
             }
+          } catch (e) {
+            console.warn('恢复客户端状态过程发生错误', e)
           }
-        } catch (e) {
-          console.warn('恢复客户端状态过程发生错误', e)
         }
       } catch (error) {
         console.error('加载客户端失败:', error)
@@ -521,7 +563,7 @@ export default {
         await new Promise(resolve => setTimeout(resolve, 500))
         await loadClients()
 
-        // 如果启用了记住客户端状态，保存当前状态到本地
+        // 如果启用了记住客户端状态，保存当前状态到本地和后端
         try {
           if (rememberClientState.value) {
             const map = {}
@@ -529,6 +571,15 @@ export default {
               const id = `${c.addr}|${c.key}`
               map[id] = c.status || 'stopped'
             })
+            // 保存到后端
+            if (typeof SaveClientStates === 'function') {
+              try {
+                await SaveClientStates(map)
+              } catch (err) {
+                console.warn('保存客户端状态到后端失败，fallback to localStorage', err)
+              }
+            }
+            // 同时保存到 localStorage 作为备份
             localStorage.setItem(CLIENT_STATES_KEY, JSON.stringify(map))
           }
         } catch (e) {
@@ -785,7 +836,9 @@ export default {
       rememberClientState,
       logDir,
       loadSettings,
+      resetSettings,
       saveSettings,
+      selectLogDirectory,
       addConnection,
       removeClient,
       toggleClient,

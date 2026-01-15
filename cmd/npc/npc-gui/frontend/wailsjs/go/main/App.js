@@ -22,6 +22,10 @@ export function GetConnectionLogs(arg1) {
   return window['go']['main']['App']['GetConnectionLogs'](arg1);
 }
 
+export function GetDefaultLogDir() {
+  return window['go']['main']['App']['GetDefaultLogDir']();
+}
+
 export function GetGuiSettings() {
   return window['go']['main']['App']['GetGuiSettings']();
 }
@@ -40,6 +44,10 @@ export function SaveClientStates(arg1) {
 
 export function SaveGuiSettings(arg1) {
   return window['go']['main']['App']['SaveGuiSettings'](arg1);
+}
+
+export function SelectDirectory() {
+  return window['go']['main']['App']['SelectDirectory']();
 }
 
 export function TestConnection(arg1) {

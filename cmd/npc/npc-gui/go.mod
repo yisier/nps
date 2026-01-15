@@ -8,6 +8,7 @@ require (
 	ehang.io/nps v0.0.0-00010101000000-000000000000
 	github.com/astaxie/beego v1.12.3
 	github.com/wailsapp/wails/v2 v2.11.0
+	golang.org/x/sys v0.30.0
 )
 
 // 使用本地路径替代依赖
@@ -59,7 +60,6 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

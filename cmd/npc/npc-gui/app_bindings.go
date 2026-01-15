@@ -15,9 +15,12 @@ import (
 	"ehang.io/nps/client"
 	_ "github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-type App struct{}
+type App struct {
+	ctx context.Context
+}
 
 // ShortClient 与前端结构对应
 type ShortClient struct {
@@ -65,24 +68,51 @@ var (
 func NewApp() *App { return &App{} }
 
 func (a *App) startup(ctx context.Context) {
-	// 初始化日志系统，同时使用 store logger 和文件 logger
-	// store logger 用于内存缓存，文件 logger 用于持久化
-	logs.SetLogger("store")
+	// 保存 context，用于后续调用 runtime API
+	a.ctx = ctx
 
-	// 可选：同时输出到文件
-	logsPath := getLogsPath()
-	// Windows 路径中的反斜杠需要转义
-	logFilePath := strings.ReplaceAll(filepath.Join(logsPath, "npc.log"), "\\", "\\\\")
-	logs.SetLogger(logs.AdapterFile, `{"filename":"`+logFilePath+`","daily":true,"maxdays":7}`)
+	// 初始化日志系统，只使用 store logger（内存缓存）
+	// 每个客户端有自己独立的日志文件，不需要全局日志文件
+	logs.SetLogger("store")
 	logs.SetLevel(logs.LevelDebug)
+
+	// 同步开机启动状态：检查配置与实际注册表是否一致
+	go func() {
+		store, err := loadPersistentStore()
+		if err == nil {
+			actualEnabled := isStartupEnabled()
+			if store.Settings.StartupEnabled && !actualEnabled {
+				// 配置说启用，但实际未启用，则启用之
+				logs.Info("同步开机启动状态：启用")
+				if err := enableStartup(); err != nil {
+					logs.Error("同步开机启动失败: %v", err)
+				}
+			} else if !store.Settings.StartupEnabled && actualEnabled {
+				// 配置说禁用，但实际已启用，则禁用之
+				logs.Info("同步开机启动状态：禁用")
+				if err := disableStartup(); err != nil {
+					logs.Error("同步开机启动失败: %v", err)
+				}
+			}
+		}
+	}()
 }
 
 func getLogsPath() string {
+	// 尝试从配置中读取用户设置的日志目录
+	store, err := loadPersistentStore()
+	if err == nil && store.Settings.LogDir != "" {
+		// 确保目录存在
+		_ = os.MkdirAll(store.Settings.LogDir, 0o755)
+		return store.Settings.LogDir
+	}
+
+	// 如果没有配置或读取失败，使用默认路径
 	dir, err := os.UserConfigDir()
 	if err != nil {
 		dir = "."
 	}
-	cfgDir := filepath.Join(dir, "nps")
+	cfgDir := filepath.Join(dir, "npc")
 	_ = os.MkdirAll(cfgDir, 0o755)
 	logsDir := filepath.Join(cfgDir, "logs")
 	_ = os.MkdirAll(logsDir, 0o755)
@@ -165,9 +195,9 @@ func getStoragePath() string {
 	if err != nil {
 		dir = "."
 	}
-	cfgDir := filepath.Join(dir, "nps")
+	cfgDir := filepath.Join(dir, "npc")
 	_ = os.MkdirAll(cfgDir, 0o755)
-	return filepath.Join(cfgDir, "npc_shortcuts.json")
+	return filepath.Join(cfgDir, "npc_data.json")
 }
 
 // 读取持久化 store，向后兼容：如果是数组则解析为 shortcuts
@@ -261,11 +291,16 @@ func (a *App) GetGuiSettings() (GuiSettings, error) {
 	}
 	// 合并默认值
 	s := store.Settings
+	// 如果 LogDir 为空，使用默认路径
 	if s.LogDir == "" {
 		s.LogDir = getLogsPath()
 	}
-	// 默认都为 true
-	if !s.StartupEnabled && !s.RememberClientState && s.LogDir == "" {
+	// 检测是否为首次使用（配置为空），如果是则使用默认值 true
+	// 注意：这里无法区分用户主动设置为 false 还是从未设置过，所以采用保守策略
+	// 只有当配置文件存在但 Settings 字段完全为空时才认为是首次使用
+	isFirstTime := !s.StartupEnabled && !s.RememberClientState
+	if isFirstTime {
+		// 首次使用，设置为默认值 true
 		s.StartupEnabled = true
 		s.RememberClientState = true
 	}
@@ -276,12 +311,34 @@ func (a *App) SaveGuiSettings(s GuiSettings) error {
 	shortcutsMu.Lock()
 	defer shortcutsMu.Unlock()
 	store, _ := loadPersistentStore()
+
+	// 保存之前检查开机启动设置是否有变化
+	oldStartupEnabled := store.Settings.StartupEnabled
+
 	store.Settings = s
 	// 如果 LogDir 为空，填充默认
 	if store.Settings.LogDir == "" {
 		store.Settings.LogDir = getLogsPath()
 	}
 	savePersistentStoreLocked(store)
+
+	// 如果开机启动设置发生变化，应用到系统
+	if oldStartupEnabled != s.StartupEnabled {
+		if s.StartupEnabled {
+			if err := enableStartup(); err != nil {
+				logs.Error("启用开机启动失败: %v", err)
+				return fmt.Errorf("启用开机启动失败: %v", err)
+			}
+			logs.Info("已启用开机启动")
+		} else {
+			if err := disableStartup(); err != nil {
+				logs.Error("禁用开机启动失败: %v", err)
+				return fmt.Errorf("禁用开机启动失败: %v", err)
+			}
+			logs.Info("已禁用开机启动")
+		}
+	}
+
 	return nil
 }
 
@@ -303,6 +360,45 @@ func (a *App) SaveClientStates(m map[string]string) error {
 	store.ClientStates = m
 	savePersistentStoreLocked(store)
 	return nil
+}
+
+// GetDefaultLogDir 获取默认日志目录路径
+func (a *App) GetDefaultLogDir() string {
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		dir = "."
+	}
+	cfgDir := filepath.Join(dir, "npc")
+	logsDir := filepath.Join(cfgDir, "logs")
+	return logsDir
+}
+
+// SelectDirectory 打开目录选择对话框
+func (a *App) SelectDirectory() (string, error) {
+	logs.Info("SelectDirectory 被调用")
+
+	// 获取当前设置的日志目录作为默认目录
+	defaultDir := ""
+	store, err := loadPersistentStore()
+	if err == nil && store.Settings.LogDir != "" {
+		defaultDir = store.Settings.LogDir
+	}
+
+	logs.Info("默认目录: %s", defaultDir)
+
+	// 打开目录选择对话框
+	selectedDir, err := wailsRuntime.OpenDirectoryDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+		Title:            "选择日志目录",
+		DefaultDirectory: defaultDir,
+	})
+
+	if err != nil {
+		logs.Error("打开目录选择对话框失败: %v", err)
+		return "", err
+	}
+
+	logs.Info("用户选择的目录: %s", selectedDir)
+	return selectedDir, nil
 }
 func addShortcut(sc ShortClient) {
 	shortcutsMu.Lock()
@@ -784,4 +880,33 @@ func (a *App) ClearConnectionLogs(clientId string) error {
 	logsCacheMu.Unlock()
 
 	return nil
+}
+
+// getExecutablePath 获取当前可执行文件的完整路径
+func getExecutablePath() (string, error) {
+	exePath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	// 解析符号链接，获取真实路径
+	exePath, err = filepath.EvalSymlinks(exePath)
+	if err != nil {
+		return "", err
+	}
+	return exePath, nil
+}
+
+// enableStartup 启用开机启动（跨平台）
+func enableStartup() error {
+	return enableStartupImpl()
+}
+
+// disableStartup 禁用开机启动（跨平台）
+func disableStartup() error {
+	return disableStartupImpl()
+}
+
+// isStartupEnabled 检查是否已启用开机启动（跨平台）
+func isStartupEnabled() bool {
+	return isStartupEnabledImpl()
 }
