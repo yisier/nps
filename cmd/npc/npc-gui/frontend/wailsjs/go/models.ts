@@ -22,6 +22,7 @@ export namespace main {
 	    startupEnabled: boolean;
 	    rememberClientState: boolean;
 	    logDir: string;
+	    themeMode: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new GuiSettings(source);
@@ -32,6 +33,7 @@ export namespace main {
 	        this.startupEnabled = source["startupEnabled"];
 	        this.rememberClientState = source["rememberClientState"];
 	        this.logDir = source["logDir"];
+	        this.themeMode = source["themeMode"];
 	    }
 	}
 	export class ShortClient {

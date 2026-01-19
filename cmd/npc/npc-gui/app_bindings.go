@@ -182,6 +182,7 @@ type GuiSettings struct {
 	StartupEnabled      bool   `json:"startupEnabled"`
 	RememberClientState bool   `json:"rememberClientState"`
 	LogDir              string `json:"logDir"`
+	ThemeMode           string `json:"themeMode"` // "auto", "light", "dark"
 }
 
 type PersistentStore struct {
@@ -287,13 +288,17 @@ func (a *App) GetGuiSettings() (GuiSettings, error) {
 	store, err := loadPersistentStore()
 	if err != nil {
 		// 返回默认值
-		return GuiSettings{StartupEnabled: true, RememberClientState: true, LogDir: getLogsPath()}, nil
+		return GuiSettings{StartupEnabled: true, RememberClientState: true, LogDir: getLogsPath(), ThemeMode: "auto"}, nil
 	}
 	// 合并默认值
 	s := store.Settings
 	// 如果 LogDir 为空，使用默认路径
 	if s.LogDir == "" {
 		s.LogDir = getLogsPath()
+	}
+	// 如果 ThemeMode 为空，使用默认值 "auto"
+	if s.ThemeMode == "" {
+		s.ThemeMode = "auto"
 	}
 	// 检测是否为首次使用（配置为空），如果是则使用默认值 true
 	// 注意：这里无法区分用户主动设置为 false 还是从未设置过，所以采用保守策略
