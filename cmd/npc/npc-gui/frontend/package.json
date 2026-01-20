@@ -1,5 +1,5 @@
 {
-  "name": "npc-gui",
+  "name": "npc-client",
   "type": "module",
   "version": "1.0.0",
   "scripts": {

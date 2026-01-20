@@ -10,18 +10,19 @@
     "dev:serverUrl": "http://localhost:34115"
   },
   "author": {
-    "name": "NPS Team"
+    "name": "NPS"
   },
   "info": {
     "productName": "NPS Client",
-    "productVersion": "1.0.0",
+    "productVersion": "0.26.29",
     "companyName": "NPS",
-    "copyright": "Copyright © 2024 NPS"
+    "copyright": "Copyright © 2026 NPS"
   },
   "build": {
     "nsis": {
       "oneShotInstaller": true,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "icon": "build/windows/icon.ico"
     },
     "windows": {
       "icon": "build/windows/icon.ico"

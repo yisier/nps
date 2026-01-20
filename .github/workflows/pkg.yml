@@ -73,3 +73,70 @@ jobs:
             npc_sdk.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_npc_gui:
+
+    runs-on: ${{ matrix.os }}
+    needs: build_assets
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux/amd64
+            artifact: linux_amd64
+          - os: windows-latest
+            platform: windows/amd64
+            artifact: windows_amd64
+          - os: macos-latest
+            platform: darwin/amd64
+            artifact: darwin_amd64
+    steps:
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Enable Yarn (corepack)
+        run: |
+          corepack enable
+          corepack prepare yarn@stable --activate
+
+      - name: Install frontend deps
+        run: |
+          cd cmd/npc/npc-gui/frontend
+          yarn install --frozen-lockfile
+
+      - name: Install Wails CLI
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Build Wails app
+        run: |
+          cd cmd/npc/npc-gui
+          $(go env GOPATH)/bin/wails build -platform ${{ matrix.platform }}
+        shell: bash
+
+      - name: Package build output
+        run: |
+          cd cmd/npc/npc-gui/build/bin
+          tar -czvf ../../../npc_gui_${{ matrix.artifact }}.tar.gz ./*
+          ls -la ../../../npc_gui_${{ matrix.artifact }}.tar.gz
+        shell: bash
+
+      - name: Upload npc-gui artifact
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: cmd/npc/npc-gui/npc_gui_${{ matrix.artifact }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
