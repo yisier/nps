@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"ehang.io/nps/client"
+	"ehang.io/nps/lib/version"
 	_ "github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -405,6 +406,12 @@ func (a *App) SelectDirectory() (string, error) {
 	logs.Info("用户选择的目录: %s", selectedDir)
 	return selectedDir, nil
 }
+
+// GetAppVersion 返回来自 lib/version 的版本号
+func (a *App) GetAppVersion() string {
+	return version.VERSION
+}
+
 func addShortcut(sc ShortClient) {
 	shortcutsMu.Lock()
 	shortcuts = append(shortcuts, sc)

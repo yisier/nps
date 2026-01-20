@@ -14,6 +14,10 @@ export function ClearConnectionLogs(arg1) {
   return window['go']['main']['App']['ClearConnectionLogs'](arg1);
 }
 
+export function GetAppVersion() {
+  return window['go']['main']['App']['GetAppVersion']();
+}
+
 export function GetClientStates() {
   return window['go']['main']['App']['GetClientStates']();
 }

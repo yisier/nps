@@ -8,6 +8,8 @@ export function AddShortcutFromBase64(arg1:string):Promise<void>;
 
 export function ClearConnectionLogs(arg1:string):Promise<void>;
 
+export function GetAppVersion():Promise<string>;
+
 export function GetClientStates():Promise<Record<string, string>>;
 
 export function GetConnectionLogs(arg1:string):Promise<Array<main.ConnectionLog>>;

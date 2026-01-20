@@ -124,7 +124,10 @@
 
       <div v-else-if="activeView === 'settings'" class="view settings-view">
         <div class="settings-container">
-          <h3 style="margin-bottom:16px">设置</h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <h3 style="margin:0">设置</h3>
+            <div style="color:var(--text-secondary)">版本: {{ appVersion || '未知' }}</div>
+          </div>
 
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
             <label style="flex:1;color:var(--text-secondary)">主题</label>
@@ -236,6 +239,7 @@ export default {
     const rememberClientState = ref(true)
     const logDir = ref('')
     const themeMode = ref('auto') // 'auto', 'light', 'dark'
+    const appVersion = ref('')
 
     // Manual add dialog
     const showManualDialog = ref(false)
@@ -308,6 +312,18 @@ export default {
         // fallback
       }
       return ''
+    }
+
+    const loadAppVersion = async () => {
+      try {
+        if (typeof GetAppVersion === 'function') {
+          appVersion.value = await GetAppVersion()
+        } else {
+          appVersion.value = ''
+        }
+      } catch (e) {
+        console.warn('GetAppVersion failed', e)
+      }
     }
 
     const loadSettings = async () => {
@@ -439,6 +455,7 @@ export default {
     let SaveClientStates = AppAPI.SaveClientStates
     let SelectDirectory = AppAPI.SelectDirectory
     let GetDefaultLogDir = AppAPI.GetDefaultLogDir
+    let GetAppVersion = AppAPI.GetAppVersion
 
     if (!AppAPI || typeof AppAPI.GetShortcuts !== 'function') {
       console.warn('Wails App API not available — using mock implementations for browser debugging')
@@ -484,6 +501,7 @@ export default {
       SaveClientStates = async (m) => { console.log('mock SaveClientStates', m); return }
       SelectDirectory = async () => { console.log('mock SelectDirectory'); return '/mock/selected/path' }
       GetDefaultLogDir = async () => { console.log('mock GetDefaultLogDir'); return 'C:\\Users\\User\\AppData\\Roaming\\npc\\logs' }
+      GetAppVersion = async () => { console.log('mock GetAppVersion'); return 'dev' }
     }
 
     const initWails = async () => {
@@ -995,6 +1013,9 @@ export default {
       // 初始化 Wails
       initWails()
 
+      // 加载版本号（如果后端已绑定）
+      await loadAppVersion()
+
       // 每 2 秒自动刷新客户端状态，保持与服务器同步
       const refreshInterval = setInterval(() => {
         loadClients()
@@ -1033,6 +1054,7 @@ export default {
       rememberClientState,
       logDir,
       themeMode,
+      appVersion,
       loadSettings,
       resetSettings,
       saveSettings,
