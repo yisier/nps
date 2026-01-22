@@ -1,0 +1,139 @@
+name: Gui
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+env:
+  GUI_DIR: cmd/npc/npc-gui
+  FRONTEND_DIR: cmd/npc/npc-gui/frontend
+
+jobs:
+  build_npc_gui:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows/amd64
+            artifact: windows_amd64
+            arch: amd64
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史，有助于版本信息
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            ${{ env.GUI_DIR }}/go.sum
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
+
+      - name: Enable corepack for Yarn
+        run: corepack enable
+
+      - name: Verify Go and Node versions
+        run: |
+          go version
+          node --version
+          yarn --version
+
+      - name: Install frontend dependencies
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: yarn install --frozen-lockfile --network-timeout 100000
+
+      - name: Install UPX (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install upx --version=4.2.4 -y --no-progress
+          upx --version
+
+      - name: Install Wails CLI
+        run: |
+          # 固定 Wails 版本以避免兼容性问题
+          go install github.com/wailsapp/wails/v2/cmd/wails@v2.7.1
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          wails version
+
+      - name: Check Wails environment
+        working-directory: ${{ env.GUI_DIR }}
+        run: wails doctor
+
+      - name: Build Wails application
+        working-directory: ${{ env.GUI_DIR }}
+        env:
+          # 设置构建参数
+          CGO_ENABLED: 1
+          # 对于 Windows，可能需要设置额外的环境变量
+          GOOS: windows
+          GOARCH: amd64
+        run: |
+          # 清理之前的构建
+          if (Test-Path -Path "build" -PathType Container) {
+            Remove-Item -Recurse -Force build
+          }
+          
+          # 构建应用
+          wails build -platform ${{ matrix.platform }} -clean -upx -verbose
+          
+          # 验证构建产物
+          Get-ChildItem -Path "build/bin" -Recurse
+
+      - name: Package build output
+        working-directory: ${{ env.GUI_DIR }}
+        run: |
+          $artifactName = "npc_gui_${{ matrix.artifact }}.zip"
+          $sourceDir = "build/bin"
+          $destPath = "$artifactName"
+          
+          # 确保目标目录存在
+          if (Test-Path -Path $destPath) {
+            Remove-Item -Path $destPath
+          }
+          
+          # 压缩构建产物
+          Compress-Archive -Path "$sourceDir/*" -DestinationPath $destPath -CompressionLevel Optimal
+          
+          # 验证压缩包
+          $fileInfo = Get-Item $destPath
+          Write-Host "Created artifact: $destPath"
+          Write-Host "Size: $($fileInfo.Length / 1MB) MB"
+          
+          # 列出压缩包内容
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::OpenRead($destPath)
+          Write-Host "Archive contains $($zip.Entries.Count) files"
+          $zip.Dispose()
+
+      - name: Upload to workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: npc_gui_${{ matrix.artifact }}
+          path: ${{ env.GUI_DIR }}/npc_gui_${{ matrix.artifact }}.zip
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.GUI_DIR }}/npc_gui_${{ matrix.artifact }}.zip
+          name: NPC GUI (${{ matrix.artifact }})
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
