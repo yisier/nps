@@ -105,9 +105,7 @@ jobs:
           node-version: '18'
 
       - name: Enable Yarn (corepack)
-        run: |
-          corepack enable
-          corepack prepare yarn@1 --activate
+        run: corepack enable
 
       - name: Install frontend deps
         run: |

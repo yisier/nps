@@ -1,5 +1,6 @@
 {
   "name": "npc-client",
+  "packageManager": "yarn@1.22.22",
   "type": "module",
   "version": "1.0.0",
   "scripts": {
