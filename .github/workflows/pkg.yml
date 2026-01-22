@@ -112,9 +112,11 @@ jobs:
           cd cmd/npc/npc-gui/frontend
           yarn install --frozen-lockfile
 
-      - name: Install UPX (Linux)
+      - name: Install Linux Dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y upx
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y upx libgtk-3-dev libwebkit2gtk-4.0-dev
 
       - name: Install UPX (macOS)
         if: runner.os == 'macOS'
