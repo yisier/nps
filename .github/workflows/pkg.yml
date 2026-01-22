@@ -77,7 +77,6 @@ jobs:
   build_npc_gui:
 
     runs-on: ${{ matrix.os }}
-    needs: build_assets
     strategy:
       matrix:
         include:
@@ -115,6 +114,18 @@ jobs:
           cd cmd/npc/npc-gui/frontend
           yarn install --frozen-lockfile
 
+      - name: Install UPX (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y upx
+
+      - name: Install UPX (macOS)
+        if: runner.os == 'macOS'
+        run: brew install upx
+
+      - name: Install UPX (Windows)
+        if: runner.os == 'Windows'
+        run: choco install upx
+
       - name: Install Wails CLI
         run: |
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -123,7 +134,7 @@ jobs:
       - name: Build Wails app
         run: |
           cd cmd/npc/npc-gui
-          $(go env GOPATH)/bin/wails build -platform ${{ matrix.platform }}
+          $(go env GOPATH)/bin/wails build -platform ${{ matrix.platform }} -upx
         shell: bash
 
       - name: Package build output
