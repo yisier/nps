@@ -6,6 +6,7 @@ toolchain go1.24.9
 
 require (
 	ehang.io/nps v0.0.0-00010101000000-000000000000
+	fyne.io/systray v1.9.1-0.20220523202515-bb6f1d955cff
 	github.com/astaxie/beego v1.12.3
 	github.com/wailsapp/wails/v2 v2.11.0
 	golang.org/x/sys v0.30.0

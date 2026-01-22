@@ -1,17 +1,26 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"io/fs"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
+
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 //go:embed all:frontend/dist
 var embeddedFiles embed.FS
+
+//go:embed build/appicon.png
+var trayIcon []byte
+
+//go:embed build/appicon.ico
+var trayIconICO []byte
 
 func main() {
 	app := NewApp()
@@ -32,6 +41,13 @@ func main() {
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		OnStartup:        app.startup,
 		OnShutdown:       app.shutdown,
+		OnBeforeClose: func(ctx context.Context) bool {
+			if isQuitting() {
+				return false
+			}
+			wailsRuntime.Hide(ctx)
+			return true
+		},
 		Bind: []interface{}{
 			app,
 		},

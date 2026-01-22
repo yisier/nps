@@ -14,6 +14,7 @@ import (
 
 	"ehang.io/nps/client"
 	"ehang.io/nps/lib/version"
+	"fyne.io/systray"
 	_ "github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -97,6 +98,8 @@ func (a *App) startup(ctx context.Context) {
 			}
 		}
 	}()
+
+	go a.startTray()
 }
 
 func getLogsPath() string {
@@ -176,7 +179,9 @@ func closeClientLogger(id string) {
 	}
 }
 
-func (a *App) shutdown(ctx context.Context) {}
+func (a *App) shutdown(ctx context.Context) {
+	systray.Quit()
+}
 
 // 持久化文件结构（向后兼容旧的仅数组格式）
 type GuiSettings struct {
