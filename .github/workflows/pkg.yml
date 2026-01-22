@@ -107,7 +107,7 @@ jobs:
       - name: Enable Yarn (corepack)
         run: |
           corepack enable
-          corepack prepare yarn@stable --activate
+          corepack prepare yarn@1 --activate
 
       - name: Install frontend deps
         run: |
