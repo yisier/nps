@@ -55,7 +55,13 @@ jobs:
           & $wails build -m -s -trimpath -skipbindings -tags $env:WAILS_TAGS -o $env:APP_NAME
           Set-Location build\bin
           $zipName = "$env:APP_NAME-windows-$arch.zip"
-          Compress-Archive -Path "$env:APP_NAME.exe" -DestinationPath $zipName -Force
+          $exe = Get-ChildItem -Path . -Filter *.exe | Select-Object -First 1
+          if (-not $exe) {
+            Write-Host "No .exe found in build/bin"
+            Get-ChildItem -Path . | Format-Table -AutoSize
+            exit 1
+          }
+          Compress-Archive -Path $exe.Name -DestinationPath $zipName -Force
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -101,7 +107,13 @@ jobs:
           wails="$(go env GOPATH)/bin/wails"
           "$wails" build -m -s -trimpath -skipbindings -tags "$WAILS_TAGS" -o "$APP_NAME"
           cd build/bin
-          zip -q -r "$APP_NAME-darwin-$arch.zip" "$APP_NAME.app"
+          app="$(ls -1d *.app 2>/dev/null | head -n 1)"
+          if [ -z "$app" ]; then
+            echo "No .app found in build/bin"
+            ls -la
+            exit 1
+          fi
+          zip -q -r "$APP_NAME-darwin-$arch.zip" "$app"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
@@ -152,7 +164,13 @@ jobs:
           wails="$(go env GOPATH)/bin/wails"
           "$wails" build -m -s -trimpath -skipbindings -tags "$WAILS_TAGS" -o "$APP_NAME"
           cd build/bin
-          zip -q "$APP_NAME-linux-$arch.zip" "$APP_NAME"
+          bin="$(find . -maxdepth 1 -type f -perm -111 -printf '%f\n' | head -n 1)"
+          if [ -z "$bin" ]; then
+            echo "No executable file found in build/bin"
+            ls -la
+            exit 1
+          fi
+          zip -q "$APP_NAME-linux-$arch.zip" "$bin"
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
