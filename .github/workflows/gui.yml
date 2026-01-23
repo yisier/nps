@@ -21,10 +21,10 @@ jobs:
           - os: windows-latest
             platform: windows/arm64
             artifact_name: npc-gui-windows-arm64
-          - os: macos-latest
+          - os: macos-13 # Intel Mac 运行器
             platform: darwin/amd64
             artifact_name: npc-gui-macos-amd64
-          - os: macos-latest
+          - os: macos-latest # Apple M系列运行器
             platform: darwin/arm64
             artifact_name: npc-gui-macos-arm64
           - os: ubuntu-latest
@@ -79,9 +79,15 @@ jobs:
         working-directory: ${{ env.GUI_DIR }}
         env:
           CGO_ENABLED: 1
+        shell: bash
         run: |
-          # 基础构建命令
-          wails build -platform ${{ matrix.platform }} -clean -trimpath -webview2 embed
+          # 根据平台决定是否添加 -webview2
+          FLAGS="-clean -trimpath"
+          if [[ "${{ matrix.os }}" == *"windows"* ]]; then
+            FLAGS="$FLAGS -webview2 embed"
+          fi
+          
+          wails build -platform ${{ matrix.platform }} $FLAGS
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
@@ -96,12 +102,11 @@ jobs:
         working-directory: ${{ env.GUI_DIR }}
         run: |
           cd build/bin
-          # 查找生成的二进制文件（Mac 可能是 .app，Linux 是二进制）
           if [ "${{ runner.os }}" == "macOS" ]; then
-            # Mac 默认生成 .app 目录，打包成 zip
+            # Mac 打包 .app
             zip -r "${{ matrix.artifact_name }}.zip" ./*.app
           else
-            # Linux 直接打包二进制
+            # Linux 打包二进制
             BINARY_NAME=$(ls -F | grep -v / | head -n 1)
             zip "${{ matrix.artifact_name }}.zip" "$BINARY_NAME"
           fi
