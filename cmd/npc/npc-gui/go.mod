@@ -6,8 +6,8 @@ toolchain go1.24.9
 
 require (
 	ehang.io/nps v0.0.0-00010101000000-000000000000
-	fyne.io/systray v1.9.1-0.20220523202515-bb6f1d955cff
 	github.com/astaxie/beego v1.12.3
+	github.com/energye/systray v1.0.2
 	github.com/wailsapp/wails/v2 v2.11.0
 	golang.org/x/sys v0.30.0
 )
@@ -49,6 +49,7 @@ require (
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/templexxx/cpufeat v0.0.0-20180724012125-cef66df7f161 // indirect
 	github.com/templexxx/xor v0.0.0-20191217153810-f85b25db303b // indirect
+	github.com/tevino/abool v0.0.0-20220530134649-2bfc934cb23c // indirect
 	github.com/tjfoc/gmsm v1.4.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect

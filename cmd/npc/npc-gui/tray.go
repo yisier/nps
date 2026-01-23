@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"fyne.io/systray"
+	"github.com/energye/systray"
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -87,61 +87,45 @@ func (a *App) startTray() {
 
 			log.Println("systray: menu items added")
 
-			// 菜单项点击处理 - 使用独立的 goroutine 且优化退出逻辑
-			go func() {
-				log.Println("systray: menu listener started")
+			systray.SetOnClick(func(menu systray.IMenu) {
+				_ = menu
+				log.Println("[Tray] Left click")
+				if a.ctx != nil && !isQuitting() {
+					wailsRuntime.EventsEmit(a.ctx, "tray-show")
+					go func() {
+						wailsRuntime.Show(a.ctx)
+					}()
+				}
+			})
 
-				// 使用带缓冲的通道确保退出信号不丢失
-				exitChan := make(chan struct{}, 1)
+			showItem.Click(func() {
+				log.Println("[Menu] Show item clicked")
+				if a.ctx != nil && !isQuitting() {
+					// 确保在主线程执行 UI 操作
+					wailsRuntime.EventsEmit(a.ctx, "tray-show")
+					// 直接调用 Show 可能跨线程，改用异步调用
+					go func() {
+						wailsRuntime.Show(a.ctx)
+					}()
+				}
+			})
 
-				// 监听退出信号
-				go func() {
-					for {
-						if isQuitting() {
-							exitChan <- struct{}{}
-							return
-						}
-						time.Sleep(50 * time.Millisecond)
-					}
-				}()
+			quitItem.Click(func() {
+				log.Println("[Menu] Quit item clicked")
+				if !isQuitting() {
+					setQuitting()
 
-				// 主事件循环
-				for {
-					select {
-					case <-exitChan:
-						log.Println("systray: exit signal received")
-						return
+					// 先关闭菜单
+					systray.Quit()
 
-					case <-showItem.ClickedCh:
-						log.Println("[Menu] Show item clicked")
-						if a.ctx != nil && !isQuitting() {
-							// 确保在主线程执行 UI 操作
-							wailsRuntime.EventsEmit(a.ctx, "tray-show")
-							// 直接调用 Show 可能跨线程，改用异步调用
-							go func() {
-								wailsRuntime.Show(a.ctx)
-							}()
-						}
-
-					case <-quitItem.ClickedCh:
-						log.Println("[Menu] Quit item clicked")
-						if !isQuitting() {
-							setQuitting()
-
-							// 先关闭菜单
-							systray.Quit()
-
-							// 退出应用
-							if a.ctx != nil {
-								wailsRuntime.Quit(a.ctx)
-							} else {
-								os.Exit(0)
-							}
-						}
-						return
+					// 退出应用
+					if a.ctx != nil {
+						wailsRuntime.Quit(a.ctx)
+					} else {
+						os.Exit(0)
 					}
 				}
-			}()
+			})
 		},
 		func() {
 			// onExit 回调

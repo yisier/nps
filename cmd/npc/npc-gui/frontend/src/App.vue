@@ -182,7 +182,7 @@
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label>名称 <span class="required">*</span></label>
+              <label>名称 </label>
               <input v-model="manualForm.name" type="text" class="form-input" placeholder="例如: test" />
             </div>
             <div class="form-group">
@@ -673,11 +673,6 @@ export default {
 
       // 验证必填字段
       const { name, addr, key, tls } = manualForm.value
-
-      if (!name || !name.trim()) {
-        manualFormError.value = '请输入客户端名称'
-        return
-      }
 
       if (!addr || !addr.trim()) {
         manualFormError.value = '请输入连接地址'
