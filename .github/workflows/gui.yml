@@ -12,11 +12,23 @@ env:
   GUI_DIR: cmd/npc/npc-gui
   FRONTEND_DIR: cmd/npc/npc-gui/frontend
   WAILS_VERSION: v2.11.0
-  APP_NAME: nps-client
+  APP_NAME: npc-gui
 
 jobs:
   build_windows:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - platform: windows/386
+            os_name: windows
+            arch: 386
+          - platform: windows/amd64
+            os_name: windows
+            arch: amd64
+          - platform: windows/arm64
+            os_name: windows
+            arch: arm64
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -49,13 +61,12 @@ jobs:
         shell: pwsh
         working-directory: ${{ env.GUI_DIR }}
         run: |
-          $arch = (go env GOARCH)
           $wails = Join-Path (go env GOPATH) "bin\\wails.exe"
           $tagArgs = @()
           if ($env:WAILS_TAGS) { $tagArgs += @("-tags", $env:WAILS_TAGS) }
-          & $wails build -m -s -trimpath -skipbindings @tagArgs -o $env:APP_NAME
+          & $wails build -m -s -trimpath -skipbindings @tagArgs -platform ${{ matrix.platform }} -o "$env:APP_NAME.exe"
           Set-Location build\bin
-          $zipName = "$env:APP_NAME-windows-$arch.zip"
+          $zipName = "$env:APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip"
           $exe = Get-ChildItem -Path . -Filter *.exe | Select-Object -First 1
           if (-not $exe) {
             $exe = Get-ChildItem -Path . -File | Select-Object -First 1
@@ -70,11 +81,20 @@ jobs:
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-builds
-          path: ${{ env.GUI_DIR }}/build/bin/*.zip
+          name: windows-builds-${{ matrix.arch }}
+          path: ${{ env.GUI_DIR }}/build/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
 
   build_macos:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - platform: darwin/amd64
+            os_name: darwin
+            arch: amd64
+          - platform: darwin/arm64
+            os_name: darwin
+            arch: arm64
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -107,13 +127,12 @@ jobs:
         shell: bash
         working-directory: ${{ env.GUI_DIR }}
         run: |
-          arch="$(go env GOARCH)"
           wails="$(go env GOPATH)/bin/wails"
           tagArgs=()
           if [ -n "$WAILS_TAGS" ]; then
             tagArgs+=( -tags "$WAILS_TAGS" )
           fi
-          "$wails" build -m -s -trimpath -skipbindings "${tagArgs[@]}" -o "$APP_NAME"
+          "$wails" build -m -s -trimpath -skipbindings "${tagArgs[@]}" -platform "${{ matrix.platform }}" -o "$APP_NAME"
           cd build/bin
           app="$(ls -1d *.app 2>/dev/null | head -n 1)"
           if [ -z "$app" ]; then
@@ -121,18 +140,24 @@ jobs:
             ls -la
             exit 1
           fi
-          zip -q -r "$APP_NAME-darwin-$arch.zip" "$app"
+          zip -q -r "$APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip" "$app"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macos-builds
-          path: ${{ env.GUI_DIR }}/build/bin/*.zip
+          name: macos-builds-${{ matrix.arch }}
+          path: ${{ env.GUI_DIR }}/build/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
 
   build_linux:
     runs-on: ubuntu-latest
     env:
       WAILS_TAGS: webkit2_41
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            os_name: linux
+            arch: amd64
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -170,13 +195,12 @@ jobs:
         shell: bash
         working-directory: ${{ env.GUI_DIR }}
         run: |
-          arch="$(go env GOARCH)"
           wails="$(go env GOPATH)/bin/wails"
           tagArgs=()
           if [ -n "$WAILS_TAGS" ]; then
             tagArgs+=( -tags "$WAILS_TAGS" )
           fi
-          "$wails" build -m -s -trimpath -skipbindings "${tagArgs[@]}" -o "$APP_NAME"
+          "$wails" build -m -s -trimpath -skipbindings "${tagArgs[@]}" -platform "${{ matrix.platform }}" -o "$APP_NAME"
           cd build/bin
           bin="$(find . -maxdepth 1 -type f -perm -111 -printf '%f\n' | head -n 1)"
           if [ -z "$bin" ]; then
@@ -184,13 +208,13 @@ jobs:
             ls -la
             exit 1
           fi
-          zip -q "$APP_NAME-linux-$arch.zip" "$bin"
+          zip -q "$APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip" "$bin"
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-builds
-          path: ${{ env.GUI_DIR }}/build/bin/*.zip
+          name: linux-builds-${{ matrix.arch }}
+          path: ${{ env.GUI_DIR }}/build/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
 
   upload_release:
     runs-on: ubuntu-latest
