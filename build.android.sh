@@ -9,8 +9,9 @@ if grep -q "buster" /etc/apt/sources.list; then
 fi
 apt-get update
 apt-get install -y libegl1-mesa-dev libgles2-mesa-dev libx11-dev xorg-dev
-GO111MODULE=on go install fyne.io/fyne/v2/cmd/fyne@latest
+GO111MODULE=off go get -u fyne.io/fyne/v2/cmd/fyne
 export PATH="$PATH:$(go env GOPATH)/bin"
+export GO111MODULE=on
 #mkdir -p /go/src/fyne.io
 #cd src/fyne.io
 #git clone https://github.com/fyne-io/fyne.git
@@ -23,7 +24,7 @@ mkdir -p /go/src/ehang.io/nps
 cp -R /app/* /go/src/ehang.io/nps
 cd /go/src/ehang.io/nps
 #go get -u fyne.io/fyne fyne.io/fyne/cmd/fyne
-rm cmd/npc/sdk.go
+rm -f cmd/npc/sdk.go
 #go get -u ./...
 #go mod tidy
 #rm -rf /go/src/golang.org/x/mobile
@@ -38,6 +39,11 @@ rm -rf vendor
 echo "vendor success"
 cd gui/npc
 fyne package -appID org.nps.client -os android -icon ../../docs/logo.png
-test -f npc.apk
-mv npc.apk /app/android_client.apk
+apk="$(ls -1 *.apk 2>/dev/null | head -n 1)"
+if [ -z "$apk" ]; then
+  echo "No apk produced"
+  ls -la
+  exit 1
+fi
+mv "$apk" /app/android_client.apk
 echo "android build success"
