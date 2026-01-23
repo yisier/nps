@@ -9,7 +9,7 @@ if grep -q "buster" /etc/apt/sources.list; then
 fi
 apt-get update
 apt-get install -y libegl1-mesa-dev libgles2-mesa-dev libx11-dev xorg-dev
-go install fyne.io/fyne/v2/cmd/fyne@latest
+GO111MODULE=on go install fyne.io/fyne/v2/cmd/fyne@latest
 export PATH="$PATH:$(go env GOPATH)/bin"
 #mkdir -p /go/src/fyne.io
 #cd src/fyne.io
