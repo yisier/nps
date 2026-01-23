@@ -22,7 +22,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.9'
+          go-version: '1.22'
           cache: true
           cache-dependency-path: |
             go.sum
@@ -42,6 +42,10 @@ jobs:
         working-directory: ${{ env.FRONTEND_DIR }}
         run: yarn install --frozen-lockfile
 
+      - name: Build frontend
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: yarn build
+
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
@@ -51,8 +55,9 @@ jobs:
         env:
           CGO_ENABLED: 1
         run: |
-          # 运行 wails build
-          wails build -platform windows/amd64 -o npc-gui.exe
+          # 运行 wails build，增加 -clean 和 -trimpath
+          # 使用 -webview2 embed 确保依赖嵌入
+          wails build -platform windows/amd64 -o npc-gui.exe -clean -trimpath -webview2 embed
           
           # 检查生成的文件
           if (Test-Path "build/bin/npc-gui.exe") {
