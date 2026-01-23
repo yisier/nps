@@ -11,7 +11,27 @@ env:
 
 jobs:
   build_npc_gui:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows/amd64
+            artifact_name: npc-gui-windows-amd64
+          - os: windows-latest
+            platform: windows/arm64
+            artifact_name: npc-gui-windows-arm64
+          - os: macos-latest
+            platform: darwin/amd64
+            artifact_name: npc-gui-macos-amd64
+          - os: macos-latest
+            platform: darwin/arm64
+            artifact_name: npc-gui-macos-arm64
+          - os: ubuntu-latest
+            platform: linux/amd64
+            artifact_name: npc-gui-linux-amd64
+
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
 
@@ -35,6 +55,12 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
 
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+
       - name: Enable corepack for Yarn
         run: corepack enable
 
@@ -51,39 +77,47 @@ jobs:
 
       - name: Build Wails application
         working-directory: ${{ env.GUI_DIR }}
-        shell: pwsh
         env:
           CGO_ENABLED: 1
         run: |
-          # 运行 wails build，增加 -clean 和 -trimpath
-          # 使用 -webview2 embed 确保依赖嵌入
-          wails build -platform windows/amd64 -o npc-gui.exe -clean -trimpath -webview2 embed
-          
-          # 检查生成的文件
-          if (Test-Path "build/bin/npc-gui.exe") {
-            Write-Host "Successfully built npc-gui.exe"
-            
-            # 打包成 ZIP
-            $zipPath = "build/bin/npc-gui-windows-amd64.zip"
-            Compress-Archive -Path "build/bin/npc-gui.exe" -DestinationPath $zipPath -Force
-            Write-Host "Created zip: $zipPath"
-          } else {
-            Write-Error "Failed to build npc-gui.exe"
-            exit 1
-          }
+          # 基础构建命令
+          wails build -platform ${{ matrix.platform }} -clean -trimpath -webview2 embed
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        working-directory: ${{ env.GUI_DIR }}
+        shell: pwsh
+        run: |
+          $exeName = Get-ChildItem -Path "build/bin/*.exe" | Select-Object -First 1 -ExpandProperty Name
+          Compress-Archive -Path "build/bin/$exeName" -DestinationPath "build/bin/${{ matrix.artifact_name }}.zip" -Force
+
+      - name: Package (macOS/Linux)
+        if: runner.os != 'Windows'
+        working-directory: ${{ env.GUI_DIR }}
+        run: |
+          cd build/bin
+          # 查找生成的二进制文件（Mac 可能是 .app，Linux 是二进制）
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            # Mac 默认生成 .app 目录，打包成 zip
+            zip -r "${{ matrix.artifact_name }}.zip" ./*.app
+          else
+            # Linux 直接打包二进制
+            BINARY_NAME=$(ls -F | grep -v / | head -n 1)
+            zip "${{ matrix.artifact_name }}.zip" "$BINARY_NAME"
+          fi
 
       - name: Upload to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: npc-gui-zip
-          path: ${{ env.GUI_DIR }}/build/bin/npc-gui-windows-amd64.zip
+          name: ${{ matrix.artifact_name }}
+          path: ${{ env.GUI_DIR }}/build/bin/${{ matrix.artifact_name }}.zip
           retention-days: 5
 
       - name: Upload to GitHub Release
         if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.GUI_DIR }}/build/bin/npc-gui-windows-amd64.zip
+          files: ${{ env.GUI_DIR }}/build/bin/${{ matrix.artifact_name }}.zip
           tag_name: ${{ github.event.release.tag_name || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
