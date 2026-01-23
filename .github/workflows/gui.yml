@@ -88,21 +88,20 @@ jobs:
           ARCH=${{ matrix.platform }}
           ARCH=${ARCH#*/}
           
-          # 设置基础编译标志
-          # -s -w 减小体积并减少符号冲突
-          FLAGS="-clean -trimpath -ldflags \"-s -w\""
-          
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            FLAGS="$FLAGS -webview2 embed"
-          fi
-          
           # 针对 macOS 的特殊处理：即使在 ARM 运行器上，也强制通过环境变量指定架构
           if [[ "${{ runner.os }}" == "macOS" ]]; then
             export GOARCH=$ARCH
           fi
+
+          # 使用数组处理参数，防止空格导致的参数拆分错误
+          BUILD_ARGS=(-platform "${{ matrix.platform }}" -clean -trimpath -ldflags "-s -w")
+          
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            BUILD_ARGS+=(-webview2 embed)
+          fi
           
           # 执行构建
-          wails build -platform ${{ matrix.platform }} $FLAGS
+          wails build "${BUILD_ARGS[@]}"
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
