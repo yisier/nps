@@ -41,8 +41,8 @@ jobs:
           chmod +x build.assets.sh
           ./build.assets.sh
       - name: Upload
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         with:
           files: |
             freebsd_386_client.tar.gz
@@ -80,6 +80,7 @@ jobs:
             windows_amd64_client.tar.gz
             windows_amd64_server.tar.gz
             npc_sdk.tar.gz
+          tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
