@@ -1,3 +1,5 @@
+//go:build !darwin
+
 package main
 
 import (
@@ -11,26 +13,6 @@ import (
 	"github.com/energye/systray"
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
-
-// 定义退出标志
-var (
-	quitting  bool
-	quitMutex sync.Mutex
-)
-
-// setQuitting 设置退出状态
-func setQuitting() {
-	quitMutex.Lock()
-	defer quitMutex.Unlock()
-	quitting = true
-}
-
-// isQuitting 检查是否正在退出
-func isQuitting() bool {
-	quitMutex.Lock()
-	defer quitMutex.Unlock()
-	return quitting
-}
 
 // QuitTray 退出托盘程序
 func QuitTray() {
