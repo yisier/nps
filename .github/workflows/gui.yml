@@ -8,6 +8,8 @@ on:
 env:
   GUI_DIR: cmd/npc/npc-gui
   FRONTEND_DIR: cmd/npc/npc-gui/frontend
+  GOTOOLCHAIN: local
+  WAILS_VERSION: v2.11.0
 
 jobs:
   build_npc_gui:
@@ -21,7 +23,7 @@ jobs:
           - os: windows-latest
             platform: windows/arm64
             artifact_name: npc-gui-windows-arm64
-          - os: macos-latest # GitHub 已下线 macos-13，统一使用最新 ARM 运行器
+          - os: macos-latest
             platform: darwin/amd64
             artifact_name: npc-gui-macos-amd64
           - os: macos-latest
@@ -42,7 +44,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.24'
           cache: true
           cache-dependency-path: |
             go.sum
@@ -55,6 +57,11 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
 
+      - name: Setup Zig (For robust CGO cross-compilation)
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
@@ -63,6 +70,7 @@ jobs:
             sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config && break || \
             (echo "Retry $i..." && sleep 5)
           done
+          pkg-config --exists gtk+-3.0 webkit2gtk-4.0 || (echo "Missing dependencies!" && exit 1)
 
       - name: Enable corepack for Yarn
         run: corepack enable
@@ -76,7 +84,7 @@ jobs:
         run: yarn build
 
       - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
 
       - name: Build Wails application
         working-directory: ${{ env.GUI_DIR }}
@@ -84,22 +92,38 @@ jobs:
           CGO_ENABLED: 1
         shell: bash
         run: |
-          # 提取架构信息
-          ARCH=${{ matrix.platform }}
-          ARCH=${ARCH#*/}
+          # 解析平台架构
+          GOOS=${{ matrix.platform }}
+          GOARCH=${GOOS#*/}
+          GOOS=${GOOS%/*}
           
-          # 针对 macOS 的特殊处理：即使在 ARM 运行器上，也强制通过环境变量指定架构
-          if [[ "${{ runner.os }}" == "macOS" ]]; then
-            export GOARCH=$ARCH
+          # 基础构建参数
+          BUILD_ARGS=(-platform "${{ matrix.platform }}" -clean -trimpath -v -ldflags "-s -w")
+          
+          # 1. 针对 macOS 的深度优化
+          if [[ "$GOOS" == "darwin" ]]; then
+            export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+            export MACOSX_DEPLOYMENT_TARGET=10.15
+            if [[ "$GOARCH" == "amd64" ]]; then
+              # 显式指定 clang 架构，解决 ARM 运行器编译 x86_64 时的符号冲突
+              export CC="clang -arch x86_64"
+              export CXX="clang++ -arch x86_64"
+            else
+              export CC="clang -arch arm64"
+              export CXX="clang++ -arch arm64"
+            fi
           fi
 
-          # 使用数组处理参数，防止空格导致的参数拆分错误
-          BUILD_ARGS=(-platform "${{ matrix.platform }}" -clean -trimpath -ldflags "-s -w")
-          
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
+          # 2. 针对 Windows 的深度优化 (使用 Zig 解决 ARM64 工具链问题)
+          if [[ "$GOOS" == "windows" ]]; then
             BUILD_ARGS+=(-webview2 embed)
+            if [[ "$GOARCH" == "arm64" ]]; then
+              # 使用 Zig 作为交叉编译器编译 Windows ARM64
+              export CC="zig cc -target aarch64-windows-gnu"
+              export CXX="zig c++ -target aarch64-windows-gnu"
+            fi
           fi
-          
+
           # 执行构建
           wails build "${BUILD_ARGS[@]}"
 
@@ -108,11 +132,12 @@ jobs:
         working-directory: ${{ env.GUI_DIR }}
         shell: pwsh
         run: |
-          $exeFile = Get-ChildItem -Path "build/bin/*.exe" | Select-Object -First 1
+          $binDir = "build/bin"
+          $exeFile = Get-ChildItem -Path "$binDir/*.exe" | Select-Object -First 1
           if ($exeFile) {
-            Compress-Archive -Path $exeFile.FullName -DestinationPath "build/bin/${{ matrix.artifact_name }}.zip" -Force
+            Compress-Archive -Path $exeFile.FullName -DestinationPath "$binDir/${{ matrix.artifact_name }}.zip" -Force
           } else {
-            Write-Error "No exe found in build/bin"
+            Write-Error "Build output not found in $binDir"
             exit 1
           }
 
@@ -122,24 +147,20 @@ jobs:
         run: |
           cd build/bin
           if [ "${{ runner.os }}" == "macOS" ]; then
-            # macOS 打包：寻找 .app 目录
-            APP_PATH=$(find . -maxdepth 1 -name "*.app" -type d | head -n 1)
-            if [ -n "$APP_PATH" ]; then
-              zip -r "${{ matrix.artifact_name }}.zip" "$APP_PATH"
+            # 精确查找 .app 目录
+            APP_NAME=$(ls -d *.app 2>/dev/null | head -n 1)
+            if [ -n "$APP_NAME" ]; then
+              zip -r "${{ matrix.artifact_name }}.zip" "$APP_NAME"
             else
-              echo "Error: No .app directory found in $(pwd)"
-              ls -la
-              exit 1
+              echo "Error: .app not found" && ls -R && exit 1
             fi
           else
-            # Linux 打包：寻找二进制文件
-            BINARY_NAME=$(find . -maxdepth 1 -type f -executable | head -n 1)
-            if [ -n "$BINARY_NAME" ]; then
-              zip "${{ matrix.artifact_name }}.zip" "$BINARY_NAME"
+            # Linux 精确查找二进制
+            BIN_NAME=$(find . -maxdepth 1 -type f -executable | head -n 1)
+            if [ -n "$BIN_NAME" ]; then
+              zip "${{ matrix.artifact_name }}.zip" "$BIN_NAME"
             else
-              echo "Error: No executable binary found in $(pwd)"
-              ls -la
-              exit 1
+              echo "Error: Binary not found" && ls -R && exit 1
             fi
           fi
 
@@ -151,10 +172,14 @@ jobs:
           retention-days: 5
 
       - name: Upload to GitHub Release
-        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         with:
           files: ${{ env.GUI_DIR }}/build/bin/${{ matrix.artifact_name }}.zip
-          tag_name: ${{ github.event.release.tag_name || github.ref_name }}
+          # 修复手动触发时的 Tag 逻辑：如果没 Release，则上传到 'gui-latest' 标签
+          tag_name: ${{ github.event.release.tag_name || 'gui-latest' }}
+          name: ${{ github.event.release.name || 'Latest GUI Build' }}
+          draft: false
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
