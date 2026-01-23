@@ -32,6 +32,11 @@ func isQuitting() bool {
 	return quitting
 }
 
+// QuitTray 退出托盘程序
+func QuitTray() {
+	systray.Quit()
+}
+
 // startTray 初始化系统托盘
 func (a *App) startTray() {
 	// 锁定 OS 线程，确保 Windows 消息循环稳定运行
