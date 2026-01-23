@@ -8,10 +8,18 @@ if grep -q "buster" /etc/apt/sources.list; then
   echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid
 fi
 apt-get update
-apt-get install -y libegl1-mesa-dev libgles2-mesa-dev libx11-dev xorg-dev
-GO111MODULE=off go get -u fyne.io/fyne/v2/cmd/fyne
+apt-get install -y libegl1-mesa-dev libgles2-mesa-dev libx11-dev xorg-dev ca-certificates curl
+
+GO_VERSION="${GO_VERSION:-1.22.7}"
+curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -o /tmp/go.tgz
+rm -rf /usr/local/go
+tar -C /usr/local -xzf /tmp/go.tgz
+export PATH="/usr/local/go/bin:$PATH"
+export GOTOOLCHAIN=auto
+go version
+
+GO111MODULE=on go install fyne.io/fyne/v2/cmd/fyne@latest
 export PATH="$PATH:$(go env GOPATH)/bin"
-export GO111MODULE=on
 #mkdir -p /go/src/fyne.io
 #cd src/fyne.io
 #git clone https://github.com/fyne-io/fyne.git
