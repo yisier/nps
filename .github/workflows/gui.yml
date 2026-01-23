@@ -12,7 +12,6 @@ env:
   GUI_DIR: cmd/npc/npc-gui
   FRONTEND_DIR: cmd/npc/npc-gui/frontend
   WAILS_VERSION: v2.11.0
-  WAILS_TAGS: webkit2_41
   APP_NAME: nps-client
 
 jobs:
@@ -52,12 +51,17 @@ jobs:
         run: |
           $arch = (go env GOARCH)
           $wails = Join-Path (go env GOPATH) "bin\\wails.exe"
-          & $wails build -m -s -trimpath -skipbindings -tags $env:WAILS_TAGS -o $env:APP_NAME
+          $tagArgs = @()
+          if ($env:WAILS_TAGS) { $tagArgs += @("-tags", $env:WAILS_TAGS) }
+          & $wails build -m -s -trimpath -skipbindings @tagArgs -o $env:APP_NAME
           Set-Location build\bin
           $zipName = "$env:APP_NAME-windows-$arch.zip"
           $exe = Get-ChildItem -Path . -Filter *.exe | Select-Object -First 1
           if (-not $exe) {
-            Write-Host "No .exe found in build/bin"
+            $exe = Get-ChildItem -Path . -File | Select-Object -First 1
+          }
+          if (-not $exe) {
+            Write-Host "No build output found in build/bin"
             Get-ChildItem -Path . | Format-Table -AutoSize
             exit 1
           }
@@ -105,7 +109,11 @@ jobs:
         run: |
           arch="$(go env GOARCH)"
           wails="$(go env GOPATH)/bin/wails"
-          "$wails" build -m -s -trimpath -skipbindings -tags "$WAILS_TAGS" -o "$APP_NAME"
+          tagArgs=()
+          if [ -n "$WAILS_TAGS" ]; then
+            tagArgs+=( -tags "$WAILS_TAGS" )
+          fi
+          "$wails" build -m -s -trimpath -skipbindings "${tagArgs[@]}" -o "$APP_NAME"
           cd build/bin
           app="$(ls -1d *.app 2>/dev/null | head -n 1)"
           if [ -z "$app" ]; then
@@ -123,6 +131,8 @@ jobs:
 
   build_linux:
     runs-on: ubuntu-latest
+    env:
+      WAILS_TAGS: webkit2_41
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -162,7 +172,11 @@ jobs:
         run: |
           arch="$(go env GOARCH)"
           wails="$(go env GOPATH)/bin/wails"
-          "$wails" build -m -s -trimpath -skipbindings -tags "$WAILS_TAGS" -o "$APP_NAME"
+          tagArgs=()
+          if [ -n "$WAILS_TAGS" ]; then
+            tagArgs+=( -tags "$WAILS_TAGS" )
+          fi
+          "$wails" build -m -s -trimpath -skipbindings "${tagArgs[@]}" -o "$APP_NAME"
           cd build/bin
           bin="$(find . -maxdepth 1 -type f -perm -111 -printf '%f\n' | head -n 1)"
           if [ -z "$bin" ]; then
