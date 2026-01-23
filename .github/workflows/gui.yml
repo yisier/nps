@@ -12,6 +12,8 @@ env:
 jobs:
   build_npc_gui:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Check out code
@@ -55,15 +57,28 @@ jobs:
           # 检查生成的文件
           if (Test-Path "build/bin/npc-gui.exe") {
             Write-Host "Successfully built npc-gui.exe"
+            
+            # 打包成 ZIP
+            $zipPath = "build/bin/npc-gui-windows-amd64.zip"
+            Compress-Archive -Path "build/bin/npc-gui.exe" -DestinationPath $zipPath -Force
+            Write-Host "Created zip: $zipPath"
           } else {
             Write-Error "Failed to build npc-gui.exe"
             exit 1
           }
 
+      - name: Upload to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: npc-gui-zip
+          path: ${{ env.GUI_DIR }}/build/bin/npc-gui-windows-amd64.zip
+          retention-days: 5
+
       - name: Upload to GitHub Release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.GUI_DIR }}/build/bin/npc-gui.exe
+          files: ${{ env.GUI_DIR }}/build/bin/npc-gui-windows-amd64.zip
+          tag_name: ${{ github.event.release.tag_name || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
