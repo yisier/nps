@@ -47,6 +47,10 @@ jobs:
         run: yarn install --frozen-lockfile
         working-directory: ${{ env.FRONTEND_DIR }}
 
+      - name: Build frontend
+        run: yarn build
+        working-directory: ${{ env.FRONTEND_DIR }}
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -64,7 +68,7 @@ jobs:
           $wails = Join-Path (go env GOPATH) "bin\\wails.exe"
           $tagArgs = @()
           if ($env:WAILS_TAGS) { $tagArgs += @("-tags", $env:WAILS_TAGS) }
-          & $wails build -m -s -trimpath -skipbindings @tagArgs -platform ${{ matrix.platform }} -o "$env:APP_NAME.exe"
+          & $wails build -m -s -trimpath -skipbindings -skipfrontend @tagArgs -platform ${{ matrix.platform }} -o "$env:APP_NAME.exe"
           Set-Location build\bin
           $zipName = "$env:APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip"
           $exe = Get-ChildItem -Path . -Filter *.exe | Select-Object -First 1
@@ -113,6 +117,10 @@ jobs:
         run: yarn install --frozen-lockfile
         working-directory: ${{ env.FRONTEND_DIR }}
 
+      - name: Build frontend
+        run: yarn build
+        working-directory: ${{ env.FRONTEND_DIR }}
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -132,7 +140,7 @@ jobs:
           if [ -n "$WAILS_TAGS" ]; then
             tagArgs+=( -tags "$WAILS_TAGS" )
           fi
-          "$wails" build -m -s -trimpath -skipbindings "${tagArgs[@]}" -platform "${{ matrix.platform }}" -o "$APP_NAME"
+          "$wails" build -m -s -trimpath -skipbindings -skipfrontend "${tagArgs[@]}" -platform "${{ matrix.platform }}" -o "$APP_NAME"
           cd build/bin
           app="$(ls -1d *.app 2>/dev/null | head -n 1)"
           if [ -z "$app" ]; then
@@ -181,6 +189,10 @@ jobs:
         run: yarn install --frozen-lockfile
         working-directory: ${{ env.FRONTEND_DIR }}
 
+      - name: Build frontend
+        run: yarn build
+        working-directory: ${{ env.FRONTEND_DIR }}
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -200,7 +212,7 @@ jobs:
           if [ -n "$WAILS_TAGS" ]; then
             tagArgs+=( -tags "$WAILS_TAGS" )
           fi
-          "$wails" build -m -s -trimpath -skipbindings "${tagArgs[@]}" -platform "${{ matrix.platform }}" -o "$APP_NAME"
+          "$wails" build -m -s -trimpath -skipbindings -skipfrontend "${tagArgs[@]}" -platform "${{ matrix.platform }}" -o "$APP_NAME"
           cd build/bin
           bin="$(find . -maxdepth 1 -type f -perm -111 -printf '%f\n' | head -n 1)"
           if [ -z "$bin" ]; then
