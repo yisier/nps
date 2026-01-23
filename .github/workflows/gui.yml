@@ -34,8 +34,6 @@ jobs:
             artifact_name: npc-gui-linux-amd64
 
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
 
     steps:
       - name: Check out code
@@ -96,10 +94,10 @@ jobs:
           GOOS=${{ matrix.platform }}
           GOARCH=${GOOS#*/}
           GOOS=${GOOS%/*}
-          
+
           # 基础构建参数
           BUILD_ARGS=(-platform "${{ matrix.platform }}" -clean -trimpath -v -ldflags "-s -w")
-          
+
           # 1. 针对 macOS 的深度优化
           if [[ "$GOOS" == "darwin" ]]; then
             export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
@@ -171,12 +169,25 @@ jobs:
           path: ${{ env.GUI_DIR }}/build/bin/${{ matrix.artifact_name }}.zip
           retention-days: 5
 
+  release:
+    needs: build_npc_gui
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: npc-gui-*
+          merge-multiple: true
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         with:
-          files: ${{ env.GUI_DIR }}/build/bin/${{ matrix.artifact_name }}.zip
-          # 修复手动触发时的 Tag 逻辑：如果没 Release，则上传到 'gui-latest' 标签
+          files: dist/*.zip
           tag_name: ${{ github.event.release.tag_name || 'gui-latest' }}
           name: ${{ github.event.release.name || 'Latest GUI Build' }}
           draft: false
