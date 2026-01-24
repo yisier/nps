@@ -54,10 +54,6 @@ export function SelectDirectory() {
   return window['go']['main']['App']['SelectDirectory']();
 }
 
-export function TestConnection(arg1) {
-  return window['go']['main']['App']['TestConnection'](arg1);
-}
-
 export function ToggleClient(arg1, arg2, arg3, arg4, arg5) {
   return window['go']['main']['App']['ToggleClient'](arg1, arg2, arg3, arg4, arg5);
 }

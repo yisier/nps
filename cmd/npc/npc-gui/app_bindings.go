@@ -448,7 +448,7 @@ func (a *App) AddShortcut(arg string) error {
 
 func (a *App) AddShortcutFromBase64(s string) error {
 	if s == "" {
-		return errors.New("empty input")
+		return errors.New("无效的启动命令")
 	}
 	b, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
@@ -456,12 +456,12 @@ func (a *App) AddShortcutFromBase64(s string) error {
 	}
 	payload := string(b)
 	if !strings.HasPrefix(payload, "nps:") {
-		return errors.New("invalid shortcut format")
+		return errors.New("无效的启动命令")
 	}
 	payload = payload[len("nps:"):]
 	parts := strings.Split(payload, "|")
 	if len(parts) != 4 {
-		return errors.New("invalid shortcut payload")
+		return errors.New("无效的启动命令")
 	}
 	tls := false
 	if parts[3] == "true" {
@@ -559,38 +559,6 @@ func (a *App) RemoveShortcut(name, addr, key string) error {
 	shortcuts = append(shortcuts[:idx], shortcuts[idx+1:]...)
 	saveShortcutsLocked()
 	return nil
-}
-
-func (a *App) TestConnection(input string) (bool, error) {
-	if input == "" {
-		return false, errors.New("输入密钥不能为空")
-	}
-	s := input
-	// use environment NPC_SERVER_ADDR if set, fallback to localhost
-	server := os.Getenv("NPC_SERVER_ADDR")
-	if server == "" {
-		server = "127.0.0.1:8024"
-	}
-
-	// Check if shortcut already exists
-	shortcutsMu.Lock()
-	for _, existing := range shortcuts {
-		if existing.Addr == server && existing.Key == s {
-			shortcutsMu.Unlock()
-			return false, errors.New("this command has already been added")
-		}
-	}
-	shortcutsMu.Unlock()
-
-	// persist a shortcut for this local connection
-	name := "local-" + time.Now().Format("20060102150405")
-	sc := ShortClient{Name: name, Addr: server, Key: s, TLS: false}
-	addShortcut(sc)
-
-	// start npc client in goroutine, not as external process
-	id := server + "|" + s
-	go startNpcClient(id, server, s, false)
-	return true, nil
 }
 
 func (a *App) ToggleClient(name, addr, key string, tls bool, runningState bool) error {

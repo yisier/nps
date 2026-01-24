@@ -209,6 +209,23 @@
           </div>
         </div>
       </div>
+
+      <!-- 确认对话框 -->
+      <div v-if="confirmState.show" class="modal-overlay" @click.self="confirmCancel">
+        <div class="modal-dialog" style="max-width:360px">
+          <div class="modal-header">
+            <h3>确认</h3>
+            <button class="btn-close" @click="confirmCancel">✕</button>
+          </div>
+          <div class="modal-body">
+            <div style="white-space:pre-wrap">{{ confirmState.text }}</div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="confirmCancel">取消</button>
+            <button class="btn btn-primary" @click="confirmOk">确定</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -254,6 +271,12 @@ export default {
     // Theme
     const isDarkTheme = ref(true)
 
+    const confirmState = ref({
+      show: false,
+      text: '',
+      resolve: null
+    })
+
     const SETTINGS_KEY = 'npc_settings'
     const CLIENT_STATES_KEY = 'npc_client_states'
 
@@ -265,8 +288,15 @@ export default {
       return 'light'
     }
 
-    // 应用主题
+    // 应用主题（auto 时交给 CSS 的 prefers-color-scheme 处理）
     const applyTheme = (theme) => {
+      if (theme === 'auto') {
+        document.documentElement.removeAttribute('data-theme')
+        if (window.matchMedia) {
+          isDarkTheme.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+        }
+        return
+      }
       isDarkTheme.value = theme === 'dark'
       document.documentElement.setAttribute('data-theme', theme)
     }
@@ -274,8 +304,7 @@ export default {
     // 根据主题模式应用主题
     const applyThemeMode = (mode) => {
       if (mode === 'auto') {
-        const systemTheme = detectSystemTheme()
-        applyTheme(systemTheme)
+        applyTheme('auto')
       } else {
         applyTheme(mode)
       }
@@ -443,7 +472,6 @@ export default {
     let AddShortcutFromBase64 = AppAPI.AddShortcutFromBase64
     let RemoveShortcut = AppAPI.RemoveShortcut
     let ToggleClient = AppAPI.ToggleClient
-    let TestConnection = AppAPI.TestConnection
     let GetConnectionLogs = AppAPI.GetConnectionLogs
     let ClearConnectionLogs = AppAPI.ClearConnectionLogs
 
@@ -480,10 +508,7 @@ export default {
         console.log('mock ToggleClient', name, newState)
         return
       }
-      TestConnection = async (input) => {
-        console.log('mock TestConnection', input)
-        return
-      }
+
       GetConnectionLogs = async (clientId) => {
         console.log('mock GetConnectionLogs', clientId)
         return [
@@ -638,7 +663,8 @@ export default {
           await AddShortcutFromBase64(input)
         } else {
           // Try direct key connection
-          await TestConnection(input)
+          showMessage('快捷启动命令格式错误', 'error')
+          return
         }
 
         commandInput.value = ''
@@ -715,7 +741,8 @@ export default {
     }
 
     const removeClient = async (client) => {
-      if (!confirm(`确定要删除 "${client.name}" 吗？`)) return
+      const confirmed = await confirmDialog(`确定要删除 "${client.name}" 吗？`)
+      if (!confirmed) return
 
       try {
         await RemoveShortcut(client.name, client.addr, client.key)
@@ -903,7 +930,8 @@ export default {
     })
 
     const clearLogs = async () => {
-      if (!confirm('确定要清空日志吗？')) return
+      const confirmed = await confirmDialog('确定要清空日志吗？')
+      if (!confirmed) return
       try {
         if (selectedClientId.value) {
           await ClearConnectionLogs(selectedClientId.value)
@@ -921,6 +949,22 @@ export default {
         showMessage('清空日志失败', 'error')
       }
     }
+
+    const confirmDialog = (text) => {
+      return new Promise((resolve) => {
+        confirmState.value = { show: true, text, resolve }
+      })
+    }
+
+    const closeConfirmDialog = (confirmed) => {
+      if (confirmState.value.resolve) {
+        confirmState.value.resolve(confirmed)
+      }
+      confirmState.value = { show: false, text: '', resolve: null }
+    }
+
+    const confirmOk = () => closeConfirmDialog(true)
+    const confirmCancel = () => closeConfirmDialog(false)
 
     // 检查是否在底部
     const isAtBottom = () => {
@@ -1000,10 +1044,15 @@ export default {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
       const handleThemeChange = (e) => {
         if (themeMode.value === 'auto') {
-          applyTheme(e.matches ? 'dark' : 'light')
+          isDarkTheme.value = e.matches
+          document.documentElement.removeAttribute('data-theme')
         }
       }
-      mediaQuery.addEventListener('change', handleThemeChange)
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleThemeChange)
+      } else if (mediaQuery.addListener) {
+        mediaQuery.addListener(handleThemeChange)
+      }
 
       // 初始化 Wails
       initWails()
@@ -1030,7 +1079,11 @@ export default {
         if (logRefreshInterval) {
           clearInterval(logRefreshInterval)
         }
-        mediaQuery.removeEventListener('change', handleThemeChange)
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener('change', handleThemeChange)
+        } else if (mediaQuery.removeListener) {
+          mediaQuery.removeListener(handleThemeChange)
+        }
       }
     })
 
@@ -1061,6 +1114,9 @@ export default {
       showManualAddDialog,
       closeManualAddDialog,
       submitManualAdd,
+      confirmState,
+      confirmOk,
+      confirmCancel,
       addConnection,
       removeClient,
       toggleClient,
@@ -1093,7 +1149,7 @@ export default {
   --warning-color: #f39c12;
 }
 
-/* Light Theme */
+/* Light Theme (explicit) */
 [data-theme="light"] {
   --bg-primary: #f5f7fa;
   --bg-secondary: #ffffff;
@@ -1107,6 +1163,24 @@ export default {
   --success-color: #38a169;
   --error-color: #e53e3e;
   --warning-color: #dd6b20;
+}
+
+/* Light Theme (auto via prefers-color-scheme) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e4e7eb;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --text-tertiary: #718096;
+    --border-color: #cbd5e0;
+    --accent-color: #3182ce;
+    --accent-hover: #2c5aa0;
+    --success-color: #38a169;
+    --error-color: #e53e3e;
+    --warning-color: #dd6b20;
+  }
 }
 
 * {

@@ -25,6 +25,17 @@
 
 
 # 更新日志  
+
+- 2026-01-24 v0.26.29  
+  新增：  
+  GUI 客户端，基于 Wails 开发，[点击查看了解更多](https://github.com/yisier/nps/blob/master/cmd/npc/npc-gui/README.md)，需要 WebView2 运行时，可通过两种方式添加客户端。  
+  方式1：直接输入快捷启动命令即可  
+  方式2：手动添加客户端，输入-server -vkey等参数
+  ![img.png](image/new/gui.png)
+  修复：  
+  Android 包未构建到 Release [72](https://github.com/yisier/nps/issues/72)
+  
+
 - 2025-12-06 v0.26.28  
   -【全局参数】页面新增`服务地址`配置项，用于客户端命令地址显示、隧道访问地址显示 [293](https://github.com/yisier/nps/issues/293)   
   -【IP授权功能优化】，通过穿透的端口去提交 IP 认证，感谢 [Aqamoe](https://github.com/Aqamoe) 的建议 [291](https://github.com/yisier/nps/issues/291)  

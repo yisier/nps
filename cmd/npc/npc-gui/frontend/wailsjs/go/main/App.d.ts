@@ -28,6 +28,4 @@ export function SaveGuiSettings(arg1:main.GuiSettings):Promise<void>;
 
 export function SelectDirectory():Promise<string>;
 
-export function TestConnection(arg1:string):Promise<boolean>;
-
 export function ToggleClient(arg1:string,arg2:string,arg3:string,arg4:boolean,arg5:boolean):Promise<void>;

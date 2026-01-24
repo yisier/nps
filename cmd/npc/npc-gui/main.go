@@ -32,9 +32,11 @@ func main() {
 	}
 
 	runErr := wails.Run(&options.App{
-		Title:  "NPS 客户端",
-		Width:  1000,
-		Height: 600,
+		Title:     "NPS 客户端",
+		Width:     1000,
+		Height:    600,
+		MinWidth:  1000,
+		MinHeight: 600,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

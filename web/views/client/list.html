@@ -218,7 +218,8 @@
     });
 
     function encodeToBase64(str){
-        return btoa("nps:"+ str);
+        const utf8Str = unescape(encodeURIComponent("nps:"+str));
+        return btoa(utf8Str);
     }
 
     function copyCommand(data) {
