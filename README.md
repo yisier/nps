@@ -26,6 +26,14 @@
 
 # 更新日志  
 
+- 2026-03-12  v0.26.30  
+  修复：
+  - http 协议 websocket 错误，感谢[xiaozonglong](https://github.com/xiaozonglong) 提供的 home assistant 环境 ,[#268](https://github.com/yisier/nps/issues/268),[#296](https://github.com/yisier/nps/issues/296)
+  - 域名解析中，主机url点击无法跳转非80端口 [311](https://github.com/yisier/nps/issues/311)  
+  - 新增的主机配置页面，客户端ID异常 [#310](https://github.com/yisier/nps/issues/310)
+  - 自动 HTTPS(301) 按照 `https_proxy_port` 配置的端口号跳转
+  
+  
 - 2026-01-24 v0.26.29  
   新增：  
   GUI 客户端，基于 Wails 开发，[点击查看了解更多](https://github.com/yisier/nps/blob/master/cmd/npc/npc-gui/README.md)，需要 WebView2 运行时，可通过两种方式添加客户端。  

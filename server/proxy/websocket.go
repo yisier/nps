@@ -99,8 +99,8 @@ func NewHttpReverseProxy(s *httpServer) *HttpReverseProxy {
 	local, _ := net.ResolveTCPAddr("tcp", "127.0.0.1")
 	proxy := NewReverseProxy(&httputil.ReverseProxy{
 		Director: func(r *http.Request) {
-			host := r.Context().Value("host").(*file.Host)
-			common.ChangeHostAndHeader(r, host.HostChange, host.HeaderChange, "")
+			//host := r.Context().Value("host").(*file.Host)
+			//common.ChangeHostAndHeader(r, host.HostChange, host.HeaderChange, "")
 		},
 		Transport: &http.Transport{
 			ResponseHeaderTimeout: rp.responseHeaderTimeout,

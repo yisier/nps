@@ -187,6 +187,7 @@
                         var option = "<option value=\"" + data.rows[i].Id + "\"";
                         option += ">" + data.rows[i].Id + '-' + data.rows[i].Remark + "</option>"; //动态添加数据
                         $("select[name='client_id']").append(option);
+                        $("select[name='client_id']").find("option[value='{{.client_id}}']").attr("selected", true);
                     }
                 }
             }

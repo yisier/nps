@@ -109,7 +109,7 @@
                 halign: 'center',
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
-                    return "<a href='http://" + row.Host  + "' target='_blank'>" + row.Host + "</a>"
+                    return "<a href='http://" + row.Host + '{{.http_proxy_port}}'  + "' target='_blank'>" + row.Host + '{{.http_proxy_port}}' + "</a>"
                 }
             },
             {
