@@ -1,7 +1,7 @@
 # NPS
 
-[新特性文档](https://dqg9t9eulqq.feishu.cn/wiki/FmVVwDcEGiTZxekYJl5ccuFanlg?from=from_copylink)
-
+[新特性文档](https://dqg9t9eulqq.feishu.cn/wiki/FmVVwDcEGiTZxekYJl5ccuFanlg?from=from_copylink)  
+[原版文档](https://ehang.io/nps/documents)
 # 说明
 由于nps已经停更多年，存留了不少bug和未完善的功能。
 
@@ -11,17 +11,25 @@
 
 ***宝塔面板***：[宝塔面板 Docker](docs/bt.md)
 
-# 交流群
-聊天灌水QQ群：619833483(2000人群),770569342
-
-# 广告
-[NPS云穿透](https://natnps.com/register?utm_from=MQ==)，免费4M带宽，2条隧道；6.8元12M带宽，10条隧道；13.8元24M带宽，20条隧道。  
-   
-雨云，500M带宽服务器；云服务器15元起，[专属连接，首月5折](https://www.rainyun.com/MjY0MzY1_)。
-
-# 提示
 强烈推荐使用无配置文件模式启动客户端（删除掉npc.exe 目录下的`conf`文件夹即可），所有数据应该在服务端保存和配置，而客户端只做连接转发。客户端配置文件对小白极不友好，配置繁琐，容易出错。   
 0.26.21 版本后的客户端，无需再通过命令行方式启动、安装、卸载客户端，直接双击运行，按照提示输入指令即可完成，非常方便。
+
+# 广告
+[NPS云穿透](https://natnps.com/register?utm_from=MQ==)，免费3M带宽，2条隧道；6.8元12M带宽，10条隧道；13.8元24M带宽，20条隧道。  
+雨云，500M带宽服务器；云服务器15元起，[专属连接，首月5折](https://www.rainyun.com/MjY0MzY1_)。
+
+# 快速上手
+***服务端启动/安装：***`./npc(.exe) -server`    
+
+![img.png](image/new/server.png)
+
+***客户端启动/安装：*** `./npc(.exe)`
+
+![image](image/new/cmd.png)
+
+
+# 交流群
+聊天灌水QQ群：619833483，热心群主可提供免费远程协助👍👍👍
 
 
 # 更新日志  
