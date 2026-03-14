@@ -41,11 +41,12 @@ func (https *HttpsServer) Start() error {
 		serverName, rb := GetServerNameFromClientHello(c)
 		if serverName == "" {
 			serverName = getFallbackServerName()
+			logs.Debug("https fallback server name result, remote addr %s, server name %q", c.RemoteAddr().String(), serverName)
 		}
 		r := buildHttpsRequest(serverName)
 		if host, err := file.GetDb().GetInfoByHost(serverName, r); err != nil {
 			c.Close()
-			logs.Debug("the url %s can't be parsed!,remote addr %s", serverName, c.RemoteAddr().String())
+			logs.Debug("https host lookup failed, server name %q, remote addr %s, error %v", serverName, c.RemoteAddr().String(), err)
 			return
 		} else {
 			if host.CertFilePath == "" || host.KeyFilePath == "" {
@@ -362,10 +363,12 @@ func GetServerNameFromClientHello(c net.Conn) (string, []byte) {
 	return clientHello.GetServerName(), rawBytes
 }
 
-// build https request
+// build https request for SNI-based host lookup.
+// RequestURI is set to "*" to skip Location filtering in GetInfoByHost,
+// because at TLS handshake stage the actual HTTP request path is unknown.
 func buildHttpsRequest(hostName string) *http.Request {
 	r := new(http.Request)
-	r.RequestURI = "/"
+	r.RequestURI = "*"
 	r.URL = new(url.URL)
 	r.URL.Scheme = "https"
 	r.Host = hostName

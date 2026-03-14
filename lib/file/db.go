@@ -377,6 +377,13 @@ func (s *DbUtils) GetInfoByHost(host string, r *http.Request) (h *Host, err erro
 		if v.Location == "" {
 			v.Location = "/"
 		}
+		// "*" means SNI-based HTTPS lookup where actual URI is unknown, skip location filter
+		if r.RequestURI == "*" {
+			if h == nil || (len(v.Location) > len(h.Location)) {
+				h = v
+			}
+			continue
+		}
 		if strings.Index(r.RequestURI, v.Location) == 0 {
 			if h == nil || (len(v.Location) > len(h.Location)) {
 				h = v
