@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -38,6 +39,9 @@ func (https *HttpsServer) Start() error {
 
 	conn.Accept(https.listener, func(c net.Conn) {
 		serverName, rb := GetServerNameFromClientHello(c)
+		if serverName == "" {
+			serverName = getFallbackServerName()
+		}
 		r := buildHttpsRequest(serverName)
 		if host, err := file.GetDb().GetInfoByHost(serverName, r); err != nil {
 			c.Close()
@@ -138,6 +142,35 @@ func (https *HttpsServer) Start() error {
 	//	})
 	//}
 	return nil
+}
+
+func getFallbackServerName() string {
+	global := file.GetDb().GetGlobal()
+	if global == nil {
+		return ""
+	}
+	serverName := strings.TrimSpace(global.ServerUrl)
+	if serverName == "" {
+		return ""
+	}
+	if strings.Contains(serverName, "://") {
+		if u, err := url.Parse(serverName); err == nil && u.Host != "" {
+			serverName = u.Host
+		}
+	}
+	if i := strings.Index(serverName, "/"); i >= 0 {
+		serverName = serverName[:i]
+	}
+	serverName = common.GetIpByAddr(serverName)
+	serverName = strings.TrimSpace(serverName)
+	if serverName == "" {
+		return ""
+	}
+	ip := net.ParseIP(serverName)
+	if ip != nil && ip.IsUnspecified() {
+		return ""
+	}
+	return serverName
 }
 
 func (https *HttpsServer) cert(host *file.Host, c net.Conn, rb []byte, certFileUrl string, keyFileUrl string) {
@@ -300,21 +333,33 @@ func (httpsListener *HttpsListener) Addr() net.Addr {
 	return httpsListener.parentListener.Addr()
 }
 
-// get server name from connection by read client hello bytes
+// get server name from connection by read full client hello bytes
 func GetServerNameFromClientHello(c net.Conn) (string, []byte) {
-	buf := make([]byte, 4096)
-	data := make([]byte, 4096)
-	n, err := c.Read(buf)
+	header := make([]byte, 5)
+	headerN, err := io.ReadFull(c, header)
 	if err != nil {
-		return "", nil
+		return "", header[:headerN]
 	}
-	if n < 42 {
-		return "", nil
+	if header[0] != 0x16 {
+		return "", header
 	}
-	copy(data, buf[:n])
+	recordLen := int(header[3])<<8 | int(header[4])
+	if recordLen <= 0 {
+		return "", header
+	}
+
+	body := make([]byte, recordLen)
+	bodyN, err := io.ReadFull(c, body)
+	if err != nil {
+		return "", append(header, body[:bodyN]...)
+	}
+
+	rawBytes := append(header, body...)
 	clientHello := new(crypt.ClientHelloMsg)
-	clientHello.Unmarshal(data[5:n])
-	return clientHello.GetServerName(), buf[:n]
+	if !clientHello.Unmarshal(body) {
+		return "", rawBytes
+	}
+	return clientHello.GetServerName(), rawBytes
 }
 
 // build https request
