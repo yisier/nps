@@ -11,6 +11,7 @@ import (
 	"ehang.io/nps/lib/goroutine"
 	"ehang.io/nps/server/connection"
 	"encoding/json"
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"io"
 	"net"
@@ -113,7 +114,7 @@ func (s *httpServer) handleTunneling(w http.ResponseWriter, r *http.Request) {
 
 	// 自动 http 301 https
 	if host.AutoHttps && r.TLS == nil {
-		http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
+		http.Redirect(w, r, "https://"+host.Host+":"+beego.AppConfig.String("https_proxy_port"), http.StatusMovedPermanently)
 		return
 	}
 
