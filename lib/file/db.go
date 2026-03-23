@@ -96,7 +96,7 @@ func (s *DbUtils) GetIdByVerifyKey(vKey string, addr string) (id int, err error)
 func (s *DbUtils) NewTask(t *Tunnel) (err error) {
 	s.JsonDb.Tasks.Range(func(key, value interface{}) bool {
 		v := value.(*Tunnel)
-		if (v.Mode == "secret" || v.Mode == "p2p") && v.Password == t.Password {
+		if (v.Mode == "secret" || v.Mode == "p2p") && v.Password == t.Password && t.Password != "" {
 			err = errors.New(fmt.Sprintf("secret mode keys %s must be unique", t.Password))
 			return false
 		}
