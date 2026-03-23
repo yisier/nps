@@ -4,8 +4,9 @@
 [原版文档](https://ehang.io/nps/documents)
 # 说明
 由于nps已经停更多年，存留了不少bug和未完善的功能。
-
 此版本基于 nps 0.26.10的基础上二次开发而来。
+### 交流
+聊天灌水QQ群：619833483，热心群主可提供免费远程协助👍👍👍
 
 ***DockerHub***： [NPS](https://hub.docker.com/r/yisier1/nps) [NPC](https://hub.docker.com/r/yisier1/npc)
 
@@ -28,11 +29,16 @@
 ![image](image/new/cmd.png)
 
 
-# 交流群
-聊天灌水QQ群：619833483，热心群主可提供免费远程协助👍👍👍
-
 
 # 更新日志  
+
+- 2026-03-23  v0.26.31  
+  - 新增：
+    - 域名解析记录开关功能 [#314](https://github.com/yisier/nps/issues/314)
+    - TCP隧道增加Basic认证 [306](https://github.com/yisier/nps/issues/306)
+  - 修复：
+    - 新增隧道出现secret mode keys must be unique [301](https://github.com/yisier/nps/issues/301)
+
 
 - 2026-03-12  v0.26.30  
   修复：
