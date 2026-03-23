@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"ehang.io/nps/bridge"
 	"ehang.io/nps/lib/common"
@@ -105,6 +106,22 @@ func ProcessTunnel(c *conn.Conn, s *TunnelModeServer) error {
 		c.Close()
 		logs.Warn("tcp port %d ,client id %d,task id %d connect error %s", s.task.Port, s.task.Client.Id, s.task.Id, err.Error())
 		return err
+	}
+
+	if s.task.Client.Cnf.U != "" && s.task.Client.Cnf.P != "" {
+		c.Conn.SetReadDeadline(time.Now().Add(time.Millisecond * 200))
+		_, _, rb, err, r := c.GetHost()
+		c.Conn.SetReadDeadline(time.Time{})
+
+		if err == nil && !common.CheckAuth(r, s.task.Client.Cnf.U, s.task.Client.Cnf.P) {
+			c.Write([]byte(common.UnauthorizedBytes))
+			c.Close()
+			return errors.New("401 Unauthorized")
+		}
+		if err == nil {
+			return s.DealClient(c, s.task.Client, targetAddr, rb, common.CONN_TCP,
+				nil, s.task.Client.Flow, s.task.Target.LocalProxy, s.task)
+		}
 	}
 
 	return s.DealClient(c, s.task.Client, targetAddr, nil, common.CONN_TCP, nil, s.task.Client.Flow, s.task.Target.LocalProxy, s.task)
