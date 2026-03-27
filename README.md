@@ -31,7 +31,10 @@
 
 
 # 更新日志  
-
+- 2026-03-27  v0.26.32
+  - 修复：
+    - 客户端注册参数未正确处理[快捷启动命令]和[TLS快捷启动命令] [#303](https://github.com/yisier/nps/issues/303)  
+    - 修复https反向代理bug，感谢[okawao](https://github.com/okawao) 的 PR
 - 2026-03-23  v0.26.31  
   - 新增：
     - 域名解析记录开关功能 [#314](https://github.com/yisier/nps/issues/314)
