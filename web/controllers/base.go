@@ -65,9 +65,10 @@ func (s *BaseController) Prepare() {
 	s.Data["allow_tunnel_num_limit"], _ = beego.AppConfig.Bool("allow_tunnel_num_limit")
 	s.Data["allow_local_proxy"], _ = beego.AppConfig.Bool("allow_local_proxy")
 	s.Data["allow_user_change_username"], _ = beego.AppConfig.Bool("allow_user_change_username")
+	showHttpProxyPort, _ := beego.AppConfig.Bool("show_http_proxy_port")
 	httpPort := beego.AppConfig.String("http_proxy_port")
-	if httpPort != "80" {
-		s.Data["http_proxy_port"] = ":" + beego.AppConfig.String("http_proxy_port")
+	if httpPort != "80" && showHttpProxyPort {
+		s.Data["http_proxy_port"] = ":" + httpPort
 	}
 }
 
