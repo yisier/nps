@@ -39,10 +39,10 @@ func (s *Conn) readRequest(buf []byte) (n int, err error) {
 	var rd int
 	for {
 		rd, err = s.Read(buf[n:])
+		n += rd
 		if err != nil {
 			return
 		}
-		n += rd
 		if n < 4 {
 			continue
 		}
@@ -61,10 +61,12 @@ func (s *Conn) readRequest(buf []byte) (n int, err error) {
 func (s *Conn) GetHost() (method, address string, rb []byte, err error, r *http.Request) {
 	var b [32 * 1024]byte
 	var n int
-	if n, err = s.readRequest(b[:]); err != nil {
+	if n, err = s.readRequest(b[:]); n > 0 {
+		rb = b[:n]
+	}
+	if err != nil {
 		return
 	}
-	rb = b[:n]
 	r, err = http.ReadRequest(bufio.NewReader(bytes.NewReader(rb)))
 	if err != nil {
 		return

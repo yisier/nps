@@ -122,6 +122,10 @@ func ProcessTunnel(c *conn.Conn, s *TunnelModeServer) error {
 			return s.DealClient(c, s.task.Client, targetAddr, rb, common.CONN_TCP,
 				nil, s.task.Client.Flow, s.task.Target.LocalProxy, s.task)
 		}
+		if len(rb) > 0 {
+			return s.DealClient(c, s.task.Client, targetAddr, rb, common.CONN_TCP,
+				nil, s.task.Client.Flow, s.task.Target.LocalProxy, s.task)
+		}
 	}
 
 	return s.DealClient(c, s.task.Client, targetAddr, nil, common.CONN_TCP, nil, s.task.Client.Flow, s.task.Target.LocalProxy, s.task)
