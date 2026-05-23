@@ -12,6 +12,7 @@ import (
 	"ehang.io/nps/lib/common"
 	"ehang.io/nps/lib/crypt"
 	"ehang.io/nps/lib/file"
+	"ehang.io/nps/lib/version"
 	"ehang.io/nps/server"
 	"github.com/astaxie/beego"
 )
@@ -97,10 +98,13 @@ func (s *BaseController) display(tpl ...string) {
 
 	s.Data["bridgeType"] = beego.AppConfig.String("bridge_type")
 	if common.IsWindows() {
-		s.Data["win"] = ".exe"
+		s.Data["win"] = "npc.exe"
+	} else {
+		s.Data["win"] = "./npc"
 	}
 
 	s.Data["p"] = strconv.Itoa(server.Bridge.TunnelPort)
+	s.Data["version"] = version.VERSION
 
 	if bridge.ServerTlsEnable {
 		tlsPort := strconv.Itoa(beego.AppConfig.DefaultInt("tls_bridge_port", 8025))

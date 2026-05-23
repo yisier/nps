@@ -79,16 +79,16 @@
                     + '<b langtag="word-protoversion"></b>: ' + row.ProtoVersion + '&emsp;'
             if (row.Mode == "p2p") {
                 return tmp + "<br/><br>"
-                        + '<b langtag="word-commandaccessp2p"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
+                        + '<b langtag="word-commandaccessp2p"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
                         + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -target=" + row.Target.TargetStr + "</code>" + "<br/><br>"
-                        + '<b langtag="word-commandaccessp2ps"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
+                        + '<b langtag="word-commandaccessp2ps"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
                         + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=p2ps" + "</code>" + "<br/><br>"
-                        + '<b langtag="word-commandaccessp2pt"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
+                        + '<b langtag="word-commandaccessp2pt"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
                         + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=p2pt" + "</code>"
 
             }
             if (row.Mode == "secret") {
-                return tmp + "<br/><br>" + '<b langtag="word-commandaccess"></b>: ' + "<code>./npc{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
+                return tmp + "<br/><br>" + '<b langtag="word-commandaccess"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
                         + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=secret" + "</code>"
             }
             return tmp
