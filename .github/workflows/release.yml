@@ -2,9 +2,6 @@ name: Release
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
-    branches: [ master ]
 
 permissions:
   contents: write
@@ -17,17 +14,15 @@ env:
 
 jobs:
 
+  # ==================== 跨平台服务端/客户端打包 ====================
   build_assets:
-
     runs-on: ubuntu-latest
     steps:
-
-      - name: Set up Go 1.x
+      - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.22
-        id: go
-      - name: Check out code into the Go module directory
+          go-version: "1.22"
+      - name: Check out code
         uses: actions/checkout@v2
       - name: Get dependencies
         run: |
@@ -84,10 +79,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # ==================== Android APK ====================
   build_android:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code into the Go module directory
+      - name: Check out code
         uses: actions/checkout@v4
       - name: Build
         run: |
@@ -104,6 +100,52 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # ==================== Docker 镜像 ====================
+  build_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push nps
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.nps
+          platforms: linux/amd64,linux/arm,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/nps:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/nps:${{ env.RELEASE_VERSION }}
+      - name: Build and push npc
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.npc
+          platforms: linux/amd64,linux/arm,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/npc:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/npc:${{ env.RELEASE_VERSION }}
+
+  # ==================== Windows GUI ====================
   build_windows_gui:
     runs-on: windows-latest
     strategy:
@@ -121,40 +163,33 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: yarn
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
-
       - name: Enable Yarn (corepack)
         run: corepack enable
-
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
         working-directory: ${{ env.FRONTEND_DIR }}
-
       - name: Build frontend
         run: yarn build
         working-directory: ${{ env.FRONTEND_DIR }}
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: ${{ env.GUI_DIR }}/go.mod
           check-latest: true
-
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
         working-directory: ${{ env.GUI_DIR }}
-
       - name: Build and package (Windows)
         shell: pwsh
         working-directory: ${{ env.GUI_DIR }}
         run: |
-          $wails = Join-Path (go env GOPATH) "bin\\wails.exe"
+          $wails = Join-Path (go env GOPATH) "bin\wails.exe"
           $tagArgs = @()
           if ($env:WAILS_TAGS) { $tagArgs += @("-tags", $env:WAILS_TAGS) }
           & $wails build -m -s -trimpath -skipbindings @tagArgs -platform ${{ matrix.platform }} -o "$env:APP_NAME.exe"
@@ -170,13 +205,13 @@ jobs:
             exit 1
           }
           Compress-Archive -Path $exe.Name -DestinationPath $zipName -Force
-
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-builds-${{ matrix.arch }}
           path: ${{ env.GUI_DIR }}/build/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
 
+  # ==================== macOS GUI ====================
   build_macos_gui:
     runs-on: macos-latest
     strategy:
@@ -191,35 +226,28 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: yarn
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
-
       - name: Enable Yarn (corepack)
         run: corepack enable
-
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
         working-directory: ${{ env.FRONTEND_DIR }}
-
       - name: Build frontend
         run: yarn build
         working-directory: ${{ env.FRONTEND_DIR }}
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: ${{ env.GUI_DIR }}/go.mod
           check-latest: true
-
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
         working-directory: ${{ env.GUI_DIR }}
-
       - name: Build and package (macOS)
         shell: bash
         working-directory: ${{ env.GUI_DIR }}
@@ -238,13 +266,13 @@ jobs:
             exit 1
           fi
           zip -q -r "$APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip" "$app"
-
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-builds-${{ matrix.arch }}
           path: ${{ env.GUI_DIR }}/build/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
 
+  # ==================== Linux GUI ====================
   build_linux_gui:
     runs-on: ubuntu-latest
     env:
@@ -258,40 +286,32 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: yarn
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
-
       - name: Enable Yarn (corepack)
         run: corepack enable
-
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
         working-directory: ${{ env.FRONTEND_DIR }}
-
       - name: Build frontend
         run: yarn build
         working-directory: ${{ env.FRONTEND_DIR }}
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: ${{ env.GUI_DIR }}/go.mod
           check-latest: true
-
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
         working-directory: ${{ env.GUI_DIR }}
-
       - name: Build and package (Linux)
         shell: bash
         working-directory: ${{ env.GUI_DIR }}
@@ -310,13 +330,13 @@ jobs:
             exit 1
           fi
           zip -q "$APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip" "$bin"
-
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-builds-${{ matrix.arch }}
           path: ${{ env.GUI_DIR }}/build/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
 
+  # ==================== GUI Release 上传 ====================
   upload_gui_release:
     runs-on: ubuntu-latest
     needs: [build_windows_gui, build_macos_gui, build_linux_gui]
@@ -326,7 +346,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: release-assets
-
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
