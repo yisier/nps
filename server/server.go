@@ -57,7 +57,7 @@ func DealBridgeTask() {
 	for {
 		select {
 		case t := <-Bridge.OpenTask:
-			AddTask(t)
+			StartTask(t.Id)
 		case t := <-Bridge.CloseTask:
 			StopServer(t.Id)
 		case id := <-Bridge.CloseClient:
@@ -67,8 +67,6 @@ func DealBridgeTask() {
 					file.GetDb().DelClient(id)
 				}
 			}
-		case tunnel := <-Bridge.OpenTask:
-			StartTask(tunnel.Id)
 		case s := <-Bridge.SecretChan:
 			logs.Trace("New secret connection, addr", s.Conn.Conn.RemoteAddr())
 			if t := file.GetDb().GetTaskByMd5Password(s.Password); t != nil {
@@ -160,25 +158,20 @@ func NewMode(Bridge *bridge.Bridge, c *file.Tunnel) proxy.Service {
 
 // stop server
 func StopServer(id int) error {
-	//if v, ok := RunList[id]; ok {
 	if v, ok := RunList.Load(id); ok {
 		if svr, ok := v.(proxy.Service); ok {
 			if err := svr.Close(); err != nil {
-				return err
+				logs.Error("stop server id %d error", id, err)
 			}
-			logs.Info("stop server id %d", id)
 		} else {
 			logs.Warn("stop server id %d error", id)
 		}
-		if t, err := file.GetDb().GetTask(id); err != nil {
-			return err
-		} else {
+		RunList.Delete(id)
+		if t, err := file.GetDb().GetTask(id); err == nil {
 			t.Status = false
 			logs.Info("close port %d,remark %s,client id %d,task id %d", t.Port, t.Remark, t.Client.Id, t.Id)
 			file.GetDb().UpdateTask(t)
 		}
-		//delete(RunList, id)
-		RunList.Delete(id)
 		return nil
 	}
 	return errors.New("task is not running")

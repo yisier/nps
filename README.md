@@ -38,6 +38,11 @@
     - web 静态文件打包进可执行文件：启动时若 web/static、web/views 目录不存在，自动释放内嵌资源，部署不再需要单独拷贝 web 目录
     - 精简发布包：去除打包时冗余的 conf/nps.conf、web 目录
     - 清理失效配置项：移除 appname、runmode、https_default_cert_file、https_default_key_file、https_just_proxy
+  - 修复：
+    - [#184](https://github.com/yisier/nps/issues/184) 限速导致隧道中断：UpdateClient 在 RateLimit=0 时创建零速率令牌桶导致永久阻塞
+    - [#159](https://github.com/yisier/nps/issues/159) 关闭隧道端口仍可用：StopServer 错误时提前返回未更新状态 + 重复 OpenTask case 导致隧道被自动重启
+    - [#170](https://github.com/yisier/nps/issues/170) TCP 负载均衡只有一个后端可达：GetRandomTarget 未处理 \r 换行符和尾部空行
+    - [#319](https://github.com/yisier/nps/issues/319) 客户端列表不显示实时网速：NowRate 计算逻辑错误，改为统计每秒实际消耗字节数
 
 - 2026-03-27  v0.26.32
   - 修复：

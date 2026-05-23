@@ -207,22 +207,28 @@ type MultiAccount struct {
 }
 
 func (s *Target) GetRandomTarget() (string, error) {
+	s.Lock()
 	if s.TargetArr == nil {
-		s.TargetArr = strings.Split(s.TargetStr, "\n")
-	}
-	if len(s.TargetArr) == 1 {
-		return s.TargetArr[0], nil
+		arr := strings.Split(s.TargetStr, "\n")
+		s.TargetArr = make([]string, 0, len(arr))
+		for _, v := range arr {
+			v = strings.TrimRight(v, "\r")
+			if v != "" {
+				s.TargetArr = append(s.TargetArr, v)
+			}
+		}
 	}
 	if len(s.TargetArr) == 0 {
+		s.Unlock()
 		return "", errors.New("all inward-bending targets are offline")
 	}
-	s.Lock()
-	defer s.Unlock()
 	if s.nowIndex >= len(s.TargetArr)-1 {
 		s.nowIndex = -1
 	}
 	s.nowIndex++
-	return s.TargetArr[s.nowIndex], nil
+	addr := s.TargetArr[s.nowIndex]
+	s.Unlock()
+	return addr, nil
 }
 
 type Glob struct {
