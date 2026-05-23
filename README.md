@@ -35,6 +35,9 @@
   - 新增：
     - 配置文件自动生成：启动时若 conf 目录或 nps.conf 不存在，自动创建并写入默认配置，方便 Docker 部署
     - 默认 web_username/admin、web_password、auth_key、auth_crypt_key 均改为随机生成，并打印到终端，提升安全性
+    - web 静态文件打包进可执行文件：启动时若 web/static、web/views 目录不存在，自动释放内嵌资源，部署不再需要单独拷贝 web 目录
+    - 精简发布包：去除打包时冗余的 conf/nps.conf、web 目录
+    - 清理失效配置项：移除 appname、runmode、https_default_cert_file、https_default_key_file、https_just_proxy
 
 - 2026-03-27  v0.26.32
   - 修复：

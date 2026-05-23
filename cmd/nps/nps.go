@@ -26,6 +26,7 @@ import (
 
 	"ehang.io/nps/lib/common"
 	"ehang.io/nps/lib/crypt"
+	"ehang.io/nps/web"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 
@@ -471,17 +472,12 @@ func initConfig(confDir string) {
 		logs.Info("auth_key:", authKey)
 		logs.Info("auth_crypt_key:", authCryptKey)
 	}
+	web.ExtractWebFiles(common.GetRunPath())
 }
 
-const defaultNpsConf = `appname = nps
-runmode = dev
-
-http_proxy_ip=0.0.0.0
+const defaultNpsConf = `http_proxy_ip=0.0.0.0
 http_proxy_port=80
 https_proxy_port=443
-https_just_proxy=true
-https_default_cert_file=conf/server.pem
-https_default_key_file=conf/server.key
 show_http_proxy_port=true
 
 bridge_type=tcp

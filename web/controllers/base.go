@@ -55,7 +55,6 @@ func (s *BaseController) Prepare() {
 	} else {
 		s.Data["isAdmin"] = true
 	}
-	s.Data["https_just_proxy"], _ = beego.AppConfig.Bool("https_just_proxy")
 	s.Data["allow_user_login"], _ = beego.AppConfig.Bool("allow_user_login")
 	s.Data["allow_flow_limit"], _ = beego.AppConfig.Bool("allow_flow_limit")
 	s.Data["allow_rate_limit"], _ = beego.AppConfig.Bool("allow_rate_limit")

@@ -7,6 +7,5 @@ RUN CGO_ENABLED=0 go build -ldflags="-w -s -extldflags -static" ./cmd/nps/nps.go
 
 FROM scratch
 COPY --from=builder /go/src/ehang.io/nps/nps /
-COPY --from=builder /go/src/ehang.io/nps/web /web
 VOLUME /conf
 CMD ["/nps"]
