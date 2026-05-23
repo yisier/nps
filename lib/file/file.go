@@ -158,6 +158,9 @@ func (s *JsonDb) GetHostId() int32 {
 }
 
 func loadSyncMapFromFile(filePath string, f func(value string)) {
+	if !common.FileExists(filePath) {
+		return
+	}
 	b, err := common.ReadAllFromFile(filePath)
 	if err != nil {
 		panic(err)

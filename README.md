@@ -31,6 +31,11 @@
 
 
 # 更新日志  
+- 2026-05-23  v0.26.33
+  - 新增：
+    - 配置文件自动生成：启动时若 conf 目录或 nps.conf 不存在，自动创建并写入默认配置，方便 Docker 部署
+    - 默认 web_username/admin、web_password、auth_key、auth_crypt_key 均改为随机生成，并打印到终端，提升安全性
+
 - 2026-03-27  v0.26.32
   - 修复：
     - 客户端注册参数未正确处理[快捷启动命令]和[TLS快捷启动命令] [#303](https://github.com/yisier/nps/issues/303)  
