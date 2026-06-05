@@ -72,7 +72,7 @@ func (s *conn) Close() (err error) {
 func (s *conn) closeProcess() {
 	s.isClose = true
 	s.receiveWindow.mux.connMap.Delete(s.connId)
-	if !s.receiveWindow.mux.IsClose {
+	if !s.receiveWindow.mux.IsClose() {
 		// if server or user close the conn while reading, will Get a io.EOF
 		// and this Close method will be invoke, send this signal to close other side
 		s.receiveWindow.mux.sendInfo(muxConnClose, s.connId, nil)

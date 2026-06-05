@@ -345,7 +345,7 @@ func GetServerNameFromClientHello(c net.Conn) (string, []byte) {
 		return "", header
 	}
 	recordLen := int(header[3])<<8 | int(header[4])
-	if recordLen <= 0 {
+	if recordLen <= 0 || recordLen > 16384 {
 		return "", header
 	}
 

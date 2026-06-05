@@ -187,8 +187,14 @@ func storeSyncMapToFile(m sync.Map, filePath string) {
 	file, err := os.Create(filePath + ".tmp")
 	// first create a temporary file to store
 	if err != nil {
-		panic(err)
+		logs.Error("store to file: create tmp file error: %v", err)
+		return
 	}
+	defer func() {
+		file.Close()
+		os.Remove(filePath + ".tmp")
+	}()
+	var writeErr bool
 	m.Range(func(key, value interface{}) bool {
 		var b []byte
 		var err error
@@ -211,9 +217,6 @@ func storeSyncMapToFile(m sync.Map, filePath string) {
 				return true
 			}
 			b, err = json.Marshal(obj)
-		//case *Glob:
-		//	obj := value.(*Glob)
-		//	b, err = json.Marshal(obj)
 		default:
 			return true
 		}
@@ -222,40 +225,54 @@ func storeSyncMapToFile(m sync.Map, filePath string) {
 		}
 		_, err = file.Write(b)
 		if err != nil {
-			panic(err)
+			logs.Error("store to file: write error: %v", err)
+			writeErr = true
+			return false
 		}
 		_, err = file.Write([]byte("\n" + common.CONN_DATA_SEQ))
 		if err != nil {
-			panic(err)
+			logs.Error("store to file: write separator error: %v", err)
+			writeErr = true
+			return false
 		}
 		return true
 	})
+	if writeErr {
+		return
+	}
 	_ = file.Sync()
 	_ = file.Close()
-	// must close file first, then rename it
 	err = os.Rename(filePath+".tmp", filePath)
 	if err != nil {
 		logs.Error(err, "store to file err, data will lost")
 	}
-	// replace the file, maybe provides atomic operation
 }
 
 func storeGlobalToFile(m *Glob, filePath string) {
 	file, err := os.Create(filePath + ".tmp")
 	// first create a temporary file to store
 	if err != nil {
-		panic(err)
+		logs.Error("store global to file: create tmp file error: %v", err)
+		return
 	}
+	defer func() {
+		file.Close()
+		os.Remove(filePath + ".tmp")
+	}()
 
 	var b []byte
 	b, err = json.Marshal(m)
+	if err != nil {
+		logs.Error("store global to file: marshal error: %v", err)
+		return
+	}
 	_, err = file.Write(b)
 	if err != nil {
-		panic(err)
+		logs.Error("store global to file: write error: %v", err)
+		return
 	}
 	_ = file.Sync()
 	_ = file.Close()
-	// must close file first, then rename it
 	err = os.Rename(filePath+".tmp", filePath)
 	if err != nil {
 		logs.Error(err, "store to file err, data will lost")

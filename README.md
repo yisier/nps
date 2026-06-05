@@ -31,6 +31,22 @@
 
 
 # 更新日志  
+- 2026-06-04  v0.26.34
+  - 修复：
+    - Dashboard IO 速率采集阻塞请求 500ms，改为后台采集缓存，消除 Sleep 等待
+    - ServerStatus 切片并发读写不安全，添加 RWMutex 保护
+    - flowSession goroutine 泄漏，改为仅在 StartNewServer 启动一次
+    - GetTunnel 双重遍历 sync.Map 性能问题，合并为单次 Range
+    - Bridge Client 字段并发读写不安全，添加 Mutex 保护
+    - TLS ClientHello recordLen 无上限，添加 16KB 限制防止内存耗尽
+    - SOCKS5 地址解析未检查 Read 返回值，改用 io.ReadFull
+    - 文件存储 panic 改为错误日志，defer 清理临时文件防止泄漏
+    - GenerateServerPort 可能无限循环，限制 1000 次重试
+    - P2P UDP 无超时永久阻塞，添加 30s ReadDeadline
+    - P2P goroutine 退出控制改用 context，修复潜在泄漏
+    - 客户端 UDP ReadFrom 错误后未退出，修复无效数据继续处理
+  - 优化：ioutil.WriteFile → os.WriteFile、rand.Seed → rand.New 本地随机源
+
 - 2026-05-23  v0.26.33
   - 新增：
     - 配置文件自动生成：启动时若 conf 目录或 nps.conf 不存在，自动创建并写入默认配置，方便 Docker 部署

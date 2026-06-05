@@ -324,20 +324,22 @@ func (s *TRPClient) handleUdp(serverConn net.Conn) {
 		defer serverConn.Close()
 		b := common.BufPoolUdp.Get().([]byte)
 		defer common.BufPoolUdp.Put(b)
+		var buf bytes.Buffer
 		for {
 			n, raddr, err := local.ReadFrom(b)
 			if err != nil {
 				s.logError("read data from remote server error %s", err.Error())
+				return
 			}
-			buf := bytes.Buffer{}
+			buf.Reset()
 			dgram := common.NewUDPDatagram(common.NewUDPHeader(0, 0, common.ToSocksAddr(raddr)), b[:n])
 			dgram.Write(&buf)
-			b, err := conn.GetLenBytes(buf.Bytes())
+			data, err := conn.GetLenBytes(buf.Bytes())
 			if err != nil {
 				s.logWarn("get len bytes error %s", err.Error())
 				continue
 			}
-			if _, err := serverConn.Write(b); err != nil {
+			if _, err := serverConn.Write(data); err != nil {
 				s.logError("write data to remote  error %s", err.Error())
 				return
 			}
@@ -377,7 +379,7 @@ loop:
 	for {
 		select {
 		case <-s.ticker.C:
-			if s.tunnel != nil && s.tunnel.IsClose {
+			if s.tunnel != nil && s.tunnel.IsClose() {
 				s.Close()
 				break loop
 			}

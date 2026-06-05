@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"ehang.io/nps/lib/common"
@@ -28,11 +29,12 @@ import (
 var ServerTlsEnable bool = false
 
 type Client struct {
+	mu        sync.Mutex // 保护 signal/tunnel/Version 等字段的并发读写
 	tunnel    *nps_mux.Mux
 	signal    *conn.Conn
 	file      *nps_mux.Mux
 	Version   string
-	retryTime int // it will be add 1 when ping not ok until to 3 will close the client
+	retryTime atomic.Int32 // it will be add 1 when ping not ok until to 3 will close the client
 }
 
 func NewClient(t, f *nps_mux.Mux, s *conn.Conn, vs string) *Client {
@@ -237,8 +239,13 @@ func (s *Bridge) cliProcess(c *conn.Conn) {
 
 func (s *Bridge) DelClient(id int) {
 	if v, ok := s.Client.Load(id); ok {
-		if v.(*Client).signal != nil {
-			v.(*Client).signal.Close()
+		cl := v.(*Client)
+		cl.mu.Lock()
+		signalToClose := cl.signal
+		cl.signal = nil
+		cl.mu.Unlock()
+		if signalToClose != nil {
+			signalToClose.Close()
 		}
 		s.Client.Delete(id)
 		if file.GetDb().IsPubClient(id) {
@@ -267,18 +274,26 @@ func (s *Bridge) typeDeal(typeVal string, c *conn.Conn, id int, vs string) {
 		}
 		//the vKey connect by another ,close the client of before
 		if v, ok := s.Client.LoadOrStore(id, NewClient(nil, nil, c, vs)); ok {
-			if v.(*Client).signal != nil {
-				v.(*Client).signal.WriteClose()
+			cl := v.(*Client)
+			cl.mu.Lock()
+			oldSignal := cl.signal
+			cl.signal = c
+			cl.Version = vs
+			cl.mu.Unlock()
+			cl.retryTime.Store(0)
+			if oldSignal != nil {
+				oldSignal.WriteClose()
 			}
-			v.(*Client).signal = c
-			v.(*Client).Version = vs
 		}
 		go s.GetHealthFromClient(id, c)
 		logs.Info("clientId %d connection succeeded, address:%s ", id, c.Conn.RemoteAddr())
 	case common.WORK_CHAN:
 		muxConn := nps_mux.NewMux(c.Conn, s.tunnelType, s.disconnectTime)
 		if v, ok := s.Client.LoadOrStore(id, NewClient(muxConn, nil, nil, vs)); ok {
-			v.(*Client).tunnel = muxConn
+			cl := v.(*Client)
+			cl.mu.Lock()
+			cl.tunnel = muxConn
+			cl.mu.Unlock()
 		}
 	case common.WORK_CONFIG:
 		client, err := file.GetDb().GetClient(id)
@@ -299,7 +314,10 @@ func (s *Bridge) typeDeal(typeVal string, c *conn.Conn, id int, vs string) {
 	case common.WORK_FILE:
 		muxConn := nps_mux.NewMux(c.Conn, s.tunnelType, s.disconnectTime)
 		if v, ok := s.Client.LoadOrStore(id, NewClient(nil, muxConn, nil, vs)); ok {
-			v.(*Client).file = muxConn
+			cl := v.(*Client)
+			cl.mu.Lock()
+			cl.file = muxConn
+			cl.mu.Unlock()
 		}
 	case common.WORK_P2P:
 		//read md5 secret
@@ -311,15 +329,22 @@ func (s *Bridge) typeDeal(typeVal string, c *conn.Conn, id int, vs string) {
 			if v, ok := s.Client.Load(t.Client.Id); !ok {
 				return
 			} else {
+				cl := v.(*Client)
+				cl.mu.Lock()
+				sig := cl.signal
+				cl.mu.Unlock()
+				if sig == nil {
+					return
+				}
 				//向密钥对应的客户端发送与服务端udp建立连接信息，地址，密钥
-				v.(*Client).signal.Write([]byte(common.NEW_UDP_CONN))
+				sig.Write([]byte(common.NEW_UDP_CONN))
 				svrAddr := beego.AppConfig.String("p2p_ip") + ":" + beego.AppConfig.String("p2p_port")
 				if err != nil {
 					logs.Warn("get local udp addr error")
 					return
 				}
-				v.(*Client).signal.WriteLenContent([]byte(svrAddr))
-				v.(*Client).signal.WriteLenContent(b)
+				sig.WriteLenContent([]byte(svrAddr))
+				sig.WriteLenContent(b)
 				//向该请求者发送建立连接请求,服务器地址
 				c.WriteLenContent([]byte(svrAddr))
 			}
@@ -356,11 +381,14 @@ func (s *Bridge) SendLinkInfo(clientId int, link *conn.Link, t *file.Tunnel) (ta
 			}
 		}
 		var tunnel *nps_mux.Mux
+		cl := v.(*Client)
+		cl.mu.Lock()
 		if t != nil && t.Mode == "file" {
-			tunnel = v.(*Client).file
+			tunnel = cl.file
 		} else {
-			tunnel = v.(*Client).tunnel
+			tunnel = cl.tunnel
 		}
+		cl.mu.Unlock()
 		if tunnel == nil {
 			err = errors.New("the client connect error")
 			return
@@ -393,14 +421,19 @@ func (s *Bridge) ping() {
 			arr := make([]int, 0)
 			s.Client.Range(func(key, value interface{}) bool {
 				v := value.(*Client)
-				if v.tunnel == nil || v.signal == nil {
-					v.retryTime += 1
-					if v.retryTime >= 3 {
+				v.mu.Lock()
+				tunnel := v.tunnel
+				signal := v.signal
+				if tunnel == nil || signal == nil {
+					v.mu.Unlock()
+					if v.retryTime.Add(1) >= 3 {
 						arr = append(arr, key.(int))
 					}
 					return true
 				}
-				if v.tunnel.IsClose {
+				isClose := tunnel.IsClose()
+				v.mu.Unlock()
+				if isClose {
 					arr = append(arr, key.(int))
 				}
 				return true

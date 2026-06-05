@@ -108,22 +108,47 @@ func (s *Sock5ModeServer) sendReply(c net.Conn, rep uint8) {
 // do conn
 func (s *Sock5ModeServer) doConnect(c net.Conn, command uint8) {
 	addrType := make([]byte, 1)
-	c.Read(addrType)
+	if _, err := io.ReadFull(c, addrType); err != nil {
+		logs.Warn("read addr type error", err)
+		s.sendReply(c, serverFailure)
+		c.Close()
+		return
+	}
 	var host string
 	switch addrType[0] {
 	case ipV4:
 		ipv4 := make(net.IP, net.IPv4len)
-		c.Read(ipv4)
+		if _, err := io.ReadFull(c, ipv4); err != nil {
+			logs.Warn("read ipv4 error", err)
+			s.sendReply(c, serverFailure)
+			c.Close()
+			return
+		}
 		host = ipv4.String()
 	case ipV6:
 		ipv6 := make(net.IP, net.IPv6len)
-		c.Read(ipv6)
+		if _, err := io.ReadFull(c, ipv6); err != nil {
+			logs.Warn("read ipv6 error", err)
+			s.sendReply(c, serverFailure)
+			c.Close()
+			return
+		}
 		host = ipv6.String()
 	case domainName:
 		var domainLen uint8
-		binary.Read(c, binary.BigEndian, &domainLen)
+		if err := binary.Read(c, binary.BigEndian, &domainLen); err != nil {
+			logs.Warn("read domain len error", err)
+			s.sendReply(c, serverFailure)
+			c.Close()
+			return
+		}
 		domain := make([]byte, domainLen)
-		c.Read(domain)
+		if _, err := io.ReadFull(c, domain); err != nil {
+			logs.Warn("read domain error", err)
+			s.sendReply(c, serverFailure)
+			c.Close()
+			return
+		}
 		host = string(domain)
 	default:
 		s.sendReply(c, addrTypeNotSupported)
@@ -131,7 +156,12 @@ func (s *Sock5ModeServer) doConnect(c net.Conn, command uint8) {
 	}
 
 	var port uint16
-	binary.Read(c, binary.BigEndian, &port)
+	if err := binary.Read(c, binary.BigEndian, &port); err != nil {
+		logs.Warn("read port error", err)
+		s.sendReply(c, serverFailure)
+		c.Close()
+		return
+	}
 	// connect to host
 	addr := net.JoinHostPort(host, strconv.Itoa(int(port)))
 	var ltype string
@@ -176,22 +206,42 @@ func (s *Sock5ModeServer) sendUdpReply(writeConn net.Conn, c net.Conn, rep uint8
 func (s *Sock5ModeServer) handleUDP(c net.Conn) {
 	defer c.Close()
 	addrType := make([]byte, 1)
-	c.Read(addrType)
+	if _, err := io.ReadFull(c, addrType); err != nil {
+		logs.Warn("read addr type error", err)
+		s.sendReply(c, serverFailure)
+		return
+	}
 	var host string
 	switch addrType[0] {
 	case ipV4:
 		ipv4 := make(net.IP, net.IPv4len)
-		c.Read(ipv4)
+		if _, err := io.ReadFull(c, ipv4); err != nil {
+			logs.Warn("read ipv4 error", err)
+			s.sendReply(c, serverFailure)
+			return
+		}
 		host = ipv4.String()
 	case ipV6:
 		ipv6 := make(net.IP, net.IPv6len)
-		c.Read(ipv6)
+		if _, err := io.ReadFull(c, ipv6); err != nil {
+			logs.Warn("read ipv6 error", err)
+			s.sendReply(c, serverFailure)
+			return
+		}
 		host = ipv6.String()
 	case domainName:
 		var domainLen uint8
-		binary.Read(c, binary.BigEndian, &domainLen)
+		if err := binary.Read(c, binary.BigEndian, &domainLen); err != nil {
+			logs.Warn("read domain len error", err)
+			s.sendReply(c, serverFailure)
+			return
+		}
 		domain := make([]byte, domainLen)
-		c.Read(domain)
+		if _, err := io.ReadFull(c, domain); err != nil {
+			logs.Warn("read domain error", err)
+			s.sendReply(c, serverFailure)
+			return
+		}
 		host = string(domain)
 	default:
 		s.sendReply(c, addrTypeNotSupported)
@@ -199,8 +249,12 @@ func (s *Sock5ModeServer) handleUDP(c net.Conn) {
 	}
 	//读取端口
 	var port uint16
-	binary.Read(c, binary.BigEndian, &port)
-	logs.Warn(host, string(port))
+	if err := binary.Read(c, binary.BigEndian, &port); err != nil {
+		logs.Warn("read port error", err)
+		s.sendReply(c, serverFailure)
+		return
+	}
+	logs.Warn(host, strconv.Itoa(int(port)))
 	replyAddr, err := net.ResolveUDPAddr("udp", s.task.ServerIp+":0")
 	if err != nil {
 		logs.Error("build local reply addr error", err)
