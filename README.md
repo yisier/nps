@@ -46,6 +46,10 @@
     - P2P goroutine 退出控制改用 context，修复潜在泄漏
     - 客户端 UDP ReadFrom 错误后未退出，修复无效数据继续处理
     - [#324](https://github.com/yisier/nps/issues/324) 隧道/域名解析/UDP 流量始终为 0
+    - muxPackager buffer pool 泄漏：UnPack() 错误路径未归还 windowBuff 导致内存持续增长
+    - bridge 客户端重连时旧 WORK_CHAN/WORK_FILE mux 未关闭，底层连接和 goroutine 永不释放
+    - pmux 连接超时泄漏：process() channel 发送超时后连接未关闭，且 ACCEPT_TIME_OUT 单位错误（10ns 应为 10s）
+    - pmux 关闭流程 panic：加 done channel + WaitGroup 保证 Close() 等所有 process() 退出后再 close conn channel；process() 入口设 ReadDeadline 防止阻塞读导致 wg.Wait() 死锁；PortListener 加 done channel 唤醒 Accept()
   - 优化：ioutil.WriteFile → os.WriteFile、rand.Seed → rand.New 本地随机源
 
 - 2026-05-23  v0.26.33

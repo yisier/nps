@@ -135,6 +135,7 @@ func (Self *muxPackager) UnPack(reader io.Reader) (n uint16, err error) {
 	Self.buf = Self.buf[0:13]
 	l, err := io.ReadFull(reader, Self.buf[:5])
 	if err != nil {
+		windowBuff.Put(Self.buf) // 归还 buf，避免 pool 泄漏
 		return
 	}
 	n += uint16(l)
@@ -145,6 +146,11 @@ func (Self *muxPackager) UnPack(reader io.Reader) (n uint16, err error) {
 		var m uint16
 		Self.content = windowBuff.Get() // need Get a window buf from pool
 		m, err = Self.basePackager.UnPack(reader)
+		if err != nil {
+			windowBuff.Put(Self.content) // 归还 content buf，避免 pool 泄漏
+			windowBuff.Put(Self.buf)
+			return
+		}
 		n += m
 	case muxMsgSendOk:
 		l, err = io.ReadFull(reader, Self.buf[5:13])

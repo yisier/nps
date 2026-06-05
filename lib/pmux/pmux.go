@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"ehang.io/nps/lib/common"
@@ -34,6 +35,8 @@ type PortMux struct {
 	net.Listener
 	port        int
 	isClose     bool
+	done        chan struct{}  // 关闭时触发 process() 退出，避免 send on closed channel
+	wg          sync.WaitGroup // 跟踪 in-flight process()，保证 Close() 关闭 conn channel 前全部退出
 	managerHost string
 	clientConn  chan *PortConn
 	httpConn    chan *PortConn
@@ -45,6 +48,7 @@ func NewPortMux(port int, managerHost string) *PortMux {
 	pMux := &PortMux{
 		managerHost: managerHost,
 		port:        port,
+		done:        make(chan struct{}),
 		clientConn:  make(chan *PortConn),
 		httpConn:    make(chan *PortConn),
 		httpsConn:   make(chan *PortConn),
@@ -65,25 +69,35 @@ func (pMux *PortMux) Start() error {
 		logs.Error(err)
 		os.Exit(0)
 	}
+	pMux.wg.Add(1)
 	go func() {
+		defer pMux.wg.Done()
 		for {
 			conn, err := pMux.Listener.Accept()
 			if err != nil {
 				logs.Warn(err)
-				//close
-				pMux.Close()
+				return
 			}
-			go pMux.process(conn)
+			pMux.wg.Add(1)
+			go func(c net.Conn) {
+				defer pMux.wg.Done()
+				pMux.process(c)
+			}(conn)
 		}
 	}()
 	return nil
 }
 
 func (pMux *PortMux) process(conn net.Conn) {
+	// 设置读超时，防止客户端不发数据导致 goroutine 永久阻塞，造成 wg.Wait() 死锁
+	readTimeout := ACCEPT_TIME_OUT * time.Second
+	conn.SetReadDeadline(time.Now().Add(readTimeout))
+
 	// Recognition according to different signs
 	// read 3 byte
 	buf := make([]byte, 3)
 	if n, err := io.ReadFull(conn, buf); err != nil || n != 3 {
+		conn.Close()
 		return
 	}
 	var ch chan *PortConn
@@ -92,6 +106,7 @@ func (pMux *PortMux) process(conn net.Conn) {
 	var readMore = false
 	switch common.BytesToNum(buf) {
 	case HTTP_CONNECT, HTTP_DELETE, HTTP_GET, HTTP_HEAD, HTTP_OPTIONS, HTTP_POST, HTTP_PUT, HTTP_TRACE: //http and manager
+		conn.SetReadDeadline(time.Now().Add(readTimeout)) // 刷新超时，给 HTTP 头读取完整时间窗口
 		buffer.Reset()
 		r := bufio.NewReader(conn)
 		buffer.Write(buf)
@@ -127,12 +142,18 @@ func (pMux *PortMux) process(conn net.Conn) {
 		readMore = true
 		ch = pMux.httpsConn
 	}
+	// 清除读超时，后续由 PortConn 的消费者自行管理超时
+	conn.SetReadDeadline(time.Time{})
 	if len(rs) == 0 {
 		rs = buf
 	}
-	timer := time.NewTimer(ACCEPT_TIME_OUT)
+	timer := time.NewTimer(readTimeout)
+	defer timer.Stop()
 	select {
+	case <-pMux.done:
+		conn.Close()
 	case <-timer.C:
+		conn.Close()
 	case ch <- newPortConn(conn, rs, readMore):
 	}
 }
@@ -142,11 +163,14 @@ func (pMux *PortMux) Close() error {
 		return errors.New("the port pmux has closed")
 	}
 	pMux.isClose = true
+	_ = pMux.Listener.Close() // 停止接收新连接，触发 accept 协程退出
+	close(pMux.done)          // 唤醒 in-flight process()
+	pMux.wg.Wait()            // 等待所有 process() 退出后再 close conn channel
 	close(pMux.clientConn)
 	close(pMux.httpsConn)
 	close(pMux.httpConn)
 	close(pMux.managerConn)
-	return pMux.Listener.Close()
+	return nil
 }
 
 func (pMux *PortMux) GetClientListener() net.Listener {

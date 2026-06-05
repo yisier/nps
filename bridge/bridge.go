@@ -292,8 +292,12 @@ func (s *Bridge) typeDeal(typeVal string, c *conn.Conn, id int, vs string) {
 		if v, ok := s.Client.LoadOrStore(id, NewClient(muxConn, nil, nil, vs)); ok {
 			cl := v.(*Client)
 			cl.mu.Lock()
+			oldTunnel := cl.tunnel
 			cl.tunnel = muxConn
 			cl.mu.Unlock()
+			if oldTunnel != nil {
+				oldTunnel.Close()
+			}
 		}
 	case common.WORK_CONFIG:
 		client, err := file.GetDb().GetClient(id)
@@ -316,8 +320,12 @@ func (s *Bridge) typeDeal(typeVal string, c *conn.Conn, id int, vs string) {
 		if v, ok := s.Client.LoadOrStore(id, NewClient(nil, muxConn, nil, vs)); ok {
 			cl := v.(*Client)
 			cl.mu.Lock()
+			oldFile := cl.file
 			cl.file = muxConn
 			cl.mu.Unlock()
+			if oldFile != nil {
+				oldFile.Close()
+			}
 		}
 	case common.WORK_P2P:
 		//read md5 secret
