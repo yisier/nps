@@ -257,7 +257,7 @@ func Join(c1 io.ReadWriteCloser, c2 io.ReadWriteCloser, host *file.Host) (inCoun
 		defer to.Close()
 		defer from.Close()
 		defer wait.Done()
-		goroutine.CopyBuffer(to, from, host.Client.Flow, nil, "")
+		goroutine.CopyBuffer(to, from, host.Client.Flow, nil, host, "")
 		//*count, _ = io.Copy(to, from)
 	}
 

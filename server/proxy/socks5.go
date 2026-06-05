@@ -172,7 +172,7 @@ func (s *Sock5ModeServer) doConnect(c net.Conn, command uint8) {
 	}
 	s.DealClient(conn.NewConn(c), s.task.Client, addr, nil, ltype, func() {
 		s.sendReply(c, succeeded)
-	}, s.task.Flow, s.task.Target.LocalProxy, nil)
+	}, s.task.Flow, s.task.Target.LocalProxy, nil, nil)
 	return
 }
 

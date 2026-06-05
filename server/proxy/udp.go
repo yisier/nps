@@ -144,6 +144,7 @@ func (s *UdpModeServer) dispatch(key string, sess *udpSession, data []byte, n in
 	}
 	sess.touch()
 	s.task.Client.Flow.Add(int64(n), int64(n))
+	s.task.Flow.Add(int64(n), int64(n))
 }
 
 // runSession 由占位赢家执行：建立到 npc 的 stream、发送首包、运行下行读循环。
@@ -191,6 +192,7 @@ func (s *UdpModeServer) runSession(addr *net.UDPAddr, key string, sess *udpSessi
 	}
 	common.BufPoolUdp.Put(buf)
 	s.task.Client.Flow.Add(int64(n), int64(n))
+	s.task.Flow.Add(int64(n), int64(n))
 
 	// 下行读循环
 	rbuf := common.BufPoolUdp.Get().([]byte)
@@ -211,6 +213,7 @@ func (s *UdpModeServer) runSession(addr *net.UDPAddr, key string, sess *udpSessi
 			return
 		}
 		s.task.Client.Flow.Add(int64(rn), int64(rn))
+		s.task.Flow.Add(int64(rn), int64(rn))
 	}
 }
 

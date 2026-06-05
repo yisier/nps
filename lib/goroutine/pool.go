@@ -22,6 +22,7 @@ type connGroup struct {
 	n      *int64
 	flow   *file.Flow
 	task   *file.Tunnel
+	host   *file.Host
 	remote string
 }
 
@@ -34,7 +35,7 @@ type connGroup struct {
 //	}
 //}
 
-func newConnGroup(dst, src io.ReadWriteCloser, wg *sync.WaitGroup, n *int64, flow *file.Flow, task *file.Tunnel, remote string) connGroup {
+func newConnGroup(dst, src io.ReadWriteCloser, wg *sync.WaitGroup, n *int64, flow *file.Flow, task *file.Tunnel, host *file.Host, remote string) connGroup {
 	return connGroup{
 		src:    src,
 		dst:    dst,
@@ -42,11 +43,12 @@ func newConnGroup(dst, src io.ReadWriteCloser, wg *sync.WaitGroup, n *int64, flo
 		n:      n,
 		flow:   flow,
 		task:   task,
+		host:   host,
 		remote: remote,
 	}
 }
 
-func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel, remote string) (err error) {
+func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel, host *file.Host, remote string) (err error) {
 	buf := common.CopyBuff.Get()
 	defer common.CopyBuff.Put(buf)
 	for {
@@ -129,7 +131,12 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 						break
 					}
 				}
-
+				if task != nil && task.Flow != nil && task.Flow != flow {
+					task.Flow.Add(int64(nw), int64(nw))
+				}
+				if host != nil && host.Flow != nil && host.Flow != flow {
+					host.Flow.Add(int64(nw), int64(nw))
+				}
 			}
 			if ew != nil {
 				err = ew
@@ -156,7 +163,7 @@ func copyConnGroup(group interface{}) {
 	}
 
 	var err error
-	err = CopyBuffer(cg.dst, cg.src, cg.flow, cg.task, cg.remote)
+	err = CopyBuffer(cg.dst, cg.src, cg.flow, cg.task, cg.host, cg.remote)
 	if err != nil {
 		cg.src.Close()
 		cg.dst.Close()
@@ -175,15 +182,17 @@ type Conns struct {
 	flow  *file.Flow
 	wg    *sync.WaitGroup
 	task  *file.Tunnel
+	host  *file.Host
 }
 
-func NewConns(c1 io.ReadWriteCloser, c2 net.Conn, flow *file.Flow, wg *sync.WaitGroup, task *file.Tunnel) Conns {
+func NewConns(c1 io.ReadWriteCloser, c2 net.Conn, flow *file.Flow, wg *sync.WaitGroup, task *file.Tunnel, host *file.Host) Conns {
 	return Conns{
 		conn1: c1,
 		conn2: c2,
 		flow:  flow,
 		wg:    wg,
 		task:  task,
+		host:  host,
 	}
 }
 
@@ -194,9 +203,9 @@ func copyConns(group interface{}) {
 	wg.Add(2)
 	var in, out int64
 	remoteAddr := conns.conn2.RemoteAddr().String()
-	_ = connCopyPool.Invoke(newConnGroup(conns.conn1, conns.conn2, wg, &in, conns.flow, conns.task, remoteAddr))
+	_ = connCopyPool.Invoke(newConnGroup(conns.conn1, conns.conn2, wg, &in, conns.flow, conns.task, conns.host, remoteAddr))
 	// outside to mux : incoming
-	_ = connCopyPool.Invoke(newConnGroup(conns.conn2, conns.conn1, wg, &out, conns.flow, conns.task, remoteAddr))
+	_ = connCopyPool.Invoke(newConnGroup(conns.conn2, conns.conn1, wg, &out, conns.flow, conns.task, conns.host, remoteAddr))
 	// mux to outside : outgoing
 	wg.Wait()
 	//if conns.flow != nil {

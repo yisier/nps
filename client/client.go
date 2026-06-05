@@ -307,7 +307,7 @@ func (s *TRPClient) handleChan(src net.Conn) {
 			}
 		}
 
-		conn.CopyWaitGroup(src, targetConn, lk.Crypt, lk.Compress, nil, nil, false, nil, nil)
+		conn.CopyWaitGroup(src, targetConn, lk.Crypt, lk.Compress, nil, nil, false, nil, nil, nil)
 	}
 }
 

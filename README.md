@@ -45,6 +45,7 @@
     - P2P UDP 无超时永久阻塞，添加 30s ReadDeadline
     - P2P goroutine 退出控制改用 context，修复潜在泄漏
     - 客户端 UDP ReadFrom 错误后未退出，修复无效数据继续处理
+    - [#324](https://github.com/yisier/nps/issues/324) 隧道/域名解析/UDP 流量始终为 0
   - 优化：ioutil.WriteFile → os.WriteFile、rand.Seed → rand.New 本地随机源
 
 - 2026-05-23  v0.26.33

@@ -262,7 +262,7 @@ reset:
 			}
 		}()
 
-		err1 := goroutine.CopyBuffer(c, connClient, host.Client.Flow, nil, "")
+		err1 := goroutine.CopyBuffer(c, connClient, host.Client.Flow, nil, host, "")
 		if err1 != nil {
 			return
 		}
@@ -292,6 +292,7 @@ reset:
 				}
 				logs.Trace("%s request, method %s, host %s, url %s, remote address %s, return cache", r.URL.Scheme, r.Method, r.Host, r.URL.Path, c.RemoteAddr().String())
 				host.Client.Flow.Add(int64(n), int64(n))
+				host.Flow.Add(int64(n), int64(n))
 				//if return cache and does not create a new conn with client and Connection is not set or close, close the connection.
 				if strings.ToLower(r.Header.Get("Connection")) == "close" || strings.ToLower(r.Header.Get("Connection")) == "" {
 					break
@@ -313,6 +314,7 @@ reset:
 			break
 		}
 		host.Client.Flow.Add(int64(lenConn.Len), int64(lenConn.Len))
+		host.Flow.Add(int64(lenConn.Len), int64(lenConn.Len))
 
 	readReq:
 		//read req from connection

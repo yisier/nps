@@ -161,7 +161,7 @@ func handleSecret(localTcpConn net.Conn, config *config.CommonConfig, l *config.
 		logs.Error("Local connection server failed ", err.Error())
 		return
 	}
-	conn.CopyWaitGroup(remoteConn.Conn, localTcpConn, false, false, nil, nil, false, nil, nil)
+	conn.CopyWaitGroup(remoteConn.Conn, localTcpConn, false, false, nil, nil, false, nil, nil, nil)
 }
 
 func handleP2PVisitor(localTcpConn net.Conn, config *config.CommonConfig, l *config.LocalServer) {
@@ -178,7 +178,7 @@ func handleP2PVisitor(localTcpConn net.Conn, config *config.CommonConfig, l *con
 		udpConnStatus = false
 		return
 	} else {
-		conn.CopyWaitGroup(target, localTcpConn, false, config.Client.Cnf.Compress, nil, nil, false, nil, nil)
+		conn.CopyWaitGroup(target, localTcpConn, false, config.Client.Cnf.Compress, nil, nil, false, nil, nil, nil)
 	}
 }
 
