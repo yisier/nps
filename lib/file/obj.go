@@ -57,6 +57,7 @@ type Client struct {
 	IpWhite         bool     // 是否启用ip白名单
 	IpWhitePass     string   // ip授权密码
 	IpWhiteList     []string // ip白名单
+	ExpireTime      string   // 到期时间,留空表示永不过期,格式 2006-01-02 15:04:05
 	sync.RWMutex
 }
 

@@ -73,7 +73,8 @@
                 + '<b langtag="word-ipwhitelist"></b>: ' + row.IpWhiteList + '&emsp;<br/>'
                 + '<b langtag="word-blackip"></b>: ' + row.BlackIpList + '&emsp;<br/><br/>'
                 + '<b langtag="word-createtime"></b>: ' + row.CreateTime + '&emsp;<br/>'
-                + '<b langtag="word-lastonlinetime"></b>: ' + row.LastOnlineTime + '&emsp;<br/><br/>'
+                + '<b langtag="word-lastonlinetime"></b>: ' + row.LastOnlineTime + '&emsp;<br/>'
+                + '<b langtag="word-expiretime"></b>: ' + (row.ExpireTime || '<span langtag="info-unrestricted"></span>') + '&emsp;<br/><br/>'
                 + '<b langtag="word-quicklycommand"></b>: <span>' + encodeToBase64(row.Remark +'|'+'{{.ip}}:{{.p}}|' + row.VerifyKey + '|false')   + '</span>&emsp;<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button><br/>'
                 + '<b langtag="word-tlsquicklycommand"></b>: <span>' + encodeToBase64(row.Remark +'|'+'{{.ip}}:{{.tls_p}}|' + row.VerifyKey + '|true')   + '</span>&emsp;<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button><br/>'
                 + '<b langtag="word-commandclient"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.VerifyKey + " -type=" +{{.bridgeType}} +"</code><button class=\"copy btn btn-info btn-xs\" onclick=\"copyCommand(this)\" data-clipboard-text=\"\">复制</button><br/>"

@@ -792,6 +792,16 @@
 		<en-US>Last Online Time</en-US>
 	</lang>
 
+	<lang id="word-expiretime">
+		<zh-CN>到期时间</zh-CN>
+		<en-US>Expire Time</en-US>
+	</lang>
+
+	<lang id="info-expiretime">
+		<zh-CN>留空表示永不过期，到期后将自动暂停客户端</zh-CN>
+		<en-US>Leave blank for no expiration. The client will be paused automatically when expired.</en-US>
+	</lang>
+
 	<lang id="word-ipwhite">
 		<zh-CN>启用IP白名单</zh-CN>
 		<en-US> Enable IP White </en-US>

@@ -35,6 +35,7 @@
   - 新增：
     - `nps -server` 管理脚本欢迎语显示当前版本号,更新版本时比对版本，已是最新则直接退出，避免无谓覆盖 [#328](https://github.com/yisier/nps/issues/328)
     - `npc` 管理脚本欢迎语显示当前版本号，新增 `[5] 更新客户端` 选项，更新并替换 npc 二进制
+    - 客户端新增到期时间字段，创建/修改客户端时可选填写，到期后自动暂停客户端 [#322](https://github.com/yisier/nps/issues/322)
   - 修复：
     - Dashboard IO 速率采集阻塞请求 500ms，改为后台采集缓存，消除 Sleep 等待
     - ServerStatus 切片并发读写不安全，添加 RWMutex 保护

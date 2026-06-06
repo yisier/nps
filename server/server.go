@@ -106,6 +106,7 @@ func StartNewServer(bridgePort int, cnf *file.Tunnel, bridgeType string, bridgeD
 	}
 	go DealBridgeTask()
 	go dealClientFlow()
+	go dealClientExpire()
 	if svr := NewMode(Bridge, cnf); svr != nil {
 		if err := svr.Start(); err != nil {
 			logs.Error(err)
@@ -125,6 +126,50 @@ func dealClientFlow() {
 		case <-ticker.C:
 			dealClientData()
 		}
+	}
+}
+
+// dealClientExpire 周期性扫描客户端到期时间，过期则自动暂停
+func dealClientExpire() {
+	// 启动时立即检查一次，避免重启后到期客户端最多 1 分钟内才被暂停
+	checkClientExpire()
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			checkClientExpire()
+		}
+	}
+}
+
+// checkClientExpire 遍历所有客户端，若 ExpireTime 已过则将 Status 置为 false 并断开连接
+func checkClientExpire() {
+	now := time.Now()
+	changed := false
+	file.GetDb().JsonDb.Clients.Range(func(key, value interface{}) bool {
+		v, ok := value.(*file.Client)
+		if !ok || v == nil {
+			return true
+		}
+		if v.ExpireTime == "" || !v.Status {
+			return true
+		}
+		t, err := time.ParseInLocation("2006-01-02 15:04:05", v.ExpireTime, time.Local)
+		if err != nil {
+			return true
+		}
+		if now.Before(t) {
+			return true
+		}
+		v.Status = false
+		changed = true
+		logs.Info("client id %d (remark: %s) expired at %s, auto paused", v.Id, v.Remark, v.ExpireTime)
+		DelClientConnect(v.Id)
+		return true
+	})
+	if changed {
+		file.GetDb().JsonDb.StoreClientsToJsonFile()
 	}
 }
 

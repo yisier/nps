@@ -73,6 +73,7 @@ func (s *ClientController) Add() {
 			IpWhite:     s.GetBoolNoErr("ipwhite"),
 			IpWhitePass: s.getEscapeString("ipwhitepass"),
 			IpWhiteList: RemoveRepeatedElement(strings.Split(s.getEscapeString("ipwhitelist"), "\r\n")),
+			ExpireTime:  normalizeExpireTime(s.getEscapeString("expire_time")),
 			CreateTime:  time.Now().Format("2006-01-02 15:04:05"),
 		}
 		if err := file.GetDb().NewClient(t); err != nil {
@@ -159,6 +160,7 @@ func (s *ClientController) Edit() {
 			}
 
 			c.BlackIpList = RemoveRepeatedElement(strings.Split(s.getEscapeString("blackiplist"), "\r\n"))
+			c.ExpireTime = normalizeExpireTime(s.getEscapeString("expire_time"))
 			file.GetDb().JsonDb.StoreClientsToJsonFile()
 		}
 		s.AjaxOk("save success")
@@ -184,6 +186,39 @@ func RemoveRepeatedElement(arr []string) (newArr []string) {
 		}
 	}
 	return
+}
+
+// expireTimeFormats 支持的到期时间输入格式
+var expireTimeFormats = []string{
+	"2006-01-02 15:04:05",
+	"2006-01-02 15:04",
+	"2006-01-02T15:04:05",
+	"2006-01-02T15:04",
+	"2006-01-02",
+}
+
+// ParseExpireTime 将多种格式的到期时间字符串解析为 time.Time
+// 留空或无法解析返回 ok=false
+func ParseExpireTime(s string) (time.Time, bool) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return time.Time{}, false
+	}
+	for _, f := range expireTimeFormats {
+		if t, err := time.ParseInLocation(f, s, time.Local); err == nil {
+			return t, true
+		}
+	}
+	return time.Time{}, false
+}
+
+// normalizeExpireTime 将用户提交的到期时间统一为 "2006-01-02 15:04:05"
+// 无法解析则返回空串表示不限制
+func normalizeExpireTime(s string) string {
+	if t, ok := ParseExpireTime(s); ok {
+		return t.Format("2006-01-02 15:04:05")
+	}
+	return ""
 }
 
 // 更改状态
