@@ -292,8 +292,10 @@ func printSlogan() {
 	fmt.Printf("\u001B[32m输入[3]\u001B[0m - 启动系统服务\n")
 	fmt.Printf("\u001B[32m输入[4]\u001B[0m - 停止系统服务\n")
 	fmt.Printf("---------------------\n")
+	fmt.Printf("\u001B[32m输入[5]\u001B[0m - 更新客户端\n")
 	fmt.Printf("\u001B[32m输入[0]\u001B[0m - 退出\n")
 	fmt.Printf("---------------------\n")
+	fmt.Printf("\u001B[32m当前版本：%s\u001B[0m\n", version.VERSION)
 	fmt.Printf("直接输入[快捷启动命令]则是启动隧道,多个[快捷启动命令]用英文逗号拼接\n")
 	fmt.Printf("\n")
 }
@@ -314,8 +316,8 @@ func inputCmd() {
 
 		flag := strings.Replace(flag, " ", "", -1)
 
-		// 如果输入不等于 1,2,3，4，则启动隧道
-		if flag != "1" && flag != "2" && flag != "3" && flag != "4" {
+		// 如果输入不等于 1,2,3,4,5，则启动隧道
+		if flag != "1" && flag != "2" && flag != "3" && flag != "4" && flag != "5" {
 
 			vkeys := strings.Split(flag, `,`)
 			var cmdArray []string
@@ -336,7 +338,12 @@ func inputCmd() {
 			}
 
 		} else {
-			systemService(flag)
+			if flag == "5" {
+				install.UpdateNpcNew()
+				inputCmd()
+			} else {
+				systemService(flag)
+			}
 		}
 	}
 }

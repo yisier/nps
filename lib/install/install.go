@@ -2,6 +2,7 @@ package install
 
 import (
 	"ehang.io/nps/lib/common"
+	"ehang.io/nps/lib/version"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -142,10 +144,50 @@ func UpdateNps() {
 }
 
 func UpdateNpsNew() {
+	latest, err := fetchLatestVersion()
+	if err != nil {
+		log.Println("获取最新版本失败：", err)
+		return
+	} else {
+		fmt.Println("最新版本为：", latest)
+		if compareVersion(version.VERSION, latest) >= 0 {
+			fmt.Println("当前已是最新版本，无需更新")
+			return
+		}
+	}
 	destPath := downloadLatest2("server", filepath.Join(common.GetAppPath(), "temp"))
 	//复制文件到对应目录
 	copyStaticFileReplaceNps(destPath, common.GetAppPath())
 	fmt.Println("更新成功，请重启服务")
+}
+
+func fetchLatestVersion() (string, error) {
+	resp, err := http.Get("https://api.github.com/repos/yisier/nps/releases/latest")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	rl := new(release)
+	if err := json.Unmarshal(b, rl); err != nil {
+		return "", err
+	}
+	return rl.TagName, nil
+}
+
+func compareVersion(a, b string) int {
+	ai, _ := strconv.Atoi(strings.ReplaceAll(strings.TrimPrefix(a, "v"), ".", ""))
+	bi, _ := strconv.Atoi(strings.ReplaceAll(strings.TrimPrefix(b, "v"), ".", ""))
+	if ai < bi {
+		return -1
+	}
+	if ai > bi {
+		return 1
+	}
+	return 0
 }
 
 func UpdateNpc() {
@@ -153,6 +195,23 @@ func UpdateNpc() {
 	//复制文件到对应目录
 	copyStaticFile(destPath, "npc")
 	fmt.Println("Update completed, please restart")
+}
+
+func UpdateNpcNew() {
+	latest, err := fetchLatestVersion()
+	if err != nil {
+		log.Println("获取最新版本失败：", err)
+		return
+	} else {
+		fmt.Println("最新版本为：", latest)
+		if compareVersion(version.VERSION, latest) >= 0 {
+			fmt.Println("当前已是最新版本，无需更新")
+			return
+		}
+	}
+	destPath := downloadLatest2("client", filepath.Join(common.GetAppPath(), "temp"))
+	copyStaticFileReplaceNpc(destPath, common.GetAppPath())
+	fmt.Println("更新成功，请重启客户端")
 }
 
 type release struct {
@@ -280,6 +339,18 @@ func copyStaticFileReplaceNps(srcPath, descPath string) string {
 		os.Rename(filepath.Join(srcPath, "nps"), filepath.Join(descPath, "nps"))
 	} else {
 		os.Rename(filepath.Join(srcPath, "nps.exe"), filepath.Join(descPath, "nps.exe"))
+	}
+	chMod(binPath, 0755)
+	os.RemoveAll(srcPath)
+	return binPath
+}
+
+func copyStaticFileReplaceNpc(srcPath, descPath string) string {
+	binPath, _ := filepath.Abs(os.Args[0])
+	if !common.IsWindows() {
+		os.Rename(filepath.Join(srcPath, "npc"), filepath.Join(descPath, "npc"))
+	} else {
+		os.Rename(filepath.Join(srcPath, "npc.exe"), filepath.Join(descPath, "npc.exe"))
 	}
 	chMod(binPath, 0755)
 	os.RemoveAll(srcPath)

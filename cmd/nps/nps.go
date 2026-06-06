@@ -215,7 +215,7 @@ func printSlogan() {
 
 	fmt.Printf("%s", green(""))
 
-	fmt.Printf("\033[32;0m欢迎使用 NPS 管理脚本 \n")
+	fmt.Printf("\033[32;0m欢迎使用 NPS 管理脚本，当前版本：v%s\n", version.VERSION)
 	fmt.Printf("\033[0m") // 重置颜色
 
 	fmt.Printf("\n")
@@ -332,7 +332,7 @@ func inputCmd() {
 			break
 		case "3":
 			install.UpdateNpsNew()
-			return
+			break
 		case "4":
 			// 查看状态
 			var statusMsg = ""

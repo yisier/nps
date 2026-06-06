@@ -32,6 +32,9 @@
 
 # 更新日志  
 - 2026-06-04  v0.26.34
+  - 新增：
+    - `nps -server` 管理脚本欢迎语显示当前版本号,更新版本时比对版本，已是最新则直接退出，避免无谓覆盖 [#328](https://github.com/yisier/nps/issues/328)
+    - `npc` 管理脚本欢迎语显示当前版本号，新增 `[5] 更新客户端` 选项，更新并替换 npc 二进制
   - 修复：
     - Dashboard IO 速率采集阻塞请求 500ms，改为后台采集缓存，消除 Sleep 等待
     - ServerStatus 切片并发读写不安全，添加 RWMutex 保护
@@ -50,9 +53,9 @@
     - bridge 客户端重连时旧 WORK_CHAN/WORK_FILE mux 未关闭，底层连接和 goroutine 永不释放
     - pmux 连接超时泄漏：process() channel 发送超时后连接未关闭，且 ACCEPT_TIME_OUT 单位错误（10ns 应为 10s）
     - pmux 关闭流程 panic：加 done channel + WaitGroup 保证 Close() 等所有 process() 退出后再 close conn channel；process() 入口设 ReadDeadline 防止阻塞读导致 wg.Wait() 死锁；PortListener 加 done channel 唤醒 Accept()
-  - 优化：ioutil.WriteFile → os.WriteFile、rand.Seed → rand.New 本地随机源
-
-- 2026-05-23  v0.26.33
+  - 优化：ioutil.WriteFile → os.WriteFile、rand.Seed → rand.New 本地随机源  
+  
+- 2026-05-23  v0.26.33  
   - 新增：
     - 配置文件自动生成：启动时若 conf 目录或 nps.conf 不存在，自动创建并写入默认配置，方便 Docker 部署
     - 首次启动默认 web_username/admin、web_password、auth_key、auth_crypt_key 均改为随机生成，并打印到终端，提升安全性
