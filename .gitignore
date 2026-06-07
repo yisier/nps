@@ -1,2 +1,27 @@
 .idea
 nps
+
+# Go build outputs
+/npc
+/nps.exe
+/npc.exe
+
+# Node.js / VuePress
+node_modules/
+yarn.lock
+pnpm-lock.yaml
+
+# VuePress build artifacts
+docs/.vuepress/.cache/
+docs/.vuepress/.temp/
+docs/.vuepress/dist/
+
+# VuePress dev runtime
+docs/vuepress-dev.log
+docs/vuepress-dev.err.log
+docs/vuepress-dev.pid
+docs/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

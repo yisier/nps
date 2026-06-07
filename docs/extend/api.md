@@ -42,4 +42,4 @@ POST /auth/getauthkey
 - 解密串编码方式 十六进制
 
 ## 详细文档
-- **[详见](webapi.md)** (感谢@avengexyz)
+- **[详见](/extend/webapi.md)** (感谢@avengexyz)

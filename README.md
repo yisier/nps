@@ -1,5 +1,20 @@
 # NPS
 
+
+> 一款轻量级、高性能、功能强大的内网穿透代理服务器，基于 ehang-io/nps 0.26.10 二次开发。
+
+| 特性 | 说明 |
+| --- | --- |
+| 全协议支持 | TCP、UDP、HTTP、HTTPS、SOCKS5、P2P 全覆盖 |
+| Web 管理界面 | 服务端面板开箱即用 |
+| 全平台兼容 | Linux / macOS / Windows / Android，桌面 GUI 客户端 |
+| TLS 桥接加密 | 防止流量被防火墙识别拦截 |
+| 进阶能力 | 流量统计、限速、IP 黑白名单、Proxy Protocol、负载均衡 |
+| 强大的 API | REST API + MD5 签名鉴权，方便自动化运维 |
+
+<div style="margin-top:1.5rem;padding:1rem 1.25rem;border-left:4px solid #4f46e5;background:var(--vp-c-bg-soft);border-radius:4px;">
+
+
 [新特性文档](https://dqg9t9eulqq.feishu.cn/wiki/FmVVwDcEGiTZxekYJl5ccuFanlg?from=from_copylink)  
 [原版文档](https://ehang.io/nps/documents)
 # 说明

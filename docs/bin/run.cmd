@@ -1,0 +1,2 @@
+cd ..
+yarn docs:dev

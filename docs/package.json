@@ -1,0 +1,24 @@
+{
+  "name": "nps-docs",
+  "version": "1.0.0",
+  "description": "NPS 内网穿透文档站点 (VuePress 2)",
+  "private": true,
+  "scripts": {
+    "docs:dev": "vuepress dev .",
+    "docs:build": "vuepress build .",
+    "docs:clean": "vuepress clean ."
+  },
+  "devDependencies": {
+    "@vuepress/bundler-vite": "2.0.0-rc.30",
+    "@vuepress/plugin-search": "2.0.0-rc.130",
+    "@vuepress/plugin-shiki": "2.0.0-rc.130",
+    "@vuepress/theme-default": "2.0.0-rc.130",
+    "sass": "1.77.8",
+    "vite": "^8.0.16",
+    "vue": "^3.5.34",
+    "vuepress": "2.0.0-rc.30"
+  },
+  "resolutions": {
+    "@vuepress/plugin-palette": "2.0.0-rc.130"
+  }
+}
