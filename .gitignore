@@ -15,12 +15,14 @@ pnpm-lock.yaml
 docs/.vuepress/.cache/
 docs/.vuepress/.temp/
 docs/.vuepress/dist/
-
 # VuePress dev runtime
 docs/vuepress-dev.log
 docs/vuepress-dev.err.log
 docs/vuepress-dev.pid
 docs/node_modules/
+docs/yarn.lock
+docs/.vscode
+
 
 # OS
 .DS_Store
