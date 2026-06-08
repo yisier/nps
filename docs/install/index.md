@@ -1,11 +1,11 @@
-﻿## 可执行文件
+﻿## 程序安装
 
 从 [releases](https://github.com/yisier/nps/releases) 下载对应系统版本，服务端 (`nps`) 和客户端 (`npc`) 是单独的压缩包。
 
 ::: tabs
 
 @tab 服务端
-> v0.26.33 起，发布包不再包含 `conf/nps.conf` 和 `web` 目录。首次启动时 `nps` 会在可执行文件同级目录自动生成 `conf/nps.conf`，并随机生成 `web_password`、`auth_key`、`auth_crypt_key`，web 管理界面的访问密码请在conf/nps.conf文件中或启动日志中查看。  
+> 首次启动时 `nps` 会在可执行文件同级目录自动生成 `conf/nps.conf`，并随机生成 `web_password`、`auth_key`、`auth_crypt_key`，web 管理界面的访问密码请在conf/nps.conf文件中或启动日志中查看。  
 
 
 `./npc(.exe) -server`    
@@ -15,7 +15,7 @@
 
 
 @tab 客户端
-> **强烈推荐使用无配置文件模式启动客户端**：所有数据应在服务端保存和配置，客户端只做连接转发。客户端可直接双击运行，通过交互菜单完成全部操作。
+> 客户端可直接双击运行，通过交互菜单完成安装、卸载、启动等操作。
 
 `./npc(.exe)`
 
@@ -24,8 +24,6 @@
 
 @tab 客户端(GUI)
 > 通过Web 后台的【快捷启动命令】或 手动填写 `-server`、`-vkey` 等参数配置客户端  
-
-`npc-gui-*.exe`
 
 ![img](/image/new/gui.png)
 

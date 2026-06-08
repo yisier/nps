@@ -7,8 +7,7 @@ import { searchPlugin } from '@vuepress/plugin-search'
 
 const serverSidebar: SidebarConfig = [
   { text: '服务端', children: [
-    { text: '介绍', link: '/server/introduction.html' },
-    { text: '使用', link: '/server/nps_use.html' },
+    { text: '使用说明', link: '/server/nps_use.html' },
     { text: '配置文件', link: '/server/server_config.html' },
     { text: '增强功能', link: '/server/nps_extend.html' },
   ]},
@@ -16,7 +15,7 @@ const serverSidebar: SidebarConfig = [
 
 const clientSidebar: SidebarConfig = [
   { text: '客户端', children: [
-    { text: '基本使用', link: '/client/use.html' },
+    { text: '使用说明', link: '/client/use.html' },
     { text: '运行', link: '/client/run.html' },
     { text: '增强功能', link: '/client/npc_extend.html' },
     { text: 'SDK', link: '/client/npc_sdk.html' },
@@ -69,8 +68,7 @@ export default defineUserConfig({
       {
         text: '服务端',
         children: [
-          { text: '介绍', link: '/server/introduction.html' },
-          { text: '使用', link: '/server/nps_use.html' },
+          { text: '使用说明', link: '/server/nps_use.html' },
           { text: '配置文件', link: '/server/server_config.html' },
           { text: '增强功能', link: '/server/nps_extend.html' },
         ],
@@ -78,7 +76,7 @@ export default defineUserConfig({
       {
         text: '客户端',
         children: [
-          { text: '基本使用', link: '/client/use.html' },
+          { text: '使用说明', link: '/client/use.html' },
           { text: '增强功能', link: '/client/npc_extend.html' },
           { text: 'SDK', link: '/client/npc_sdk.html' },
         ],
@@ -118,8 +116,7 @@ export default defineUserConfig({
         {
           text: '服务端',
           children: [
-            { text: '介绍', link: '/server/introduction.html' },
-            { text: '使用', link: '/server/nps_use.html' },
+            { text: '使用说明', link: '/server/nps_use.html' },
             { text: '配置文件', link: '/server/server_config.html' },
             { text: '增强功能', link: '/server/nps_extend.html' },
           ],
@@ -127,7 +124,7 @@ export default defineUserConfig({
         {
           text: '客户端',
           children: [
-            { text: '基本使用', link: '/client/use.html' },
+            { text: '使用说明', link: '/client/use.html' },
             { text: '运行', link: '/client/run.html' },
             { text: '增强功能', link: '/client/npc_extend.html' },
             { text: 'SDK', link: '/client/npc_sdk.html' },

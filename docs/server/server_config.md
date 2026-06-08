@@ -1,32 +1,26 @@
 # 服务端配置文件
-配置文件路径：
 
-- 二进制直接运行：`<nps 可执行文件目录>/conf/nps.conf`
-- `nps install` 之后：`/etc/nps/conf/nps.conf`（linux/darwin）或 `C:\Program Files\nps\conf\nps.conf`（windows）
-- 自定义：`-conf_path=` 参数指定的目录下的 `conf/nps.conf`
+配置文件路径：`<nps 可执行文件目录>/conf/nps.conf`
 
-> v0.26.33 起，首次启动时若 `conf/nps.conf` 不存在会**自动生成默认配置**，其中 `web_username`（默认 `admin`）、`web_password`、`auth_key`、`auth_crypt_key` **均为随机值**并打印到终端，请第一时间复制保存。
 
-## 通用 / 桥接 / 日志
+> 首次启动时若 `conf/nps.conf` 不存在会**自动生成默认配置**，其中 `web_username`（默认 `admin`）、`web_password`、`auth_key`、`auth_crypt_key` **均为随机值**并打印到终端，请在启动日志或配置文件中查看。
+
+## 通用
 
 | 名称 | 含义 |
 | --- | --- |
 | bridge_type | 客户端与服务端连接方式 `tcp` 或 `kcp` |
-| bridge_port | 服务端客户端通信端口（默认 `8024`） |
 | bridge_ip | 桥接监听 IP，默认 `0.0.0.0` |
+| bridge_port | 服务端客户端通信端口（默认 `8024`） |
+| tls_enable | 是否开启 TLS。开启后客户端可通过 `-tls_enable=true` 连接 `tls_bridge_port` |
+| tls_bridge_port | TLS 桥接端口，默认 `8025`。**与 `bridge_port` 并存**：客户端可分别用 `bridge_port`（明文）或 `tls_bridge_port`（TLS）接入 |
 | public_vkey | 客户端以配置文件模式启动时使用的公钥，设为空表示关闭配置文件连接模式 |
 | disconnect_timeout | 客户端连接超时，单位为 5s，默认 `60`（即 5 分钟） |
-| flow_store_interval | 流量数据持久化间隔，单位分钟；忽略表示不持久化 |
+| flow_store_interval | 流量数据持久化间隔，单位分钟；忽略表示不持久化,默认为`1分钟`|
 | log_level | 日志级别 0~7 |
 | log_path | 日志文件路径 |
 | ip_limit | 是否限制 IP 访问，`true` / `false` / 忽略 |
 
-## TLS（v0.26.17+）
-
-| 名称 | 含义 |
-| --- | --- |
-| tls_enable | 是否开启 TLS。开启后客户端可通过 `-tls_enable=true` 连接 `tls_bridge_port` |
-| tls_bridge_port | TLS 桥接端口，默认 `8025`。**与 `bridge_port` 并存**：客户端可分别用 `bridge_port`（明文）或 `tls_bridge_port`（TLS）接入 |
 
 ## HTTP / HTTPS 代理
 
