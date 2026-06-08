@@ -8,13 +8,12 @@
 > 💬 聊天灌水 QQ 群：**619833483**（热心群主可提供免费远程协助）
 
 ### 📖 在线文档
-[完整文档](https://yisier.github.io/nps) · [更新日志](https://yisier.github.io/nps/changelog/)   
-[程序安装](https://yisier.github.io/nps/install/#%E7%A8%8B%E5%BA%8F%E5%AE%89%E8%A3%85) · [宝塔面板](https://yisier.github.io/nps/install/#%E5%AE%9D%E5%A1%94%E9%9D%A2%E6%9D%BF-%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2) · [Docker安装](https://yisier.github.io/nps/install/#docker-%E5%AE%89%E8%A3%85)
----
+<small>[完整文档](https://yisier.github.io/nps) · [更新日志](https://yisier.github.io/nps/changelog/) · [程序安装](https://yisier.github.io/nps/install/#%E7%A8%8B%E5%BA%8F%E5%AE%89%E8%A3%85) · [宝塔面板](https://yisier.github.io/nps/install/#%E5%AE%9D%E5%A1%94%E9%9D%A2%E6%9D%BF-%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2) · [Docker安装](https://yisier.github.io/nps/install/#docker-%E5%AE%89%E8%A3%85)</small>
 
+---
 ## 💰 赞助 / 推荐
 #### ☁️ [雨云 — 国内便宜稳定的云服务器，首月 5 折](https://www.rainyun.com/MjY0MzY1_)
-自建 NPS 服务端首选，500M 带宽，云服务器**15 元起**，通过此链接注册首月 5 折。
+500M 带宽，高仿物理机，云服务器**15 元起**，通过此链接注册首月 5 折。
 
 #### 🚀 [NATNPS 云穿透 — 免费 3M 带宽 / 2 条隧道](https://natnps.com/register?utm_from=MQ==)
 无需自备服务器，注册即用。免费版 3M 带宽 2 条隧道；6.8 元 12M 带宽 10 条隧道；13.8 元 24M 带宽 20 条隧道。
