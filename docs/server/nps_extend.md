@@ -14,7 +14,7 @@
 ## 自动 HTTPS
 
 在 web 域名编辑页勾选「自动 HTTPS」后，nps 会把对应域名的 http 请求 301 重定向到 https。
-v0.26.30 起重定向会按 `https_proxy_port` 配置的端口跳转（例如 `https_proxy_port=8443` 时会跳到 `https://<host>:8443/...`），方便非标准端口部署。
+重定向会按 `https_proxy_port` 配置的端口跳转（例如 `https_proxy_port=8443` 时会跳到 `https://<host>:8443/...`），方便非标准端口部署。
 
 ## HTTPS 证书来源
 
@@ -45,7 +45,6 @@ npc.exe -server=1.1.1.1:8025 -vkey=xxx -tls_enable=true      # TLS 桥接（tls_
 ```
 
 > 客户端忽略证书校验，请勿暴露在不可信网络里。
-> v0.26.27 已移除客户端配置中的 `compress` / `crypt`（snappy 压缩与 AES 加密）。如需链路保护请使用此 TLS 桥接。
 
 ## 全局参数
 
@@ -126,7 +125,7 @@ server_ip=xxx
 
 ## 首次启动随机凭据
 
-为避免默认密码被恶意扫描，**v0.26.33 起首次启动时** `web_username`（默认 `admin`）、`web_password`、`auth_key`、`auth_crypt_key` 全部随机生成，并直接打印到终端：
+为避免默认密码被恶意扫描，**首次启动时** `web_username`（默认 `admin`）、`web_password`、`auth_key`、`auth_crypt_key` 全部随机生成，并直接打印到终端：
 
 ```text
 [INFO] generated random web_password: <xxxxxxxx>

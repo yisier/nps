@@ -1,7 +1,4 @@
 ﻿# 更新日志
-
-> 本页内容同步自仓库根目录 [`README.md`](https://github.com/yisier/nps/blob/master/README.md) 的「更新日志」章节。
-
 - 2026-06-04  v0.26.34
   - 新增：
     - `nps -server` 管理脚本欢迎语显示当前版本号,更新版本时比对版本，已是最新则直接退出，避免无谓覆盖 [#328](https://github.com/yisier/nps/issues/328)

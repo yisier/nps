@@ -49,7 +49,7 @@ npc.exe        # windows（管理员 cmd）
 
 按菜单选「注册系统服务」并粘贴【快捷启动命令】或【TLS 快捷启动命令】即可，服务名为 `nps-client-<vkey>`。
 
-> 如果需要当客户端退出时自动重启客户端，请按照如图所示配置
+> Windows 如果需要当客户端退出时自动重启客户端，请按照如图所示配置
 
 ![img](/image/windows_client_service_configuration.png)
 

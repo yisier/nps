@@ -23,5 +23,5 @@
 或http://username:password@ip:port
 
 ## 群晖支持
-添加 `我不是狂神` 套件地址 ： https://spk7.imnks.com/，下载npc套件安装后，按照提示输入服务地址和连接密钥即可。
+添加 `我不是矿神` 套件地址 ： https://spk7.imnks.com/，下载npc套件安装后，按照提示输入服务地址和连接密钥即可。
 

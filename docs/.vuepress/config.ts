@@ -135,16 +135,6 @@ export default defineUserConfig({
             { text: 'Web API 详细', link: '/extend/webapi.html' },
           ],
         },
-        {
-          text: '其他',
-          children: [
-            { text: 'FAQ', link: '/other/faq.html' },
-            { text: '贡献', link: '/other/contribute.html' },
-            { text: '讨论', link: '/other/discuss.html' },
-            { text: '捐赠', link: '/other/donate.html' },
-            { text: '致谢', link: '/other/thanks.html' },
-          ],
-        },
         { text: '更新日志', link: '/changelog/' },
       ],
     },

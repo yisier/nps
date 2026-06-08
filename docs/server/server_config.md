@@ -47,7 +47,7 @@
 | web_open_ssl | web 管理是否启用 https | `false` |
 | web_cert_file | web 管理 https 证书路径 | `conf/server.pem` |
 | web_key_file | web 管理 https 私钥路径 | `conf/server.key` |
-| open_captcha | 登录是否开启验证码校验（v0.26.27 之前提供，默认 `false`） | `false` |
+| open_captcha | 登录是否开启验证码校验 | `false` |
 | allow_user_login | 是否允许多用户登录，开启后用户名 `user`，密码为客户端的验证密钥 | `true` |
 | allow_user_register | 是否允许从登录页注册账号 | `false` |
 | allow_user_change_username | 多用户登录后是否允许修改用户名 | `true` |
@@ -56,7 +56,7 @@
 
 | 名称 | 含义 | 默认值 |
 | --- | --- | --- |
-| auth_key | web API 鉴权密钥，详见 [Web API](/extend/api.html) | 首次启动随机生成 |
+| auth_key | web API 鉴权密钥，详见 [Web API](/nps/extend/api.html) | 首次启动随机生成 |
 | auth_crypt_key | `auth/getauthkey` 接口的 AES 加密密钥，**必须 16 位** | 首次启动随机生成 |
 
 ## P2P
