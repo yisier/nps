@@ -31,6 +31,7 @@ const extendSidebar: SidebarConfig = [
 ]
 
 export default defineUserConfig({
+  base: '/nps/',
   bundler: viteBundler(),
   lang: 'zh-CN',
   title: 'NPS',
