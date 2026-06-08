@@ -1,45 +1,115 @@
-# web api
+# Web API 鉴权
 
-需要开启请先去掉`nps.conf`中`auth_key`的注释并配置一个合适的密钥
-## webAPI验证说明
-- 采用auth_key的验证方式
-- 在提交的每个请求后面附带两个参数，`auth_key` 和`timestamp`
+在 `nps.conf` 中配置 `auth_key` 即可启用 API 鉴权（首次启动自动生成）。
 
-```
-auth_key的生成方式为：md5(配置文件中的auth_key+当前时间戳)
-```
+## 鉴权方式
 
-```
-timestamp为当前时间戳
-```
-```
-curl --request POST \
-  --url http://127.0.0.1:8080/client/list \
-  --data 'auth_key=2a0000d9229e7dbcf79dd0f5e04bb084&timestamp=1553045344&start=0&limit=10'
-```
-**注意：** 为保证安全，时间戳的有效范围为20秒内，所以每次提交请求必须重新生成。
+每个请求需附带两个参数：
 
-## 获取服务端时间
-由于服务端与api请求的客户端时间差异不能太大，所以提供了一个可以获取服务端时间的接口
+| 参数 | 说明 |
+| --- | --- |
+| `auth_key` | `md5(配置文件中的 auth_key + 当前时间戳)` |
+| `timestamp` | 当前 unix 时间戳（秒） |
+
+时间戳有效范围为 **20 秒**，每次请求须重新生成。
+
+## 获取服务端时间戳
+
+由于客户端与服务端时间可能不一致，可先获取服务端时间：
 
 ```
-POST /auth/gettime
+GET /auth/gettime/
 ```
 
-## 获取服务端authKey
+返回：
+```json
+{"time": 1717654321}
+```
 
-如果想获取authKey，服务端提供获取authKey的接口
+> 此接口无需鉴权。
+
+## 获取服务端 auth_key（加密）
 
 ```
-POST /auth/getauthkey
+GET /auth/getauthkey/
 ```
-将返回加密后的authKey，采用aes cbc加密，请使用与服务端配置文件中cryptKey相同的密钥进行解密
 
-**注意：** nps配置文件中`auth_crypt_key`需为16位
-- 解密密钥长度128
-- 偏移量与密钥相同
-- 补码方式pkcs5padding
-- 解密串编码方式 十六进制
+返回经 AES-CBC 加密后的 `auth_key`（hex 编码）。
 
-## 详细文档
-- **[详见](/extend/webapi.md)** (感谢@avengexyz)
+> 此接口无需鉴权。需确保 `nps.conf` 中 `auth_crypt_key` 为 **16 位**。
+
+解密参数：
+- 算法：AES-128-CBC
+- 密钥：`auth_crypt_key`（16 字节）
+- IV：与密钥相同
+- 填充：PKCS5Padding
+- 密文编码：hex
+
+---
+
+## 接入示例
+
+::: tabs
+
+@tab curl
+
+```bash
+# 1. 获取服务端时间戳
+ts=$(curl -s http://127.0.0.1:8080/auth/gettime/ | sed 's/.*"time":\([0-9]*\).*/\1/')
+
+# 2. 计算签名（Linux）
+sign=$(echo -n "your_auth_key${ts}" | md5sum | awk '{print $1}')
+# 或 macOS:
+# sign=$(echo -n "your_auth_key${ts}" | md5)
+
+# 3. 调用接口
+curl -s -X POST "http://127.0.0.1:8080/client/list/" \
+  -d "auth_key=${sign}&timestamp=${ts}&search=&order=asc&offset=0&limit=10"
+```
+
+@tab Python
+
+```python
+import hashlib, requests
+
+host = "http://127.0.0.1:8080"
+auth_key = "your_auth_key"
+
+ts = requests.get(f"{host}/auth/gettime/").json()["time"]
+sign = hashlib.md5(f"{auth_key}{ts}".encode()).hexdigest()
+
+r = requests.post(f"{host}/client/list/", data={
+    "auth_key": sign, "timestamp": ts,
+    "search": "", "order": "asc", "offset": 0, "limit": 10
+})
+print(r.json())
+```
+
+@tab JavaScript
+
+```javascript
+const crypto = require("crypto");
+
+const host = "http://127.0.0.1:8080";
+const authKey = "your_auth_key";
+
+(async () => {
+  const ts = (await (await fetch(`${host}/auth/gettime/`)).json()).time;
+  const sign = crypto.createHash("md5").update(`${authKey}${ts}`).digest("hex");
+
+  const r = await fetch(`${host}/client/list/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ auth_key: sign, timestamp: ts, search: "", order: "asc", offset: 0, limit: 10 }).toString(),
+  });
+  console.log(await r.json());
+})();
+```
+
+:::
+
+---
+
+## 详细接口清单
+
+- [Web API 接口文档](webapi.html)
