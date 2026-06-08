@@ -27,15 +27,6 @@ features:
 footer: GPL-3.0 License · 基于 ehang-io/nps 0.26.10 二次开发
 ---
 
-## 关于本文档
-
-本站文档对应 [`yisier/nps`](https://github.com/yisier/nps) fork 版本，当前版本 **v0.26.34**。
-
-- 想升级 / 重新部署？看 [客户端使用](/client/use.html) 和 [服务端使用](/server/nps_use.html)
-- 第一次接触？走一遍 [安装](/install/) → [客户端使用](/client/use.html) → [使用示例](/extend/example.html)
-- 想知道每个版本改了什么？查 [更新日志](/changelog/)
-- 想用 API 做自动化？查 [Web API](/extend/api.html) 和 [Web API 详细](/extend/webapi.html)
-
 ## 加入交流
 
 聊天灌水 QQ 群：**619833483**，热心群主可提供免费远程协助。
