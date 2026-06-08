@@ -39,8 +39,6 @@ POST /client/add/
 | limit | 条数(分页显示的条数) |
 | vkey | 客户端验证密钥 |
 | config\_conn\_allow | 是否允许客户端以配置文件模式连接 1允许 0不允许 |
-| compress | ⚠️ 已于 v0.26.27 移除，参数会被服务端忽略 |
-| crypt | ⚠️ 已于 v0.26.27 移除，参数会被服务端忽略（链路加密请改用 [TLS 桥接](/server/nps_extend.html#tls-桥接加密v02617)） |
 | rate\_limit | 带宽限制 单位KB/S 空则为不限制 |
 | flow\_limit | 流量限制 单位M 空则为不限制 |
 | max\_conn | 客户端最大连接数量 空则为不限制 |
@@ -62,8 +60,6 @@ POST /client/edit/
 | limit | 条数(分页显示的条数) |
 | vkey | 客户端验证密钥 |
 | config\_conn\_allow | 是否允许客户端以配置文件模式连接 1允许 0不允许 |
-| compress | ⚠️ 已于 v0.26.27 移除，参数会被服务端忽略 |
-| crypt | ⚠️ 已于 v0.26.27 移除，参数会被服务端忽略 |
 | rate\_limit | 带宽限制 单位KB/S 空则为不限制 |
 | flow\_limit | 流量限制 单位M 空则为不限制 |
 | max\_conn | 客户端最大连接数量 空则为不限制 |

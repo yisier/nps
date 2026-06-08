@@ -1,21 +1,47 @@
-# 扩展功能
+## 获取用户真实ip
+如需使用需要在`nps.conf`中设置`http_add_origin_header=true`
+
+在域名代理模式中，可以通过request请求 header 中的 X-Forwarded-For 和 X-Real-IP 来获取用户真实 IP。
+
+**本代理前会在每一个http(s)请求中添加了这两个 header。**
+
+## 热更新支持
+对于绝大多数配置，在web管理中的修改将实时使用，无需重启客户端或者服务端
+
+## 客户端地址显示
+在web管理中将显示客户端的连接地址
+
+## 流量统计
+可统计显示每个代理使用的流量，由于压缩和加密等原因，会和实际环境中的略有差异
+
+## 当前客户端带宽
+可统计每个客户端当前的带宽，可能和实际有一定差异，仅供参考。
+
+## 客户端与服务端版本对比
+为了程序正常运行，客户端与服务端的核心版本必须一致，否则将导致客户端无法成功连接致服务端。
+
+## Linux系统限制
+默认情况下linux对连接数量有限制，对于性能好的机器完全可以调整内核参数以处理更多的连接。
+`tcp_max_syn_backlog` `somaxconn`
+酌情调整参数，增强网络性能
+
+## web管理保护
+当一个 ip 连续登陆失败次数超过 10 次，将在一分钟内禁止该 ip 再次尝试。
+
+可在 `nps.conf` 设置 `open_captcha=true` 进一步开启图形验证码
+
+
+
+
 ## 缓存支持
 对于web站点来说，一些静态文件往往消耗更大的流量，且在内网穿透中，静态文件还需到客户端获取一次，这将导致更大的流量消耗。nps在域名解析代理中支持对静态文件进行缓存。
 
 即假设一个站点有a.css，nps将只需从npc客户端读取一次该文件，然后把该文件的内容放在内存中，下一次将不再对npc客户端进行请求而直接返回内存中的对应内容。该功能默认是关闭的，如需开启请在`nps.conf`中设置`http_cache=true`，并设置`http_cache_length`（缓存文件的个数，消耗内存，不宜过大，0表示不限制个数）
 
-## 数据压缩支持（v0.26.27 已移除）
+## 加密传输
 
-> 早期版本支持 SNAPPY 压缩传输（web 或客户端配置 `compress=true`）。
-> 由于该功能会显著提高 CPU/内存占用，"利大于弊"，已于 **v0.26.27 移除**，相关配置项被忽略。
-
-## 加密传输（v0.26.27 已重构，请使用 TLS）
-
-> 早期版本支持基于 AES 的链路加密（客户端配置 `crypt=true`），同样在 **v0.26.27 因性能问题被移除**。
->
-> 链路加密的新方式：在 `nps.conf` 设置 `tls_enable=true`，客户端连接 `tls_bridge_port`（默认 `8025`，v0.26.18 引入）并加 `-tls_enable=true` 参数。详见 [TLS 桥接加密](/server/nps_extend.html#tls-桥接加密v02617)。
+> 链路加密的新方式：在 `nps.conf` 设置 `tls_enable=true`，客户端连接 `tls_bridge_port`（默认 `8025`）并加 `-tls_enable=true` 参数。详见 [TLS 桥接加密](/server/nps_extend.html#tls-桥接加密v02617)。
 > nps 仍会在每次启动时随机生成 TLS 证书用于桥接通道。
-
 
 
 ## 站点保护
@@ -49,19 +75,16 @@
 ## 负载均衡
 本代理支持域名解析模式和tcp代理的负载均衡，在web域名添加或者编辑中内网目标分行填写多个目标即可实现轮训级别的负载均衡
 
-> v0.26.33 修复：TCP 负载均衡此前在多行目标中会出现"只有一个后端可达"的 bug（`\r` 换行符和尾部空行未处理），现已正确处理。
-
-## 隧道端口自动生成（2022-12-19+）
+## 隧道端口自动生成
 在 web 后台新增隧道时，**服务端端口留空即可自动生成**未被占用的端口号。
-> v0.26.34 起对端口生成做了硬上限（最多 1000 次重试），避免端口耗尽时无限循环。
 
-## 隧道复制（v0.26.24+）
+## 隧道复制
 隧道列表页提供「复制」按钮：除了服务端端口随机生成，其他参数全部一键拷贝，方便创建多条相似隧道。
 
 ## TCP 隧道获取真实 IP
 两种方式选一：
 
-1. **[Proxy Protocol](/server/nps_extend.html#tcp-隧道-proxy-protocolv02623)**（v0.26.23+）：在 web 上勾选开关，后端以 PROXY v1/v2 协议解析。
+1. **[Proxy Protocol](/server/nps_extend.html#tcp-隧道-proxy-protocolv02623)**：在 web 上勾选开关，后端以 PROXY v1/v2 协议解析。
 2. **HTTP 域名解析**：使用域名代理模式，配合 `http_add_origin_header=true` 通过 `X-Forwarded-For` / `X-Real-IP` 获取（见 [说明](/extend/description.html#获取用户真实ip)）。
 
 ## 端口白名单
@@ -103,41 +126,10 @@ target_ip=10.1.50.2
 支持域名泛解析，例如将host设置为*.proxy.com，a.proxy.com、b.proxy.com等都将解析到同一目标，在web管理中或客户端配置文件中将host设置为此格式即可。
 
 ## URL路由
-本代理支持根据URL将同一域名转发到不同的内网服务器，可在web中或客户端配置文件中设置，此参数也可忽略，例如在客户端配置文件中
-
-```ini
-[web1]
-host=a.proxy.com
-target_addr=127.0.0.1:7001
-location=/test
-[web2]
-host=a.proxy.com
-target_addr=127.0.0.1:7002
-location=/static
-```
+本代理支持根据URL将同一域名转发到不同的内网服务器，可在web中设置
 对于`a.proxy.com/test`将转发到`web1`，对于`a.proxy.com/static`将转发到`web2`
 
-## 限制ip访问
-如果将一些危险性高的端口例如ssh端口暴露在公网上，可能会带来一些风险，本代理支持限制ip访问。
 
-**使用方法:** 在配置文件nps.conf中设置`ip_limit`=true，设置后仅通过注册的ip方可访问。
-
-**ip注册**：
-
-**方式一：**
-在需要访问的机器上，运行客户端
-
-```
-./npc register -server=ip:port -vkey=公钥或客户端密钥 time=2
-```
-
-time为有效小时数，例如time=2，在当前时间后的两小时内，本机公网ip都可以访问nps代理.
-
-**方式二：**
-此外nps的web登陆也可提供验证的功能，成功登陆nps web admin后将自动为登陆的ip注册两小时的允许访问权限。
-
-
-**注意：** 本机公网ip并不是一成不变的，请自行注意有效期的设置，同时同一网络下，多人也可能是在公用同一个公网ip。
 ## 客户端最大连接数
 为防止恶意大量长连接，影响服务端程序的稳定性，可以在web或客户端配置文件中为每个客户端设置最大连接数。该功能针对`socks5`、`http正向代理`、`域名代理`、`tcp代理`、`udp代理`、`私密代理`生效,使用该功能需要在`nps.conf`中设置`allow_connection_num_limit=true`，默认是关闭的。
 
@@ -177,79 +169,6 @@ export NPC_SERVER_VKEY=xxxxx
 ```
 直接执行./npc即可运行
 
-**在配置文件启动模式下：**
-```ini
-[common]
-server_addr={{.NPC_SERVER_ADDR}}
-conn_type=tcp
-vkey={{.NPC_SERVER_VKEY}}
-auto_reconnection=true
-[web]
-host={{.NPC_WEB_HOST}}
-target_addr={{.NPC_WEB_TARGET}}
-```
-在配置文件中填入相应的环境变量名称，npc将自动进行渲染配置文件替换环境变量
-
-## 健康检查
-
-当客户端以配置文件模式启动时，支持多节点的健康检查。配置示例如下
-
-```ini
-[health_check_test1]
-health_check_timeout=1
-health_check_max_failed=3
-health_check_interval=1
-health_http_url=/
-health_check_type=http
-health_check_target=127.0.0.1:8083,127.0.0.1:8082
-
-[health_check_test2]
-health_check_timeout=1
-health_check_max_failed=3
-health_check_interval=1
-health_check_type=tcp
-health_check_target=127.0.0.1:8083,127.0.0.1:8082
-```
-**health关键词必须在开头存在**
-
-第一种是http模式，也就是以get的方式请求目标+url，返回状态码为200表示成功
-
-第一种是tcp模式，也就是以tcp的方式与目标建立连接，能成功建立连接表示成功
-
-如果失败次数超过`health_check_max_failed`，nps则会移除该npc下的所有该目标，如果失败后目标重新上线，nps将自动将目标重新加入。
-
-项 | 含义
----|---
-health_check_timeout |  健康检查超时时间
-health_check_max_failed |  健康检查允许失败次数
-health_check_interval |  健康检查间隔
-health_check_type |  健康检查类型
-health_check_target |  健康检查目标，多个以逗号（,）分隔
-health_check_type |  健康检查类型
-health_http_url |  健康检查url，仅http模式适用
-
-## 日志输出
-
-日志输出级别
-
-**对于npc：**
-```
--log_level=0~7 -log_path=npc.log
-```
-```
-LevelEmergency->0  LevelAlert->1
-
-LevelCritical->2 LevelError->3
-
-LevelWarning->4 LevelNotice->5
-
-LevelInformational->6 LevelDebug->7
-```
-默认为全输出,级别为0到7
-
-**对于nps：**
-
-在`nps.conf`中设置相关配置即可
 
 ## pprof性能分析与调试
 

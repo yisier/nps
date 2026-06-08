@@ -16,7 +16,6 @@ const serverSidebar: SidebarConfig = [
 const clientSidebar: SidebarConfig = [
   { text: '客户端', children: [
     { text: '使用说明', link: '/client/use.html' },
-    { text: '运行', link: '/client/run.html' },
     { text: '增强功能', link: '/client/npc_extend.html' },
     { text: 'SDK', link: '/client/npc_sdk.html' },
   ]},
@@ -24,11 +23,10 @@ const clientSidebar: SidebarConfig = [
 
 const extendSidebar: SidebarConfig = [
   { text: '扩展', children: [
-    { text: '功能', link: '/extend/feature.html' },
-    { text: '说明', link: '/extend/description.html' },
+    { text: '更多功能', link: '/extend/feature.html' },
     { text: '配置示例', link: '/extend/example.html' },
-    { text: 'Web API', link: '/extend/api.html' },
-    { text: 'Web API 详细', link: '/extend/webapi.html' },
+    { text: 'API接入方式', link: '/extend/api.html' },
+    { text: 'API 清单', link: '/extend/webapi.html' },
   ]},
 ]
 
@@ -84,10 +82,10 @@ export default defineUserConfig({
       {
         text: '扩展',
         children: [
-          { text: '功能', link: '/extend/feature.html' },
-          { text: '说明', link: '/extend/description.html' },
-          { text: 'Web API', link: '/extend/api.html' },
-          { text: 'Web API 详细', link: '/extend/webapi.html' },
+          { text: '更多功能', link: '/extend/feature.html' },
+          { text: '配置示例', link: '/extend/example.html' },
+          { text: 'API接入方式', link: '/extend/api.html' },
+          { text: 'API 清单', link: '/extend/webapi.html' },
         ],
       },
       { text: '更新日志', link: '/changelog/' },
@@ -102,11 +100,9 @@ export default defineUserConfig({
       '/server/server_config.html': serverSidebar,
       '/server/nps_extend.html': serverSidebar,
       '/client/use.html': clientSidebar,
-      '/client/run.html': clientSidebar,
       '/client/npc_extend.html': clientSidebar,
       '/client/npc_sdk.html': clientSidebar,
       '/extend/feature.html': extendSidebar,
-      '/extend/description.html': extendSidebar,
       '/extend/example.html': extendSidebar,
       '/extend/api.html': extendSidebar,
       '/extend/webapi.html': extendSidebar,
@@ -125,7 +121,6 @@ export default defineUserConfig({
           text: '客户端',
           children: [
             { text: '使用说明', link: '/client/use.html' },
-            { text: '运行', link: '/client/run.html' },
             { text: '增强功能', link: '/client/npc_extend.html' },
             { text: 'SDK', link: '/client/npc_sdk.html' },
           ],
@@ -134,9 +129,8 @@ export default defineUserConfig({
           text: '扩展',
           children: [
             { text: '功能', link: '/extend/feature.html' },
-            { text: '说明', link: '/extend/description.html' },
             { text: '配置示例', link: '/extend/example.html' },
-            { text: 'Web API', link: '/extend/api.html' },
+            { text: 'API接入方式', link: '/extend/api.html' },
             { text: 'Web API 详细', link: '/extend/webapi.html' },
           ],
         },
