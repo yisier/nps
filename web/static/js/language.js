@@ -140,6 +140,7 @@ function langreply(langstr) {
 }
 
 var nps_submitting = false;
+var nps_batch_submitting = false;
 function submitform(action, url, postdata) {
     if (nps_submitting) return;
     postsubmit = false;
@@ -212,4 +213,45 @@ function changeunit(limit) {
         return sizeStr.substring(0, index) + sizeStr.substr(index + 3, 2);
     }
     return size;
+}
+
+function batchDelete(url) {
+    var rows = $('#table').bootstrapTable('getSelections');
+    if (rows.length === 0) {
+        alert(languages && languages['content'] && languages['content']['confirm'] && languages['content']['confirm']['noselected']
+            ? (languages['content']['confirm']['noselected'][languages['current']] || languages['content']['confirm']['noselected'][languages['default']] || 'Please select items to delete.')
+            : 'Please select items to delete.');
+        return;
+    }
+    var confirmObj = (languages && languages['content'] && languages['content']['confirm']) ? languages['content']['confirm']['delete'] : null;
+    var confirmMsg = (confirmObj && (confirmObj[languages['current']] || confirmObj[languages['default']])) || ('Are you sure you want to delete ' + rows.length + ' items?');
+    if (!confirm(confirmMsg + ' (' + rows.length + ' ' + (rows.length > 1 ? 'items' : 'item') + ')')) return;
+    if (nps_batch_submitting) return;
+    nps_batch_submitting = true;
+    var ids = [];
+    for (var i = 0; i < rows.length; i++) {
+        ids.push(rows[i].Id);
+    }
+    var idx = 0;
+    function next() {
+        if (idx >= ids.length) {
+            nps_batch_submitting = false;
+            document.location.reload();
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: { id: ids[idx] },
+            success: function (res) {
+                idx++;
+                next();
+            },
+            error: function () {
+                idx++;
+                next();
+            }
+        });
+    }
+    next();
 }

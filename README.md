@@ -1,6 +1,6 @@
 # NPS
 
-![Version](https://img.shields.io/badge/version-v0.26.34-blue)
+![Version](https://img.shields.io/badge/version-v0.26.35-blue)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 ![Go](https://img.shields.io/badge/Go-%3E%3D1.22-00ADD8?logo=go)
 

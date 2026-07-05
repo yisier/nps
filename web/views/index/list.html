@@ -20,6 +20,8 @@
                         <div id="toolbar">
                             <a href="{{.web_base_url}}/index/add?type={{.type}}&client_id={{.client_id}}" class="btn btn-primary dim">
                             <i class="fa fa-fw fa-lg fa-plus"></i> <span langtag="word-add"></span></a>
+                            <a href="#" onclick="batchDelete('{{.web_base_url}}/index/del');return false;" class="btn btn-danger dim">
+                            <i class="fa fa-fw fa-lg fa-trash"></i> <span langtag="word-batchdelete"></span></a>
                         </div>
                         <table id="taskList_table" class="table-striped table-hover" data-mobile-responsive="true"></table>
                     </div>
@@ -95,6 +97,11 @@
         },
         //表格的列
         columns: [
+            {
+                checkbox: true,
+                align: 'center',
+                valign: 'middle'
+            },
             {
                 field: 'Id',//域值
                 title: '<span langtag="word-id"></span>',//标题

@@ -1,5 +1,7 @@
 ﻿# 更新日志
 - 2026-07-04  v0.26.35
+  - 新增：
+    - 客户端列表、隧道列表、域名解析列表支持多选批量删除 [#287](https://github.com/yisier/nps/issues/287)
   - 修复：
     - HTTP 代理在 SVN 客户端无法正常检出 [#336](https://github.com/yisier/nps/issues/336)
     - 新增/编辑隧道时无提示且不跳转，重复点击会产生多条记录 [#334](https://github.com/yisier/nps/issues/334)
