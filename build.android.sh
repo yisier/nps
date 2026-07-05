@@ -18,7 +18,7 @@ export PATH="/usr/local/go/bin:$PATH"
 export GOTOOLCHAIN=auto
 go version
 
-GO111MODULE=on go install fyne.io/fyne/v2/cmd/fyne@latest
+GO111MODULE=on go install fyne.io/tools/cmd/fyne@latest
 export PATH="$PATH:$(go env GOPATH)/bin"
 #mkdir -p /go/src/fyne.io
 #cd src/fyne.io
