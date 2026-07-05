@@ -239,8 +239,9 @@ func (s *TRPClient) handleChan(src net.Conn) {
 				srcConn.Close()
 				targetConn.Close()
 			}()
+			br := bufio.NewReader(srcConn)
 			for {
-				if r, err := http.ReadRequest(bufio.NewReader(srcConn)); err != nil {
+				if r, err := http.ReadRequest(br); err != nil {
 					srcConn.Close()
 					targetConn.Close()
 					break

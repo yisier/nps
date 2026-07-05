@@ -1,4 +1,8 @@
 ﻿# 更新日志
+- 2026-07-04  v0.26.35
+  - 修复：
+    - HTTP 代理在 SVN 客户端无法正常检出 [#336](https://github.com/yisier/nps/issues/336)
+
 - 2026-06-04  v0.26.34
   - 新增：
     - `nps -server` 管理脚本欢迎语显示当前版本号,更新版本时比对版本，已是最新则直接退出，避免无谓覆盖 [#328](https://github.com/yisier/nps/issues/328)

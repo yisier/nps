@@ -133,7 +133,7 @@ server_ip=xxx
 [INFO] generated random auth_crypt_key: <xxxxxxxxxxxxxxxx>
 ```
 
-请在第一次启动时妥善记录。后续可在 `nps.conf` 中手工修改并执行 `nps reload`。
+请在第一次启动时妥善记录。后续可在 `nps.conf` 中手工修改。
 
 
 

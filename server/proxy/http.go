@@ -11,6 +11,7 @@ import (
 	"ehang.io/nps/lib/goroutine"
 	"ehang.io/nps/server/connection"
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"io"
@@ -127,17 +128,18 @@ func (s *httpServer) handleTunneling(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Hijacking not supported", http.StatusInternalServerError)
 			return
 		}
-		c, _, err := hijacker.Hijack()
+		c, rw, err := hijacker.Hijack()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
 		}
 
-		s.handleHttp(conn.NewConn(c), r)
+		s.handleHttp(conn.NewConn(c), r, rw.Reader)
 	}
 
 }
 
-func (s *httpServer) handleHttp(c *conn.Conn, r *http.Request) {
+func (s *httpServer) handleHttp(c *conn.Conn, r *http.Request, br *bufio.Reader) {
 	var (
 		host       *file.Host
 		target     net.Conn
@@ -159,6 +161,7 @@ func (s *httpServer) handleHttp(c *conn.Conn, r *http.Request) {
 		}
 		c.Close()
 	}()
+	firstReq := true
 reset:
 	if isReset {
 		host.Client.AddConn()
@@ -262,23 +265,8 @@ reset:
 			}
 		}()
 
-		err1 := goroutine.CopyBuffer(c, connClient, host.Client.Flow, nil, host, "")
-		if err1 != nil {
+		if err1 := goroutine.CopyBuffer(c, connClient, host.Client.Flow, nil, host, ""); err1 != nil {
 			return
-		}
-
-		resp, err := http.ReadResponse(bufio.NewReader(connClient), r)
-		if err != nil || resp == nil || r == nil {
-			// if there got broken pipe, http.ReadResponse will get a nil
-			//break
-			return
-		} else {
-			lenConn := conn.NewLenConn(c)
-			if err := resp.Write(lenConn); err != nil {
-				logs.Error(err)
-				//break
-				return
-			}
 		}
 	}()
 
@@ -309,23 +297,29 @@ reset:
 		//write
 		lenConn = conn.NewLenConn(connClient)
 		//lenConn = conn.LenConn
-		if err := r.Write(lenConn); err != nil {
-			logs.Error(err)
-			break
+		if firstReq {
+			if err = writeRequestRaw(lenConn, r, br); err != nil {
+				logs.Error(err)
+				break
+			}
+		} else {
+			if err = r.Write(lenConn); err != nil {
+				logs.Error(err)
+				break
+			}
 		}
+		firstReq = false
 		host.Client.Flow.Add(int64(lenConn.Len), int64(lenConn.Len))
 		host.Flow.Add(int64(lenConn.Len), int64(lenConn.Len))
 
 	readReq:
 		//read req from connection
-		r, err = http.ReadRequest(bufio.NewReader(c))
+		r, err = http.ReadRequest(br)
 		if err != nil {
 			//break
 			return
 		}
 		r.URL.Scheme = scheme
-		//What happened ，Why one character less???
-		r.Method = resetReqMethod(r.Method)
 		if hostTmp, err := file.GetDb().GetInfoByHost(r.Host, r); err != nil {
 			logs.Notice("the url %s %s %s can't be parsed!", r.URL.Scheme, r.Host, r.RequestURI)
 			break
@@ -339,14 +333,83 @@ reset:
 	wg.Wait()
 }
 
-func resetReqMethod(method string) string {
-	if method == "ET" {
-		return "GET"
+func writeRequestRaw(w io.Writer, r *http.Request, br *bufio.Reader) error {
+	bw := bufio.NewWriter(w)
+	if _, err := fmt.Fprintf(bw, "%s %s HTTP/1.1\r\n", r.Method, r.URL.RequestURI()); err != nil {
+		return err
 	}
-	if method == "OST" {
-		return "POST"
+	if _, err := fmt.Fprintf(bw, "Host: %s\r\n", r.Host); err != nil {
+		return err
 	}
-	return method
+	chunked := len(r.TransferEncoding) > 0 && r.TransferEncoding[0] == "chunked"
+	if chunked {
+		if _, err := io.WriteString(bw, "Transfer-Encoding: chunked\r\n"); err != nil {
+			return err
+		}
+	}
+	if err := r.Header.Write(bw); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(bw, "\r\n"); err != nil {
+		return err
+	}
+	if err := bw.Flush(); err != nil {
+		return err
+	}
+	if r.ContentLength > 0 {
+		if _, err := io.CopyN(w, br, r.ContentLength); err != nil {
+			return err
+		}
+	} else if chunked {
+		if err := copyRawChunked(w, br); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func copyRawChunked(w io.Writer, br *bufio.Reader) error {
+	for {
+		line, err := br.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if _, err := io.WriteString(w, line); err != nil {
+			return err
+		}
+		sizeStr := strings.TrimSpace(line)
+		if i := strings.IndexByte(sizeStr, ';'); i >= 0 {
+			sizeStr = sizeStr[:i]
+		}
+		size, err := strconv.ParseInt(sizeStr, 16, 64)
+		if err != nil {
+			return err
+		}
+		if size == 0 {
+			for {
+				tline, err := br.ReadString('\n')
+				if err != nil {
+					return err
+				}
+				if _, err := io.WriteString(w, tline); err != nil {
+					return err
+				}
+				if tline == "\r\n" || tline == "\n" {
+					return nil
+				}
+			}
+		}
+		if _, err := io.CopyN(w, br, size); err != nil {
+			return err
+		}
+		var crlf [2]byte
+		if _, err := io.ReadFull(br, crlf[:]); err != nil {
+			return err
+		}
+		if _, err := w.Write(crlf[:]); err != nil {
+			return err
+		}
+	}
 }
 
 func (s *httpServer) NewServer(port int, scheme string) *http.Server {
