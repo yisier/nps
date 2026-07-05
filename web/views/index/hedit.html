@@ -8,7 +8,8 @@
                     <div class="form-group">
                         <label class="control-label font-bold" langtag="word-clientid"></label>
                         <div class="col-sm-10">
-                            <input value="{{.h.Client.Id}}" class="form-control" type="text" name="client_id" placeholder="" langtag="word-clientid">
+                            <select class="form-control" name="client_id" placeholder=""
+                                    langtag="word-belongclient"></select>
                         </div>
                     </div>
                     <div class="form-group">
@@ -178,6 +179,28 @@
                 $("#AutoHttps").css("display", "none")
             }
         })
+
+        getClientList();
     })
+
+    function getClientList() {
+        $("select[name='client_id']").empty();
+        $.ajax({
+            type: "POST",
+            url: "{{.web_base_url}}/client/list", // 服务器数据的加载地址
+            data: {order: "asc", offset: 0, limit: 999},
+            dataType: "json",
+            success: function (data) {
+                if (data && data.rows.length > 0) {
+                    for (var i = 0; i < data.rows.length; i++) {
+                        var option = "<option value=\"" + data.rows[i].Id + "\"";
+                        option += ">" + data.rows[i].Id + '-' + data.rows[i].Remark + "</option>"; //动态添加数据
+                        $("select[name='client_id']").append(option);
+                        $("select[name='client_id']").find("option[value='{{.h.Client.Id}}']").attr("selected", true);
+                    }
+                }
+            }
+        });
+    }
 
 </script>

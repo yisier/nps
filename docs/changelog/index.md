@@ -2,6 +2,9 @@
 - 2026-07-04  v0.26.35
   - 修复：
     - HTTP 代理在 SVN 客户端无法正常检出 [#336](https://github.com/yisier/nps/issues/336)
+    - 新增/编辑隧道时无提示且不跳转，重复点击会产生多条记录 [#334](https://github.com/yisier/nps/issues/334)
+  - 优化：
+    - 隧道、域名解析编辑页的客户端 ID 改为下拉选择 [#334](https://github.com/yisier/nps/issues/334)
 
 - 2026-06-04  v0.26.34
   - 新增：

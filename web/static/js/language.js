@@ -132,25 +132,29 @@ var chartdatas = {};
 var postsubmit;
 
 function langreply(langstr) {
+    if (!languages || !languages['content'] || !languages['content']['reply']) return langstr;
     var langobj = languages['content']['reply'][langstr.replace(/[\s,\.\?]*/g,"").toLowerCase()];
     if ($.type(langobj) == 'undefined') return langstr
     langobj = (langobj[languages['current']] || langobj[languages['default']] || langstr);
     return langobj
 }
 
+var nps_submitting = false;
 function submitform(action, url, postdata) {
+    if (nps_submitting) return;
     postsubmit = false;
     switch (action) {
         case 'start':
         case 'stop':
         case 'delete':
 		case 'copy':
-            var langobj = languages['content']['confirm'][action];
-            action = (langobj[languages['current']] || langobj[languages['default']] || 'Are you sure you want to ' + action + ' it?');
-            if (! confirm(action)) return;
+            var confirmObj = (languages && languages['content'] && languages['content']['confirm']) ? languages['content']['confirm'][action] : null;
+            var confirmMsg = (confirmObj && (confirmObj[languages['current']] || confirmObj[languages['default']])) || ('Are you sure you want to ' + action + ' it?');
+            if (! confirm(confirmMsg)) return;
             postsubmit = true;
         case 'add':
         case 'edit':
+            nps_submitting = true;
             $.ajax({
                 type: "POST",
                 url: url,
@@ -164,10 +168,14 @@ function submitform(action, url, postdata) {
 							window.location.href= document.referrer
 						}
                     }
+                },
+                complete: function () {
+                    nps_submitting = false;
                 }
             });
 			return;
 		case 'global':
+			nps_submitting = true;
 			$.ajax({
 				type: "POST",
 				url: url,
@@ -177,6 +185,9 @@ function submitform(action, url, postdata) {
 					if (res.status) {
 						document.location.reload();
 					}
+				},
+				complete: function () {
+					nps_submitting = false;
 				}
 			});
     }
