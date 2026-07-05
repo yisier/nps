@@ -3,6 +3,7 @@
   - 修复：
     - HTTP 代理在 SVN 客户端无法正常检出 [#336](https://github.com/yisier/nps/issues/336)
     - 新增/编辑隧道时无提示且不跳转，重复点击会产生多条记录 [#334](https://github.com/yisier/nps/issues/334)
+    - mips/mipsle 架构运行出现 Illegal instruction 错误 [#331](https://github.com/yisier/nps/issues/331)
   - 优化：
     - 隧道、域名解析编辑页的客户端 ID 改为下拉选择 [#334](https://github.com/yisier/nps/issues/334)
 

@@ -44,22 +44,22 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags "-s -w -extldflags -stat
 tar -czvf linux_arm64_client.tar.gz npc 
 
 
-CGO_ENABLED=0 GOOS=linux GOARCH=mips64 go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/npc/npc.go
+CGO_ENABLED=0 GOOS=linux GOARCH=mips64 GOMIPS64=softfloat go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/npc/npc.go
 
 tar -czvf linux_mips64_client.tar.gz npc 
 
 
-CGO_ENABLED=0 GOOS=linux GOARCH=mips64le go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/npc/npc.go
+CGO_ENABLED=0 GOOS=linux GOARCH=mips64le GOMIPS64=softfloat go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/npc/npc.go
 
 tar -czvf linux_mips64le_client.tar.gz npc 
 
 
-CGO_ENABLED=0 GOOS=linux GOARCH=mipsle go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/npc/npc.go
+CGO_ENABLED=0 GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/npc/npc.go
 
 tar -czvf linux_mipsle_client.tar.gz npc 
 
 
-CGO_ENABLED=0 GOOS=linux GOARCH=mips go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/npc/npc.go
+CGO_ENABLED=0 GOOS=linux GOARCH=mips GOMIPS=softfloat go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/npc/npc.go
 
 tar -czvf linux_mips_client.tar.gz npc 
 
@@ -125,22 +125,22 @@ tar -czvf freebsd_amd64_server.tar.gz nps
 
 
 
-CGO_ENABLED=0 GOOS=linux GOARCH=mips go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/nps/nps.go
+CGO_ENABLED=0 GOOS=linux GOARCH=mips GOMIPS=softfloat go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/nps/nps.go
 
 tar -czvf linux_mips_server.tar.gz nps
 
 
-CGO_ENABLED=0 GOOS=linux GOARCH=mips64 go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/nps/nps.go
+CGO_ENABLED=0 GOOS=linux GOARCH=mips64 GOMIPS64=softfloat go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/nps/nps.go
 
 tar -czvf linux_mips64_server.tar.gz nps
 
 
-CGO_ENABLED=0 GOOS=linux GOARCH=mips64le go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/nps/nps.go
+CGO_ENABLED=0 GOOS=linux GOARCH=mips64le GOMIPS64=softfloat go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/nps/nps.go
 
 tar -czvf linux_mips64le_server.tar.gz nps
 
 
-CGO_ENABLED=0 GOOS=linux GOARCH=mipsle go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/nps/nps.go
+CGO_ENABLED=0 GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags "-s -w -extldflags -static -extldflags -static" ./cmd/nps/nps.go
 
 tar -czvf linux_mipsle_server.tar.gz nps
 
