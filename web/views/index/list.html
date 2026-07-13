@@ -123,6 +123,7 @@
                 field: 'Remark',//域值
                 title: '<span langtag="word-remark"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
@@ -136,6 +137,7 @@
                 field: 'Mode',//域值
                 title: '<span langtag="word-scheme"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     return '<span langtag="scheme-' + value + '"></span>'
@@ -152,7 +154,7 @@
                 field: 'address',//域值
                 title: '<span langtag="word-accessaddress"></span>',//标题
                 halign: 'center',
-                sortable: false, //启用排序
+                sortable: false, //计算列，按 Port 排序即可
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     var address = {{.ip}} + ":" + row.Port
@@ -173,6 +175,7 @@
                 field: 'Password',//域值
                 title: '<span langtag="word-identificationkey"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
@@ -181,6 +184,7 @@
                 align: 'center',
                 halign: 'center',
                 visible: true,//false表示不显示
+                sortable: true,
                 formatter: function (value, row, index) {
                     if (value) {
                         return '<span class="badge badge-primary" langtag="word-open"></span>'
@@ -195,6 +199,7 @@
                 align: 'center',
                 halign: 'center',
                 visible: true,//false表示不显示
+                sortable: true,
                 formatter: function (value, row, index) {
                     if (value) {
                         return '<span class="badge badge-primary" langtag="word-open"></span>'
@@ -204,11 +209,12 @@
                 }
             },
             {
-                field: '',//域值
+                field: 'IsConnect',//域值
                 title: '<span langtag="word-clientstatus"></span>',//内容
                 align: 'center',
                 halign: 'center',
                 visible: true,//false表示不显示
+                sortable: true,
                 formatter: function (value, row, index) {
                     if (row.Client.IsConnect) {
                         return '<span class="badge badge-primary" langtag="word-online"></span>'

@@ -47,7 +47,10 @@
             return {
                 "offset": params.offset,
                 "limit": params.limit,
-                "search": params.search
+                "search": params.search,
+                "sort": params.sort,
+                "order": params.order,
+                "client_id": {{if .client_id}}{{.client_id}}{{else}}0{{end}}
             }
         },
         search: true,
@@ -87,12 +90,14 @@
                 field: 'Id',//域值
                 title: '<span langtag="word-id"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
-                field: 'Id',//域值
+                field: 'ClientId',//域值
                 title: '<span langtag="word-clientid"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     return row.Client.Id + '-' + row.Client.Remark
@@ -102,18 +107,21 @@
                 field: 'Remark',//域值
                 title: '<span langtag="word-remark"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
                 field: 'Client.VerifyKey',//域值
                 title: '<span langtag="word-verifykey"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
                 field: 'Host',//域值
                 title: '<span langtag="word-host"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     return "<a href='http://" + row.Host + '{{.http_proxy_port}}'  + "' target='_blank'>" + row.Host + '{{.http_proxy_port}}' + "</a>"
@@ -123,6 +131,7 @@
                 field: 'Scheme',//域值
                 title: '<span langtag="word-scheme"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     return '<span langtag="word-' +value+ '"></span>'
@@ -132,6 +141,7 @@
                 field: 'Target',//域值
                 title: '<span langtag="word-target"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     return row.Target.TargetStr
@@ -141,6 +151,7 @@
                 field: 'Location',//域值
                 title: '<span langtag="word-location"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
@@ -148,6 +159,7 @@
                 title: '<span langtag="word-status"></span>',//内容
                 align: 'center',
                 halign: 'center',
+                sortable: true,
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     if (!value) {
@@ -158,10 +170,11 @@
                 }
             },
             {
-                field: '',//域值
+                field: 'IsConnect',//域值
                 title: '<span langtag="word-clientstatus"></span>',//内容
                 align: 'center',
                 halign: 'center',
+                sortable: true,
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     hosturl = ((row.Scheme == 'http' ) ? 'http://' : 'https://') + row.Host + row.Location

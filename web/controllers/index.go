@@ -274,7 +274,7 @@ func (s *IndexController) HostList() {
 	} else {
 		start, length := s.GetAjaxParams()
 		clientId := s.GetIntNoErr("client_id")
-		list, cnt := file.GetDb().GetHost(start, length, clientId, s.getEscapeString("search"))
+		list, cnt := server.GetHostList(start, length, clientId, s.getEscapeString("search"), s.getEscapeString("sort"), s.getEscapeString("order"))
 		s.AjaxTable(list, cnt, cnt, nil)
 	}
 }

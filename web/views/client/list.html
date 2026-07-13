@@ -46,6 +46,15 @@
         method: 'post', // 服务器数据的请求方式 get or post
         url: "{{.web_base_url}}/client/list", // 服务器数据的加载地址
         contentType: "application/x-www-form-urlencoded",
+        queryParams: function (params) {
+            return {
+                "offset": params.offset,
+                "limit": params.limit,
+                "search": params.search,
+                "sort": params.sort,
+                "order": params.order
+            }
+        },
         striped: true, // 设置为true会有隔行变色效果
         search: true,
         showHeader: true,
@@ -93,24 +102,28 @@
                 field: 'Id',//域值
                 title: '<span langtag="word-id"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
                 field: 'Remark',//域值
                 title: '<span langtag="word-remark"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
                 field: 'Version',//域值
                 title: '<span langtag="word-version"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
                 field: 'VerifyKey',//域值
                 title: '<span langtag="word-verifykey"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true,//false表示不显示
                 formatter: function (value, row, index) {
                     if (!row.NoStore) {
@@ -124,12 +137,14 @@
                 field: 'Addr',//域值
                 title: '<span langtag="word-address"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
                 field: 'LocalAddr',//域值
                 title: '<span langtag="word-localaddr"></span>',//标题
                 halign: 'center',
+                sortable: true,
                 visible: true//false表示不显示
             },
             {
@@ -153,10 +168,11 @@
                 }
             },
             {
-                field: 'IsConnect',//域值
+                field: 'NowRate',//域值
                 title: '<span langtag="word-speed"></span>',//内容
                 halign: 'center',
                 visible: true,//false表示不显示
+                sortable: true,
                 formatter: function (value, row, index) {
                     return changeunit(row.Rate.NowRate) + "/S"
                 }
@@ -167,6 +183,7 @@
                 align: 'center',
                 halign: 'center',
                 visible: true,//false表示不显示
+                sortable: true,
                 formatter: function (value, row, index) {
                     if (value) {
                         return '<span class="badge badge-primary" langtag="word-open"></span>'
@@ -181,6 +198,7 @@
                 align: 'center',
                 halign: 'center',
                 visible: true,//false表示不显示
+                sortable: true,
                 formatter: function (value, row, index) {
                     if (value) {
                         return '<span class="badge badge-primary" langtag="word-online"></span>'

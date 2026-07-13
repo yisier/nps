@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 	"sync"
 
@@ -36,43 +35,42 @@ func GetDb() *DbUtils {
 	return Db
 }
 
-func GetMapKeys(m sync.Map, isSort bool, sortKey, order string) (keys []int) {
-	if sortKey != "" && isSort {
-		return sortClientByKey(m, sortKey, order)
-	}
-	m.Range(func(key, value interface{}) bool {
-		keys = append(keys, key.(int))
+func (s *DbUtils) GetClientList(start, length int, search, sortField, order string, clientId int) ([]*Client, int) {
+	all := make([]*Client, 0)
+	s.JsonDb.Clients.Range(func(key, value interface{}) bool {
+		v := value.(*Client)
+		if v.NoDisplay {
+			return true
+		}
+		if clientId != 0 && clientId != v.Id {
+			return true
+		}
+		if search != "" && !(v.Id == common.GetIntNoErrByStr(search) || strings.Contains(v.VerifyKey, search) || strings.Contains(v.Remark, search) || strings.Contains(v.Addr, search) || strings.Contains(v.LocalAddr, search)) {
+			return true
+		}
+		all = append(all, v)
 		return true
 	})
-	sort.Ints(keys)
-	return
+	SortClients(all, sortField, order)
+	return paginateClients(all, start, length)
 }
 
-func (s *DbUtils) GetClientList(start, length int, search, sort, order string, clientId int) ([]*Client, int) {
-	list := make([]*Client, 0)
-	var cnt int
-	keys := GetMapKeys(s.JsonDb.Clients, true, sort, order)
-	for _, key := range keys {
-		if value, ok := s.JsonDb.Clients.Load(key); ok {
-			v := value.(*Client)
-			if v.NoDisplay {
-				continue
-			}
-			if clientId != 0 && clientId != v.Id {
-				continue
-			}
-			if search != "" && !(v.Id == common.GetIntNoErrByStr(search) || strings.Contains(v.VerifyKey, search) || strings.Contains(v.Remark, search) || strings.Contains(v.Addr, search) || strings.Contains(v.LocalAddr, search)) {
-				continue
-			}
-			cnt++
-			if start--; start < 0 {
-				if length--; length >= 0 {
-					list = append(list, v)
-				}
-			}
-		}
+func paginateClients(all []*Client, start, length int) ([]*Client, int) {
+	cnt := len(all)
+	if start < 0 {
+		start = 0
 	}
-	return list, cnt
+	if length <= 0 {
+		return []*Client{}, cnt
+	}
+	if start >= cnt {
+		return []*Client{}, cnt
+	}
+	end := start + length
+	if end > cnt {
+		end = cnt
+	}
+	return all[start:end], cnt
 }
 
 func (s *DbUtils) GetIdByVerifyKey(vKey string, addr string) (id int, err error) {
@@ -182,27 +180,45 @@ func (s *DbUtils) NewHost(t *Host) error {
 	return nil
 }
 
-func (s *DbUtils) GetHost(start, length int, id int, search string) ([]*Host, int) {
-	list := make([]*Host, 0)
-	var cnt int
-	keys := GetMapKeys(s.JsonDb.Hosts, false, "", "")
-	for _, key := range keys {
-		if value, ok := s.JsonDb.Hosts.Load(key); ok {
-			v := value.(*Host)
-			if search != "" && !(v.Id == common.GetIntNoErrByStr(search) || strings.Contains(v.Host, search) || strings.Contains(v.Remark, search) || strings.Contains(v.Client.VerifyKey, search)) {
-				continue
+func (s *DbUtils) GetHost(start, length int, id int, search, sortField, order string) ([]*Host, int) {
+	all := make([]*Host, 0)
+	s.JsonDb.Hosts.Range(func(key, value interface{}) bool {
+		v := value.(*Host)
+		if search != "" {
+			vkey := ""
+			if v.Client != nil {
+				vkey = v.Client.VerifyKey
 			}
-			if id == 0 || v.Client.Id == id {
-				cnt++
-				if start--; start < 0 {
-					if length--; length >= 0 {
-						list = append(list, v)
-					}
-				}
+			if !(v.Id == common.GetIntNoErrByStr(search) || strings.Contains(v.Host, search) || strings.Contains(v.Remark, search) || strings.Contains(vkey, search)) {
+				return true
 			}
 		}
+		if id != 0 && (v.Client == nil || v.Client.Id != id) {
+			return true
+		}
+		all = append(all, v)
+		return true
+	})
+	SortHosts(all, sortField, order)
+	return paginateHosts(all, start, length)
+}
+
+func paginateHosts(all []*Host, start, length int) ([]*Host, int) {
+	cnt := len(all)
+	if start < 0 {
+		start = 0
 	}
-	return list, cnt
+	if length <= 0 {
+		return []*Host{}, cnt
+	}
+	if start >= cnt {
+		return []*Host{}, cnt
+	}
+	end := start + length
+	if end > cnt {
+		end = cnt
+	}
+	return all[start:end], cnt
 }
 
 func (s *DbUtils) DelClient(id int) error {

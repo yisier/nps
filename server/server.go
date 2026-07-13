@@ -5,7 +5,6 @@ import (
 	"errors"
 	"math"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -283,82 +282,68 @@ func DelTask(id int) error {
 
 // get task list by page num
 func GetTunnel(start, length int, typeVal string, clientId int, search string, sortField string, order string) ([]*file.Tunnel, int) {
-	all_list := make([]*file.Tunnel, 0) //store all Tunnel
-	list := make([]*file.Tunnel, 0)
-	var cnt int
+	all_list := make([]*file.Tunnel, 0)
 
-	// 单次遍历收集所有符合条件的 Tunnel（修复原代码双重遍历 sync.Map 的性能问题）
+	// collect + fill runtime fields before sort/paginate
 	file.GetDb().JsonDb.Tasks.Range(func(key, value interface{}) bool {
 		v := value.(*file.Tunnel)
 		if (typeVal != "" && v.Mode != typeVal || (clientId != 0 && v.Client.Id != clientId)) || (typeVal == "" && clientId != v.Client.Id) {
 			return true
 		}
+		if search != "" {
+			targetStr := ""
+			if v.Target != nil {
+				targetStr = v.Target.TargetStr
+			}
+			if !(v.Id == common.GetIntNoErrByStr(search) || v.Port == common.GetIntNoErrByStr(search) || strings.Contains(v.Password, search) || strings.Contains(v.Remark, search) || strings.Contains(targetStr, search)) {
+				return true
+			}
+		}
+		if v.Client != nil {
+			if _, ok := Bridge.Client.Load(v.Client.Id); ok {
+				v.Client.IsConnect = true
+			} else {
+				v.Client.IsConnect = false
+			}
+		}
+		if _, ok := RunList.Load(v.Id); ok {
+			v.RunStatus = true
+		} else {
+			v.RunStatus = false
+		}
 		all_list = append(all_list, v)
 		return true
 	})
-	//sort by Id, Remark, TargetStr, Port, asc or desc
-	if sortField == "Id" {
-		if order == "asc" {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Id < all_list[j].Id })
-		} else {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Id > all_list[j].Id })
-		}
-	} else if sortField == "ClientId" {
-		if order == "asc" {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Client.Id < all_list[j].Client.Id })
-		} else {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Client.Id > all_list[j].Client.Id })
-		}
-	} else if sortField == "Remark" {
-		if order == "asc" {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Remark < all_list[j].Remark })
-		} else {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Remark > all_list[j].Remark })
-		}
-	} else if sortField == "Client.VerifyKey" {
-		if order == "asc" {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Client.VerifyKey < all_list[j].Client.VerifyKey })
-		} else {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Client.VerifyKey > all_list[j].Client.VerifyKey })
-		}
-	} else if sortField == "Target" {
-		if order == "asc" {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Target.TargetStr < all_list[j].Target.TargetStr })
-		} else {
-			sort.SliceStable(all_list, func(i, j int) bool { return all_list[i].Target.TargetStr > all_list[j].Target.TargetStr })
-		}
-	}
 
-	//search and paginate（直接在已排序的列表上操作，避免二次 Load）
-	for _, v := range all_list {
-		if search != "" && !(v.Id == common.GetIntNoErrByStr(search) || v.Port == common.GetIntNoErrByStr(search) || strings.Contains(v.Password, search) || strings.Contains(v.Remark, search) || strings.Contains(v.Target.TargetStr, search)) {
-			continue
-		}
-		cnt++
-		if _, ok := Bridge.Client.Load(v.Client.Id); ok {
-			v.Client.IsConnect = true
-		} else {
-			v.Client.IsConnect = false
-		}
-		if start--; start < 0 {
-			if length--; length >= 0 {
-				if _, ok := RunList.Load(v.Id); ok {
-					v.RunStatus = true
-				} else {
-					v.RunStatus = false
-				}
-				list = append(list, v)
-			}
-		}
+	file.SortTunnels(all_list, sortField, order)
+
+	cnt := len(all_list)
+	if start < 0 {
+		start = 0
 	}
-	return list, cnt
+	if length <= 0 || start >= cnt {
+		return []*file.Tunnel{}, cnt
+	}
+	end := start + length
+	if end > cnt {
+		end = cnt
+	}
+	return all_list[start:end], cnt
 }
 
 // get client list
-func GetClientList(start, length int, search, sort, order string, clientId int) (list []*file.Client, cnt int) {
-	list, cnt = file.GetDb().GetClientList(start, length, search, sort, order, clientId)
+func GetClientList(start, length int, search, sortField, order string, clientId int) (list []*file.Client, cnt int) {
+	// fill IsConnect / Version before sort so IsConnect ordering is correct
 	dealClientData()
+	list, cnt = file.GetDb().GetClientList(start, length, search, sortField, order, clientId)
 	return
+}
+
+// GetHostList returns hosts with client online status filled before sort/pagination.
+func GetHostList(start, length int, clientId int, search, sortField, order string) ([]*file.Host, int) {
+	// ensure Client.IsConnect is current for sort and display
+	dealClientData()
+	return file.GetDb().GetHost(start, length, clientId, search, sortField, order)
 }
 
 func dealClientData() {
