@@ -35,7 +35,8 @@ type Client struct {
 	Cnf             *Config
 	Id              int        //id
 	VerifyKey       string     //verify key
-	Addr            string     //the ip of client
+	Addr            string     // client egress address as seen by server (RemoteAddr)
+	LocalAddr       string     // client private/LAN addresses reported by npc
 	Remark          string     //remark
 	Status          bool       //is allow connect
 	IsConnect       bool       //is the client connect
@@ -67,6 +68,7 @@ func NewClient(vKey string, noStore bool, noDisplay bool) *Client {
 		Id:        0,
 		VerifyKey: vKey,
 		Addr:      "",
+		LocalAddr: "",
 		Remark:    "",
 		Status:    true,
 		IsConnect: false,

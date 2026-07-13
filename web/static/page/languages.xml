@@ -122,8 +122,12 @@
 	</lang>
 
 	<lang id="word-address">
-		<zh-CN>客户端地址</zh-CN>
-		<en-US>Client address</en-US>
+		<zh-CN>客户端出口地址</zh-CN>
+		<en-US>Client egress address</en-US>
+	</lang>
+	<lang id="word-localaddr">
+		<zh-CN>内网地址</zh-CN>
+		<en-US>LAN address</en-US>
 	</lang>
 	<lang id="word-add">
 		<zh-CN>新增</zh-CN>

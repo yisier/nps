@@ -21,6 +21,9 @@ const (
 	RES_MSG           = "msg0"
 	RES_CLOSE         = "clse"
 	NEW_UDP_CONN      = "udpc" //p2p udp conn
+	// REPORT_LOCAL_IP: server requests client local/private IPs on WORK_MAIN.
+	// New clients reply with WriteLenContent; old clients ignore the flag (server times out).
+	REPORT_LOCAL_IP   = "rlip"
 	NEW_TASK          = "task"
 	NEW_CONF          = "conf"
 	NEW_HOST          = "host"

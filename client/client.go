@@ -141,6 +141,14 @@ func (s *TRPClient) handleMain() {
 			break
 		}
 		switch flags {
+		case common.REPORT_LOCAL_IP:
+			// server requests private/LAN IPs (new nps); ignore failures so main loop continues
+			localIPs := common.GetLocalIPs(s.signal.Conn)
+			if err := s.signal.WriteLenContent([]byte(localIPs)); err != nil {
+				s.logWarn("report local ip failed: %s", err.Error())
+			} else {
+				s.logInfo("reported local addr: %s", localIPs)
+			}
 		case common.NEW_UDP_CONN:
 			//read server udp addr and password
 			if lAddr, err := s.signal.GetShortLenContent(); err != nil {

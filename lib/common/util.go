@@ -482,6 +482,99 @@ func GetIntranetIp() (error, string) {
 	return errors.New("get intranet ip error"), ""
 }
 
+// isUsefulPrivateIPv4 reports whether ip is a usable LAN IPv4 for display:
+// RFC1918 private only — excludes loopback, link-local (169.254.0.0/16), public, etc.
+func isUsefulPrivateIPv4(ip net.IP) bool {
+	if ip == nil {
+		return false
+	}
+	v4 := ip.To4()
+	if v4 == nil {
+		return false
+	}
+	if v4.IsLoopback() || v4.IsLinkLocalUnicast() || v4.IsLinkLocalMulticast() || v4.IsUnspecified() || v4.IsMulticast() {
+		return false
+	}
+	// RFC1918 only (not 169.254, not public)
+	return v4.IsPrivate()
+}
+
+func ipFromAddr(addr net.Addr) net.IP {
+	if addr == nil {
+		return nil
+	}
+	switch a := addr.(type) {
+	case *net.TCPAddr:
+		return a.IP
+	case *net.UDPAddr:
+		return a.IP
+	default:
+		return net.ParseIP(GetIpByAddr(addr.String()))
+	}
+}
+
+// GetLocalIPs returns private (RFC1918) IPv4 addresses useful for identifying the npc host.
+// Prefers the local IP of conn (path toward nps). Falls back to interface scan.
+// Link-local 169.254.0.0/16, loopback and public addresses are excluded.
+func GetLocalIPs(conn net.Conn) string {
+	seen := make(map[string]struct{})
+	ips := make([]string, 0, 4)
+
+	add := func(ip net.IP) {
+		if !isUsefulPrivateIPv4(ip) {
+			return
+		}
+		s := ip.To4().String()
+		if _, ok := seen[s]; ok {
+			return
+		}
+		seen[s] = struct{}{}
+		ips = append(ips, s)
+	}
+
+	// 1) Local endpoint of the bridge connection — usually the real LAN IP used to reach nps.
+	if conn != nil {
+		add(ipFromAddr(conn.LocalAddr()))
+		// One correct path IP is enough for most hosts (avoids docker/vm junk alongside).
+		if len(ips) > 0 {
+			return ips[0]
+		}
+	}
+
+	// 2) Outbound interface toward the internet (same idea as GetLocalUdpAddr).
+	if tmp, err := net.Dial("udp", "114.114.114.114:53"); err == nil {
+		add(ipFromAddr(tmp.LocalAddr()))
+		_ = tmp.Close()
+		if len(ips) > 0 {
+			return ips[0]
+		}
+	}
+
+	// 3) Fallback: all up interfaces with private IPv4.
+	ifaces, err := net.Interfaces()
+	if err == nil {
+		for _, iface := range ifaces {
+			if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+				continue
+			}
+			addrs, err := iface.Addrs()
+			if err != nil {
+				continue
+			}
+			for _, address := range addrs {
+				if ipnet, ok := address.(*net.IPNet); ok {
+					add(ipnet.IP)
+				}
+			}
+		}
+	}
+
+	if len(ips) > 1 {
+		sort.Strings(ips)
+	}
+	return strings.Join(ips, ",")
+}
+
 func IsPublicIP(IP net.IP) bool {
 	if IP.IsLoopback() || IP.IsLinkLocalMulticast() || IP.IsLinkLocalUnicast() {
 		return false

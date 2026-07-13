@@ -117,6 +117,37 @@ func (s *Bridge) StartTunnel() error {
 	return nil
 }
 
+// requestClientLocalAddr asks the client for private/LAN IPs on the main signal conn.
+// New clients reply with WriteLenContent; old clients ignore the flag and we time out.
+func (s *Bridge) requestClientLocalAddr(id int, c *conn.Conn) {
+	if c == nil || c.Conn == nil {
+		return
+	}
+	if _, err := c.Write([]byte(common.REPORT_LOCAL_IP)); err != nil {
+		return
+	}
+	_ = c.Conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	defer func() {
+		// clear deadline so health / later reads are not affected
+		_ = c.Conn.SetReadDeadline(time.Time{})
+	}()
+	b, err := c.GetShortLenContent()
+	if err != nil {
+		logs.Trace("clientId %d did not report local addr (old client or timeout): %v", id, err)
+		return
+	}
+	localAddr := strings.TrimSpace(string(b))
+	if localAddr == "" {
+		return
+	}
+	if client, err := file.GetDb().GetClient(id); err == nil {
+		client.Lock()
+		client.LocalAddr = localAddr
+		client.Unlock()
+		logs.Info("clientId %d local addr: %s", id, localAddr)
+	}
+}
+
 // get health information form client
 func (s *Bridge) GetHealthFromClient(id int, c *conn.Conn) {
 	for {
@@ -285,6 +316,8 @@ func (s *Bridge) typeDeal(typeVal string, c *conn.Conn, id int, vs string) {
 				oldSignal.WriteClose()
 			}
 		}
+		// Request private/LAN IPs from client. Old clients ignore the flag; short timeout keeps compatibility.
+		s.requestClientLocalAddr(id, c)
 		go s.GetHealthFromClient(id, c)
 		logs.Info("clientId %d connection succeeded, address:%s ", id, c.Conn.RemoteAddr())
 	case common.WORK_CHAN:
