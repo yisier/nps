@@ -51,6 +51,7 @@ func main() {
 		return
 	}
 	if *serverCmd {
+		_ = logs.SetLogger(logs.AdapterConsole, `{"level":7,"color":true}`)
 		printSlogan()
 		inputCmd()
 		return
@@ -269,7 +270,15 @@ func inputCmd() {
 			_ = service.Control(s, "uninstall")
 			binPath := install.InstallNpsToCurrentDir()
 
-			beego.LoadAppConfig("ini", filepath.Join(common.GetAppPath(), "conf", "nps.conf"))
+			// Ensure conf exists (same as normal startup), then load it for display.
+			// Previously LoadAppConfig error was ignored and web_port could be empty,
+			// printing "127.0.0.1:" with no port. See #317.
+			confDir := filepath.Join(common.GetAppPath(), "conf")
+			initConfig(confDir)
+			if err := beego.LoadAppConfig("ini", filepath.Join(confDir, "nps.conf")); err != nil {
+				fmt.Println("加载配置文件失败：", err)
+				break
+			}
 
 			logPath := filepath.Join(common.GetAppPath(), "nps.log")
 			if common.IsWindows() {
@@ -302,7 +311,16 @@ func inputCmd() {
 			if err != nil {
 				fmt.Println("启动NPS服务失败", err)
 			} else {
-				fmt.Println("NPS服务已启动，管理面板访问地址：127.0.0.1:" + beego.AppConfig.String("web_port"))
+				webPort := beego.AppConfig.String("web_port")
+				if webPort == "" {
+					fmt.Println("NPS服务已启动（未配置 web_port，管理面板已关闭）")
+				} else {
+					scheme := "http"
+					if beego.AppConfig.DefaultBool("web_open_ssl", false) {
+						scheme = "https"
+					}
+					fmt.Println("NPS服务已启动，管理面板访问地址：" + scheme + "://127.0.0.1:" + webPort)
+				}
 			}
 
 			break
