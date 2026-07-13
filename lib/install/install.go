@@ -232,7 +232,7 @@ func downloadLatest(bin string) string {
 	json.Unmarshal(b, &rl)
 	version := rl.TagName
 	fmt.Println("the latest version is", version)
-	filename := runtime.GOOS + "_" + runtime.GOARCH + "_" + bin + ".tar.gz"
+	filename := runtime.GOOS + "_" + runtime.GOARCH + "_" + bin + ".zip"
 	// download latest package
 	downloadUrl := fmt.Sprintf("https://github.com/yisier/nps/releases/download/%s/%s", version, filename)
 	fmt.Println("download package from ", downloadUrl)
@@ -270,7 +270,7 @@ func downloadLatest2(bin string, path string) string {
 	json.Unmarshal(b, &rl)
 	version := rl.TagName
 	fmt.Println("the latest version is", version)
-	filename := runtime.GOOS + "_" + runtime.GOARCH + "_" + bin + ".tar.gz"
+	filename := runtime.GOOS + "_" + runtime.GOARCH + "_" + bin + ".zip"
 	// download latest package
 	downloadUrl := fmt.Sprintf("https://github.com/yisier/nps/releases/download/%s/%s", version, filename)
 	fmt.Println("download package from ", downloadUrl)
@@ -301,17 +301,12 @@ func copyStaticFile(srcPath, bin string) string {
 			if _, err := copyFile(filepath.Join(srcPath, bin), "/usr/local/bin/"+bin); err != nil {
 				log.Fatalln(err)
 			} else {
-				copyFile(filepath.Join(srcPath, bin), "/usr/local/bin/"+bin+"-update")
-				chMod("/usr/local/bin/"+bin+"-update", 0755)
 				binPath = "/usr/local/bin/" + bin
 			}
 		} else {
-			copyFile(filepath.Join(srcPath, bin), "/usr/bin/"+bin+"-update")
-			chMod("/usr/bin/"+bin+"-update", 0755)
 			binPath = "/usr/bin/" + bin
 		}
 	} else {
-		copyFile(filepath.Join(srcPath, bin+".exe"), filepath.Join(common.GetAppPath(), bin+"-update.exe"))
 		copyFile(filepath.Join(srcPath, bin+".exe"), filepath.Join(common.GetAppPath(), bin+".exe"))
 	}
 	chMod(binPath, 0755)
@@ -371,11 +366,11 @@ func InstallNps() string {
 	log.Println("The new configuration file is located in", path, "you can edit them")
 	if !common.IsWindows() {
 		log.Println(`You can start with:
-nps start|stop|restart|uninstall|update or nps-update update
+nps start|stop|restart|uninstall|update
 anywhere!`)
 	} else {
 		log.Println(`You can copy executable files to any directory and start working with:
-nps.exe start|stop|restart|uninstall|update or nps-update.exe update
+nps.exe start|stop|restart|uninstall|update
 now!`)
 	}
 	chMod(common.GetLogPath(), 0777)
