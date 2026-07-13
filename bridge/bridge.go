@@ -216,6 +216,7 @@ func (s *Bridge) GetHealthFromClient(id int, c *conn.Conn) {
 // 验证失败，返回错误验证flag，并且关闭连接
 func (s *Bridge) verifyError(c *conn.Conn) {
 	c.Write([]byte(common.VERIFY_EER))
+	c.Close()
 }
 
 func (s *Bridge) verifySuccess(c *conn.Conn) {
@@ -223,16 +224,19 @@ func (s *Bridge) verifySuccess(c *conn.Conn) {
 }
 
 func (s *Bridge) cliProcess(c *conn.Conn) {
+	// 握手 10s 超时：扫描/半开连接不会一直占着 goroutine；成功后清掉
+	_ = c.SetReadDeadline(time.Now().Add(10 * time.Second))
+
 	//read test flag
 	if _, err := c.GetShortContent(3); err != nil {
 		logs.Info("The client %s connect error", c.Conn.RemoteAddr(), err.Error())
+		c.Close()
 		return
 	}
-	//version check
-	if b, err := c.GetShortLenContent(); err != nil || string(b) != version.GetVersion() {
-		//logs.Info("The client %s version does not match", c.Conn.RemoteAddr())
-		//c.Close()
-		//return
+	//version check（版本不匹配仍兼容放行；读失败则断开）
+	if _, err := c.GetShortLenContent(); err != nil {
+		c.Close()
+		return
 	}
 	//version get
 	var vs []byte
@@ -244,7 +248,7 @@ func (s *Bridge) cliProcess(c *conn.Conn) {
 	}
 	//write server version to client
 	c.Write([]byte(crypt.Md5(version.GetVersion())))
-	c.SetReadDeadlineBySecond(5)
+	_ = c.SetReadDeadline(time.Now().Add(10 * time.Second))
 	var buf []byte
 	//get vKey from client
 	if buf, err = c.GetShortContent(32); err != nil {
@@ -261,9 +265,12 @@ func (s *Bridge) cliProcess(c *conn.Conn) {
 		s.verifySuccess(c)
 	}
 	if flag, err := c.ReadFlag(); err == nil {
+		// 握手完成，交给 typeDeal 做长连接
+		_ = c.SetReadDeadline(time.Time{})
 		s.typeDeal(flag, c, id, string(vs))
 	} else {
 		logs.Warn(err, flag)
+		c.Close()
 	}
 	return
 }
