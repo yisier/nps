@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"path/filepath"
 	"strings"
 	"sync"
 
 	"ehang.io/nps/lib/common"
 	"ehang.io/nps/lib/file"
+	"ehang.io/nps/web"
 	"github.com/astaxie/beego/logs"
 	"github.com/panjf2000/ants/v2"
 )
@@ -64,7 +64,7 @@ func CopyBuffer(dst io.Writer, src io.Reader, flow *file.Flow, task *file.Tunnel
 					ip := common.GetIpByAddr(remote)
 					var jsonBytes []byte
 
-					errorContent, _ := common.ReadAllFromFile(filepath.Join(common.GetRunPath(), "web", "static", "page", "auth.html"))
+					errorContent, _ := web.ReadStaticFile("page/auth.html")
 					authHtml := string(errorContent)
 					authHtml = strings.ReplaceAll(authHtml, "${ip}", ip)
 

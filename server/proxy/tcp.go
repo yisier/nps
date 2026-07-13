@@ -7,7 +7,6 @@ import (
 	"errors"
 	"net"
 	"net/http"
-	"path/filepath"
 	"strconv"
 
 	"ehang.io/nps/bridge"
@@ -15,6 +14,7 @@ import (
 	"ehang.io/nps/lib/conn"
 	"ehang.io/nps/lib/file"
 	"ehang.io/nps/server/connection"
+	"ehang.io/nps/web"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
@@ -66,8 +66,8 @@ func (s *WebServer) Start() error {
 		<-stop
 	}
 	beego.BConfig.WebConfig.Session.SessionOn = true
-	beego.SetStaticPath(beego.AppConfig.String("web_base_url")+"/static", filepath.Join(common.GetRunPath(), "web", "static"))
-	beego.SetViewsPath(filepath.Join(common.GetRunPath(), "web", "views"))
+	// Serve management UI from embedded assets only (no disk web/ directory).
+	web.InitBeegoAssets()
 	err := errors.New("Web management startup failure ")
 	var l net.Listener
 	if l, err = connection.GetWebManagerListener(); err == nil {

@@ -10,6 +10,7 @@ import (
 	"ehang.io/nps/lib/file"
 	"ehang.io/nps/lib/goroutine"
 	"ehang.io/nps/server/connection"
+	"ehang.io/nps/web"
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
@@ -58,7 +59,7 @@ func NewHttp(bridge *bridge.Bridge, c *file.Tunnel, httpPort, httpsPort int, use
 
 func (s *httpServer) Start() error {
 	var err error
-	if s.errorContent, err = common.ReadAllFromFile(filepath.Join(common.GetRunPath(), "web", "static", "page", "error.html")); err != nil {
+	if s.errorContent, err = web.ReadStaticFile("page/error.html"); err != nil {
 		s.errorContent = []byte("nps 404")
 	}
 	if s.httpPort > 0 {
@@ -231,7 +232,7 @@ reset:
 				return
 			}
 
-			errorContent, _ := common.ReadAllFromFile(filepath.Join(common.GetRunPath(), "web", "static", "page", "auth.html"))
+			errorContent, _ := web.ReadStaticFile("page/auth.html")
 			authHtml := string(errorContent)
 			authHtml = strings.ReplaceAll(authHtml, "${ip}", common.GetIpByAddr(c.RemoteAddr().String()))
 			s.errorContent, err = []byte(authHtml), err

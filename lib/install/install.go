@@ -294,18 +294,7 @@ func downloadLatest2(bin string, path string) string {
 	return destPath
 }
 func copyStaticFile(srcPath, bin string) string {
-	path := common.GetInstallPath()
-	if bin == "nps" {
-		//复制文件到对应目录
-		if err := CopyDir(filepath.Join(srcPath, "web", "views"), filepath.Join(path, "web", "views")); err != nil {
-			log.Fatalln(err)
-		}
-		chMod(filepath.Join(path, "web", "views"), 0766)
-		if err := CopyDir(filepath.Join(srcPath, "web", "static"), filepath.Join(path, "web", "static")); err != nil {
-			log.Fatalln(err)
-		}
-		chMod(filepath.Join(path, "web", "static"), 0766)
-	}
+	// nps web UI is embedded in the binary; no web/ files to copy.
 	binPath, _ := filepath.Abs(os.Args[0])
 	if !common.IsWindows() {
 		if _, err := copyFile(filepath.Join(srcPath, bin), "/usr/bin/"+bin); err != nil {
@@ -330,10 +319,7 @@ func copyStaticFile(srcPath, bin string) string {
 }
 
 func copyStaticFileReplaceNps(srcPath, descPath string) string {
-	//复制文件到对应目录
-	os.Rename(filepath.Join(srcPath, "web"), filepath.Join(descPath, "web"))
-	chMod(filepath.Join(descPath, "web"), 0766)
-
+	// Web UI is embedded in the binary; only replace the executable.
 	binPath, _ := filepath.Abs(os.Args[0])
 	if !common.IsWindows() {
 		os.Rename(filepath.Join(srcPath, "nps"), filepath.Join(descPath, "nps"))
@@ -371,10 +357,8 @@ func InstallNpc() {
 func InstallNps() string {
 	path := common.GetInstallPath()
 	log.Println("install path:" + path)
-	if common.FileExists(path) {
-		MkidrDirAll(path, "web/static", "web/views")
-	} else {
-		MkidrDirAll(path, "conf", "web/static", "web/views")
+	if !common.FileExists(path) {
+		MkidrDirAll(path, "conf")
 		// not copy config if the config file is exist
 		if err := CopyDir(filepath.Join(common.GetAppPath(), "conf"), filepath.Join(path, "conf")); err != nil {
 			log.Fatalln(err)
@@ -383,7 +367,7 @@ func InstallNps() string {
 	}
 	binPath := copyStaticFile(common.GetAppPath(), "nps")
 	log.Println("install ok!")
-	log.Println("Static files and configuration files in the current directory will be useless")
+	log.Println("Web UI is embedded in the nps binary; no web/ directory is required")
 	log.Println("The new configuration file is located in", path, "you can edit them")
 	if !common.IsWindows() {
 		log.Println(`You can start with:
