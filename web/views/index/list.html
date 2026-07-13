@@ -79,19 +79,34 @@
                     + '<b langtag="word-basicusername"></b>: ' + row.Client.Cnf.U + '&emsp;'
                     + '<b langtag="word-basicpassword"></b>: ' + row.Client.Cnf.P + '&emsp;'
                     + '<b langtag="word-protoversion"></b>: ' + row.ProtoVersion + '&emsp;'
+            var copyBtn = '<button class="copy btn btn-info btn-xs" onclick="copyCommand(this)" data-clipboard-text="">复制</button>'
             if (row.Mode == "p2p") {
-                return tmp + "<br/><br>"
+                var p2pCmd = tmp + "<br/><br>"
                         + '<b langtag="word-commandaccessp2p"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
-                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -target=" + row.Target.TargetStr + "</code>" + "<br/><br>"
+                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -target=" + row.Target.TargetStr + "</code>" + copyBtn + "<br/><br>"
                         + '<b langtag="word-commandaccessp2ps"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
-                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=p2ps" + "</code>" + "<br/><br>"
+                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=p2ps" + "</code>" + copyBtn + "<br/><br>"
                         + '<b langtag="word-commandaccessp2pt"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
-                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=p2pt" + "</code>"
-
+                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=p2pt" + "</code>" + copyBtn
+                {{if .tls_enable}}
+                p2pCmd += "<br/><br>"
+                        + '<b langtag="word-commandaccessp2p-tls"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.Client.VerifyKey
+                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -target=" + row.Target.TargetStr + " -tls_enable=true</code>" + copyBtn + "<br/><br>"
+                        + '<b langtag="word-commandaccessp2ps-tls"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.Client.VerifyKey
+                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=p2ps -tls_enable=true</code>" + copyBtn + "<br/><br>"
+                        + '<b langtag="word-commandaccessp2pt-tls"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.Client.VerifyKey
+                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=p2pt -tls_enable=true</code>" + copyBtn
+                {{end}}
+                return p2pCmd
             }
             if (row.Mode == "secret") {
-                return tmp + "<br/><br>" + '<b langtag="word-commandaccess"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
-                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=secret" + "</code>"
+                var secretCmd = tmp + "<br/><br>" + '<b langtag="word-commandaccess"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.p}} -vkey=" + row.Client.VerifyKey 
+                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=secret" + "</code>" + copyBtn
+                {{if .tls_enable}}
+                secretCmd += "<br/><br>" + '<b langtag="word-commandaccess-tls"></b>: ' + "<code>{{.win}} -server={{.ip}}:{{.tls_p}} -vkey=" + row.Client.VerifyKey
+                        + " -type=" +{{.bridgeType}} +" -password=" + row.Password + " -local_type=secret -tls_enable=true</code>" + copyBtn
+                {{end}}
+                return secretCmd
             }
             return tmp
         },
@@ -251,5 +266,18 @@
                 }
             }
         ]
+    });
+
+    function copyCommand(data) {
+        data.setAttribute("data-clipboard-text", data.previousElementSibling.innerHTML)
+    }
+
+    var clipboard = new ClipboardJS('.copy');
+    clipboard.on('success', function (e) {
+        toastr.success('复制成功');
+        e.clearSelection();
+    });
+    clipboard.on('error', function (e) {
+        toastr.error('复制失败', '提示');
     });
 </script>

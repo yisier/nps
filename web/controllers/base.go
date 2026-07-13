@@ -109,8 +109,10 @@ func (s *BaseController) display(tpl ...string) {
 	if bridge.ServerTlsEnable {
 		tlsPort := strconv.Itoa(beego.AppConfig.DefaultInt("tls_bridge_port", 8025))
 		s.Data["tls_p"] = tlsPort
+		s.Data["tls_enable"] = true
 		s.Data["p1"] = strconv.Itoa(server.Bridge.TunnelPort) + " / " + tlsPort
 	} else {
+		s.Data["tls_enable"] = false
 		s.Data["p1"] = strconv.Itoa(server.Bridge.TunnelPort)
 	}
 

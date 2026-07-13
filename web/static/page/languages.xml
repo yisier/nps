@@ -193,6 +193,22 @@
 		<zh-CN>访问端命令</zh-CN>
 		<en-US>Access command</en-US>
 	</lang>
+	<lang id="word-commandaccess-tls">
+		<zh-CN>访问端命令 (TLS)</zh-CN>
+		<en-US>Access command (TLS)</en-US>
+	</lang>
+	<lang id="word-commandaccessp2p-tls">
+		<zh-CN>访问端命令 (TCP / TLS)</zh-CN>
+		<en-US>Access command (TCP / TLS)</en-US>
+	</lang>
+	<lang id="word-commandaccessp2ps-tls">
+		<zh-CN>访问端命令 (SOCKS 5 / TLS)</zh-CN>
+		<en-US>Access command (SOCKS 5 / TLS)</en-US>
+	</lang>
+	<lang id="word-commandaccessp2pt-tls">
+		<zh-CN>访问端命令 (透明代理 / TLS)</zh-CN>
+		<en-US>Access command (Transparent proxy / TLS)</en-US>
+	</lang>
 	<lang id="word-protoversion">
 		<zh-CN>Proxy Protocol Version</zh-CN>
 		<en-US>Proxy Protocol Version</en-US>
