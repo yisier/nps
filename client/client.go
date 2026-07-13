@@ -34,6 +34,7 @@ type TRPClient struct {
 	cnf            *config.Config
 	disconnectTime int
 	once           sync.Once
+	closeCh        chan struct{}   // closed when client is shutting down; stops ping
 	logger         *logs.BeeLogger // 每个客户端独立的 logger
 }
 
@@ -48,6 +49,7 @@ func NewRPClient(svraddr string, vKey string, bridgeConnType string, proxyUrl st
 		cnf:            cnf,
 		disconnectTime: disconnectTime,
 		once:           sync.Once{},
+		closeCh:        make(chan struct{}),
 		logger:         nil, // 默认使用全局 logger，可通过 SetLogger 设置
 	}
 }
@@ -134,6 +136,7 @@ retry:
 
 // handle main connection
 func (s *TRPClient) handleMain() {
+mainLoop:
 	for {
 		flags, err := s.signal.ReadFlag()
 		if err != nil {
@@ -153,7 +156,7 @@ func (s *TRPClient) handleMain() {
 			//read server udp addr and password
 			if lAddr, err := s.signal.GetShortLenContent(); err != nil {
 				s.logWarn(err.Error())
-				return
+				break mainLoop
 			} else if pwd, err := s.signal.GetShortLenContent(); err == nil {
 				var localAddr string
 				//The local port remains unchanged for a certain period of time
@@ -161,7 +164,7 @@ func (s *TRPClient) handleMain() {
 					tmpConn, err := common.GetLocalUdpAddr()
 					if err != nil {
 						s.logError(err.Error())
-						return
+						break mainLoop
 					}
 					localAddr = tmpConn.LocalAddr().String()
 				} else {
@@ -211,7 +214,10 @@ func (s *TRPClient) newUdpConn(localAddr, rAddr string, md5Password string) {
 func (s *TRPClient) newChan() {
 	tunnel, err := NewConn(s.bridgeConnType, s.vKey, s.svrAddr, common.WORK_CHAN, s.proxyUrl)
 	if err != nil {
-		s.logError("connect to %s error: %v", s.svrAddr, err)
+		// WORK_MAIN may already be up; without Close the client stays half-connected
+		// (handleMain blocks, outer reconnect loop never runs). See #115.
+		s.logError("connect to %s error: %v, client will reconnect", s.svrAddr, err)
+		s.Close()
 		return
 	}
 	s.tunnel = nps_mux.NewMux(tunnel.Conn, s.bridgeConnType, s.disconnectTime)
@@ -384,14 +390,18 @@ func (s *TRPClient) handleUdp(serverConn net.Conn) {
 // Whether the monitor channel is closed
 func (s *TRPClient) ping() {
 	s.ticker = time.NewTicker(time.Second * 5)
-loop:
+	defer s.ticker.Stop()
 	for {
 		select {
 		case <-s.ticker.C:
+			// tunnel still nil: newChan failed or still connecting; if Close already ran, closeCh fires.
+			// tunnel established then closed: tear down so outer loop can reconnect.
 			if s.tunnel != nil && s.tunnel.IsClose() {
 				s.Close()
-				break loop
+				return
 			}
+		case <-s.closeCh:
+			return
 		}
 	}
 }
@@ -403,13 +413,16 @@ func (s *TRPClient) Close() {
 func (s *TRPClient) closing() {
 	CloseClient = true
 	NowStatus = 0
+	// unblock ping; safe: closing runs only once via once.Do
+	select {
+	case <-s.closeCh:
+	default:
+		close(s.closeCh)
+	}
 	if s.tunnel != nil {
 		_ = s.tunnel.Close()
 	}
 	if s.signal != nil {
 		_ = s.signal.Close()
-	}
-	if s.ticker != nil {
-		s.ticker.Stop()
 	}
 }

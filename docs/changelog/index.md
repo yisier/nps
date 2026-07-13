@@ -11,6 +11,7 @@
     - 解决私密代理和P2P连接的TLS启用问题 [#143](https://github.com/yisier/nps/issues/143)
     - HTTP 正向代理 Basic 认证 BUG[#133](https://github.com/yisier/nps/issues/133)
     - SOCKS5 用户名密码认证 BUG [#133](https://github.com/yisier/nps/issues/133)
+    - 客户端建连失败后半连接假死、需手动重启 npc BUG [#115](https://github.com/yisier/nps/issues/115)
 
 - 2026-07-04  v0.26.35
   - 新增：
