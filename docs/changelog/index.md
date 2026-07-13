@@ -6,6 +6,7 @@
   - 优化：
     - 不再依赖外部 `web` 目录的静态文件
   - 修复：
+    - 客户端/服务端在线更新失败 BUG
     - `nps -server` 安装成功后 `web_port` 未正常显示BUG [#317](https://github.com/yisier/nps/issues/317)
     - Bridge 握手增加 10s 读超时，校验失败/读失败立即关闭连接，减轻端口扫描导致的连接与 goroutine 堆积 [#281](https://github.com/yisier/nps/issues/281)
     - 解决私密代理和P2P连接的TLS启用问题 [#143](https://github.com/yisier/nps/issues/143)
