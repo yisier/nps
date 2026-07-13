@@ -64,12 +64,21 @@ func (s *BaseServer) writeConnFail(c net.Conn) {
 	c.Write(s.errorContent)
 }
 
-// auth check
+// auth check for reverse-proxy hosts (401 + WWW-Authenticate).
 func (s *BaseServer) auth(r *http.Request, c *conn.Conn, u, p string) error {
+	return s.doAuth(r, c, u, p, common.UnauthorizedBytes, "401 Unauthorized")
+}
+
+// proxyAuth check for HTTP forward proxy (407 + Proxy-Authenticate).
+func (s *BaseServer) proxyAuth(r *http.Request, c *conn.Conn, u, p string) error {
+	return s.doAuth(r, c, u, p, common.ProxyAuthRequiredBytes, "407 Proxy Authentication Required")
+}
+
+func (s *BaseServer) doAuth(r *http.Request, c *conn.Conn, u, p, failBytes, errMsg string) error {
 	if u != "" && p != "" && !common.CheckAuth(r, u, p) {
-		c.Write([]byte(common.UnauthorizedBytes))
+		c.Write([]byte(failBytes))
 		c.Close()
-		return errors.New("401 Unauthorized")
+		return errors.New(errMsg)
 	}
 	return nil
 }

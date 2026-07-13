@@ -111,20 +111,24 @@ func ProcessTunnel(c *conn.Conn, s *TunnelModeServer) error {
 
 // http proxy
 func ProcessHttp(c *conn.Conn, s *TunnelModeServer) error {
-
 	_, addr, rb, err, r := c.GetHost()
 	if err != nil {
 		c.Close()
 		logs.Info(err)
 		return err
 	}
-	if r.Method == "CONNECT" {
-		c.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n"))
-		rb = nil
-	}
-	if err := s.auth(r, c, s.task.Client.Cnf.U, s.task.Client.Cnf.P); err != nil {
+	// Authenticate before establishing CONNECT tunnel (fixes auth-after-200 bug).
+	if err := s.proxyAuth(r, c, s.task.Client.Cnf.U, s.task.Client.Cnf.P); err != nil {
+		logs.Warn("http proxy auth failed, client %d, remote %s: %v", s.task.Client.Id, c.Conn.RemoteAddr(), err)
 		return err
 	}
+	if r.Method == "CONNECT" {
+		if _, err := c.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {
+			c.Close()
+			return err
+		}
+		rb = nil
+	}
+	logs.Info("http proxy request, method %s, host %s, client %d, remote %s", r.Method, addr, s.task.Client.Id, c.Conn.RemoteAddr())
 	return s.DealClient(c, s.task.Client, addr, rb, common.CONN_TCP, nil, s.task.Client.Flow, s.task.Target.LocalProxy, nil, nil)
-
 }
