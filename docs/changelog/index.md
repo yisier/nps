@@ -2,6 +2,8 @@
 - 2026-08-08  v0.26.37
   - 修复：
     - NPC 安装到系统服务失败 BUG [#338](https://github.com/yisier/nps/issues/338)  
+  - 新增：
+     - 客户端、隧道、域名解析修改接口支持修改流量数据 [#341](https://github.com/yisier/nps/issues/341)
 
 - 2026-07-12  v0.26.36
   - 新增：

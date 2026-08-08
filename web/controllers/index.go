@@ -233,6 +233,12 @@ func (s *IndexController) Edit() {
 			t.StripPre = s.getEscapeString("strip_pre")
 			t.Remark = s.getEscapeString("remark")
 			t.Target.LocalProxy = s.GetBoolNoErr("local_proxy")
+			if s.GetString("flow_inlet") != "" {
+				t.Flow.InletFlow = int64(s.GetIntNoErr("flow_inlet"))
+			}
+			if s.GetString("flow_export") != "" {
+				t.Flow.ExportFlow = int64(s.GetIntNoErr("flow_export"))
+			}
 			file.GetDb().UpdateTask(t)
 			server.StopServer(t.Id)
 			server.StartTask(t.Id)
@@ -409,6 +415,12 @@ func (s *IndexController) EditHost() {
 				h.AutoHttps = false
 			}
 
+			if s.GetString("flow_inlet") != "" {
+				h.Flow.InletFlow = int64(s.GetIntNoErr("flow_inlet"))
+			}
+			if s.GetString("flow_export") != "" {
+				h.Flow.ExportFlow = int64(s.GetIntNoErr("flow_export"))
+			}
 			file.GetDb().JsonDb.StoreHostToJsonFile()
 		}
 		s.AjaxOk("modified success")

@@ -103,6 +103,8 @@ POST /client/edit/
 | ipwhitepass | IP 白名单授权密码 |
 | ipwhitelist | 白名单 IP 列表，`\r\n` 分隔 |
 | expire_time | 到期时间，格式同新增接口 |
+| flow_inlet | 入口流量，单位字节，传入则覆盖原值（留空不修改） |
+| flow_export | 出口流量，单位字节，传入则覆盖原值（留空不修改） |
 
 ---
 
@@ -219,6 +221,8 @@ POST /index/edit/
 | local_path | 本地文件路径 |
 | strip_pre | URL 前缀去除 |
 | proto_version | 协议版本 |
+| flow_inlet | 入口流量，单位字节，传入则覆盖原值（留空不修改） |
+| flow_export | 出口流量，单位字节，传入则覆盖原值（留空不修改） |
 
 ---
 
@@ -331,10 +335,8 @@ POST /index/edithost/
 | key_file_path | HTTPS 证书私钥文本或路径 |
 | cert_file_path | HTTPS 证书文件文本或路径 |
 | AutoHttps | 是否自动 HTTPS |
-
----
-
-### 停止域名解析
+| flow_inlet | 入口流量，单位字节，传入则覆盖原值（留空不修改） |
+| flow_export | 出口流量，单位字节，传入则覆盖原值（留空不修改） |
 
 ```
 POST /index/hoststop/

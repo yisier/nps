@@ -134,6 +134,12 @@ func (s *ClientController) Edit() {
 				c.MaxConn = s.GetIntNoErr("max_conn")
 				c.MaxTunnelNum = s.GetIntNoErr("max_tunnel")
 			}
+			if s.GetString("flow_inlet") != "" {
+				c.Flow.InletFlow = int64(s.GetIntNoErr("flow_inlet"))
+			}
+			if s.GetString("flow_export") != "" {
+				c.Flow.ExportFlow = int64(s.GetIntNoErr("flow_export"))
+			}
 			c.Remark = s.getEscapeString("remark")
 			c.Cnf.U = s.getEscapeString("u")
 			c.Cnf.P = s.getEscapeString("p")
