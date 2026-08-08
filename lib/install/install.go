@@ -407,6 +407,13 @@ func replaceExecutable(srcBin, destBin string) error {
 	if _, err := os.Stat(srcBin); err != nil {
 		return fmt.Errorf("源文件不存在: %s: %w", srcBin, err)
 	}
+	if dstFi, err := os.Stat(destBin); err == nil {
+		if srcFi, err := os.Stat(srcBin); err == nil {
+			if os.SameFile(srcFi, dstFi) {
+				return nil
+			}
+		}
+	}
 	if err := os.MkdirAll(filepath.Dir(destBin), 0755); err != nil {
 		return err
 	}
