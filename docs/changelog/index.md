@@ -4,6 +4,7 @@
     - NPC 安装到系统服务失败 BUG [#338](https://github.com/yisier/nps/issues/338)  
     - 隧道实际未运行但面板提示「启动成功」、运行状态始终为关闭的问题 [#339](https://github.com/yisier/nps/issues/339)
     - 配置 `allow_ports` 后随机生成端口问题 [#339](https://github.com/yisier/nps/issues/339)
+    - Web 面板`languages.xml`使用 NPS 版本号作为缓存标识 [#342](https://github.com/yisier/nps/issues/342)
   - 新增：
      - 客户端、隧道、域名解析修改接口支持修改流量数据 [#341](https://github.com/yisier/nps/issues/341)
 

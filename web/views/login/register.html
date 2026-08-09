@@ -59,7 +59,7 @@
         <div><strong langtag="word-copyright"></strong> <span langtag="application"></span> &copy; 2018-2019</div>
     </div>
 <script>
-    window.nps = { "web_base_url": {{.web_base_url}} }
+    window.nps = { "web_base_url": {{.web_base_url}}, "version": "{{.version}}" }
     function register() {
         $.ajax({
             type: "POST",
