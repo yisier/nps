@@ -218,7 +218,7 @@ func (s *IndexController) Edit() {
 					t.Port = tool.GenerateServerPort(t.Mode)
 				}
 
-				if !tool.TestServerPort(s.GetIntNoErr("port"), t.Mode) {
+				if !tool.TestServerPort(t.Port, t.Mode) {
 					s.AjaxErr("The port cannot be opened because it may has been occupied or is no longer allowed.")
 					return
 				}

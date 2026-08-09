@@ -56,6 +56,20 @@ func TestServerPort(p int, m string) (b bool) {
 }
 
 func GenerateServerPort(m string) int {
+	// allow_ports 已配置：在允许范围内随机选取，打乱顺序后逐个尝试以避免重复命中已占用端口
+	if len(ports) != 0 {
+		shuffled := make([]int, len(ports))
+		copy(shuffled, ports)
+		rand.Shuffle(len(shuffled), func(i, j int) {
+			shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+		})
+		for _, p := range shuffled {
+			if TestServerPort(p, m) {
+				return p
+			}
+		}
+		return 0
+	}
 	for i := 0; i < 1000; i++ {
 		//生成随机数 1024 - 65535
 		serverPort := rand.Intn(65535)

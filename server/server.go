@@ -259,13 +259,15 @@ func AddTask(t *file.Tunnel) error {
 
 // start task
 func StartTask(id int) error {
-	if t, err := file.GetDb().GetTask(id); err != nil {
+	t, err := file.GetDb().GetTask(id)
+	if err != nil {
 		return err
-	} else {
-		AddTask(t)
-		t.Status = true
-		file.GetDb().UpdateTask(t)
 	}
+	if err := AddTask(t); err != nil {
+		return err
+	}
+	t.Status = true
+	file.GetDb().UpdateTask(t)
 	return nil
 }
 

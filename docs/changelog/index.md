@@ -2,6 +2,8 @@
 - 2026-08-08  v0.26.37
   - 修复：
     - NPC 安装到系统服务失败 BUG [#338](https://github.com/yisier/nps/issues/338)  
+    - 隧道实际未运行但面板提示「启动成功」、运行状态始终为关闭的问题 [#339](https://github.com/yisier/nps/issues/339)
+    - 配置 `allow_ports` 后随机生成端口问题 [#339](https://github.com/yisier/nps/issues/339)
   - 新增：
      - 客户端、隧道、域名解析修改接口支持修改流量数据 [#341](https://github.com/yisier/nps/issues/341)
 
