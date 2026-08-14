@@ -66,7 +66,7 @@ npc -server=ip:8024 -vkey=vkey1,vkey2                    # 多隧道
 
 ## 📈 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yisier/nps&type=Date)](https://star-history.com/#yisier/nps&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=yisier/nps&type=Date)](https://star-history.dera.page/#yisier/nps&Date)
 
 ---
 
