@@ -5,6 +5,7 @@ import (
 	"github.com/astaxie/beego/utils/captcha"
 	"math/rand"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -27,10 +28,22 @@ type record struct {
 	lastLoginTime     time.Time
 }
 
-func init() {
+// InitCaptcha registers the captcha image route and the create_captcha template
+// function. The image URL prefix must include web_base_url, otherwise the login
+// page would request the captcha from the site root and fail behind a reverse
+// proxy that only forwards the web_base_url sub path.
+//
+// It must be called after beego.LoadAppConfig, so it cannot live in init():
+// package init() runs before main() loads conf/nps.conf, where web_base_url
+// would still be empty.
+func InitCaptcha() {
 	// use beego cache system store the captcha data
 	store := cache.NewMemoryCache()
-	cpt = captcha.NewWithFilter("/captcha/", store)
+	base := strings.TrimSuffix(beego.AppConfig.String("web_base_url"), "/")
+	if base != "" && !strings.HasPrefix(base, "/") {
+		base = "/" + base
+	}
+	cpt = captcha.NewWithFilter(base+"/captcha/", store)
 }
 
 func (self *LoginController) Index() {
