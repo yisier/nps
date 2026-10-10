@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"ehang.io/nps/bridge"
@@ -75,6 +76,15 @@ func (s *WebServer) Start() error {
 		if beego.AppConfig.String("web_open_ssl") == "true" {
 			keyPath := beego.AppConfig.String("web_key_file")
 			certPath := beego.AppConfig.String("web_cert_file")
+			// Resolve relative paths against the nps run path instead of the
+			// process working directory. Otherwise the web panel fails to start
+			// when nps runs from another directory (e.g. as a system service).
+			if !filepath.IsAbs(certPath) {
+				certPath = filepath.Join(common.GetRunPath(), certPath)
+			}
+			if !filepath.IsAbs(keyPath) {
+				keyPath = filepath.Join(common.GetRunPath(), keyPath)
+			}
 			err = http.ServeTLS(l, beego.BeeApp.Handlers, certPath, keyPath)
 		} else {
 			err = http.Serve(l, beego.BeeApp.Handlers)
