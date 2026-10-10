@@ -6,6 +6,10 @@ import (
 )
 
 func Init() {
+	// The captcha image path and its filter are built from web_base_url, so it
+	// has to be registered here (after the config is loaded) instead of in an
+	// init() function.
+	controllers.InitCaptcha()
 	web_base_url := beego.AppConfig.String("web_base_url")
 	if len(web_base_url) > 0 {
 		ns := beego.NewNamespace(web_base_url,
