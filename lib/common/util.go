@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"ehang.io/nps/lib/crypt"
 )
@@ -452,18 +453,41 @@ func GetExtFromPath(path string) string {
 
 var externalIp string
 
+// externalIpServices are queried in order until one returns a valid IP.
+// HTTPS plain-text echo services are preferred, because a plain HTTP endpoint
+// can be hijacked or transparently cached by some ISPs (see #355).
+var externalIpServices = []string{
+	"https://ifconfig.me/ip",
+	"https://ipinfo.io/ip",
+	"http://v4.ipip.net",
+}
+
+// GetExternalIp returns the public IP of this server by asking an external
+// "what is my IP" service. The result is cached only after a valid answer,
+// so a transient failure or a hijacked/empty response is not cached forever.
 func GetExternalIp() string {
 	if externalIp != "" {
 		return externalIp
 	}
-	resp, err := http.Get("http://myexternalip.com/raw")
-	if err != nil {
-		return ""
+	client := &http.Client{Timeout: 3 * time.Second}
+	for _, url := range externalIpServices {
+		resp, err := client.Get(url)
+		if err != nil {
+			continue
+		}
+		content, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 64))
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			continue
+		}
+		ip := strings.TrimSpace(string(content))
+		if net.ParseIP(ip) == nil {
+			continue
+		}
+		externalIp = ip
+		return externalIp
 	}
-	defer resp.Body.Close()
-	content, _ := ioutil.ReadAll(resp.Body)
-	externalIp = string(content)
-	return externalIp
+	return ""
 }
 
 func GetIntranetIp() (error, string) {
@@ -609,12 +633,23 @@ func IsPublicIP(IP net.IP) bool {
 	return false
 }
 
-func GetServerIpByClientIp(clientIp net.IP) string {
-	if IsPublicIP(clientIp) {
-		return GetExternalIp()
+// GetServerIpByClientIp returns an address the SOCKS5 client can use to reach
+// the server's UDP relay (the SOCKS5 BND.ADDR).
+//
+//   - LAN client: the server's intranet IP.
+//   - WAN client: the local IP the client actually connected to, which is
+//     guaranteed to be reachable because the TCP control connection succeeded.
+//     Only when that address is not public (the server sits behind NAT) do we
+//     fall back to querying an external "what is my IP" service.
+func GetServerIpByClientIp(clientIp, localIp net.IP) string {
+	if !IsPublicIP(clientIp) {
+		_, ip := GetIntranetIp()
+		return ip
 	}
-	_, ip := GetIntranetIp()
-	return ip
+	if IsPublicIP(localIp) {
+		return localIp.String()
+	}
+	return GetExternalIp()
 }
 
 func PrintVersion() {

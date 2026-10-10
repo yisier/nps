@@ -267,7 +267,12 @@ func (s *Sock5ModeServer) handleUDP(c net.Conn) {
 		return
 	}
 	// reply the local addr
-	s.sendUdpReply(c, reply, succeeded, common.GetServerIpByClientIp(c.RemoteAddr().(*net.TCPAddr).IP))
+	// Use the address the client actually connected to as BND.ADDR whenever it
+	// is public; only fall back to external IP detection when the server is
+	// behind NAT (see #355).
+	clientIp := c.RemoteAddr().(*net.TCPAddr).IP
+	localIp := c.LocalAddr().(*net.TCPAddr).IP
+	s.sendUdpReply(c, reply, succeeded, common.GetServerIpByClientIp(clientIp, localIp))
 	defer reply.Close()
 	// new a tunnel to client
 	link := conn.NewLink("udp5", "", s.task.Client.Cnf.Crypt, s.task.Client.Cnf.Compress, c.RemoteAddr().String(), false, "")

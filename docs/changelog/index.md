@@ -3,6 +3,7 @@
   - 修复：
     - 同时开启 `web_base_url` 与 `open_captcha` 时，验证码图片路径未跟随 `web_base_url`，反向代理到子路径后无法登录 [#359](https://github.com/yisier/nps/pull/359)
     - Web 面板语言机制：浏览器语言按前缀归一化匹配（`zh*`→`zh-CN`、`en*`→`en-US`），匹配不到时回退默认 `en-US`；用户手动切换语言后长期持久化，不再因关闭浏览器而失效 [#356](https://github.com/yisier/nps/issues/356)
+    - SOCKS5（私密代理）UDP ASSOCIATE 回复的中继地址 `BND.ADDR` 优先使用客户端实际连接到的服务端地址，避免外网 IP 探测被运营商 HTTP 劫持返回错误 IP 导致 UDP 不通；外网探测改为 HTTPS 端点并加超时与校验 [#355](https://github.com/yisier/nps/issues/355)
 
 - 2026-08-24  v0.26.38
   - 新增：
