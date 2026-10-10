@@ -136,43 +136,29 @@ RestartSec=120
 WantedBy=multi-user.target
 `
 
-func UpdateNps() {
-	destPath, err := downloadLatest("server")
-	if err != nil {
-		log.Println("下载更新失败：", err)
-		return
-	}
-	//复制文件到对应目录
-	if _, err := copyStaticFile(destPath, "nps"); err != nil {
-		log.Println("替换服务端文件失败：", err)
-		return
-	}
-	fmt.Println("Update completed, please restart")
-}
-
-func UpdateNpsNew() {
+// UpdateNps 检查并替换服务端到最新版本。
+// 返回 updated=true 表示已用新版本替换当前二进制（调用方应重启服务使其生效）；
+// updated=false 且 err=nil 表示当前已是最新版本，未做任何改动。
+func UpdateNps() (updated bool, err error) {
 	latest, err := fetchLatestVersion()
 	if err != nil {
-		log.Println("获取最新版本失败：", err)
-		return
+		return false, err
 	}
 	fmt.Println("最新版本为：", latest)
 	if compareVersion(version.VERSION, latest) >= 0 {
 		fmt.Println("当前已是最新版本，无需更新")
-		return
+		return false, nil
 	}
 	tempDir := filepath.Join(common.GetAppPath(), "temp")
 	destPath, err := downloadLatest2("server", tempDir)
 	if err != nil {
-		log.Println("下载更新失败：", err)
-		return
+		return false, err
 	}
-	//复制文件到对应目录
 	if err := copyStaticFileReplaceNps(destPath, common.GetAppPath()); err != nil {
-		log.Println("替换服务端文件失败：", err)
-		return
+		return false, err
 	}
-	fmt.Println("更新成功，请重启服务")
+	fmt.Println("更新成功")
+	return true, nil
 }
 
 func fetchLatestVersion() (string, error) {

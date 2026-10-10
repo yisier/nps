@@ -50,12 +50,6 @@ func main() {
 		common.PrintVersion()
 		return
 	}
-	if *serverCmd {
-		_ = logs.SetLogger(logs.AdapterConsole, `{"level":7,"color":true}`)
-		printSlogan()
-		inputCmd()
-		return
-	}
 
 	var logPath string
 	// *confPath why get null value ?
@@ -71,6 +65,13 @@ func main() {
 		if strings.Contains(v, "-log_path=") {
 			logPath = strings.Replace(v, "-log_path=", "", -1)
 		}
+	}
+
+	if *serverCmd {
+		_ = logs.SetLogger(logs.AdapterConsole, `{"level":7,"color":true}`)
+		printSlogan()
+		inputCmd()
+		return
 	}
 
 	// auto-generate default config files if not exist
@@ -198,7 +199,11 @@ func main() {
 			}
 			return
 		case "update":
-			install.UpdateNps()
+			if updated, err := install.UpdateNps(); err != nil {
+				logs.Error("更新失败：", err)
+			} else if updated {
+				restartNpsService(s)
+			}
 			return
 			//default:
 			//	logs.Error("command is not support")
@@ -210,35 +215,117 @@ func main() {
 }
 
 func printSlogan() {
+	confFile := ""
+	for _, dir := range []string{common.GetAppPath(), common.GetRunPath()} {
+		if p := filepath.Join(dir, "conf", "nps.conf"); common.FileExists(p) {
+			confFile = p
+			break
+		}
+	}
+	configLoaded := false
+	if confFile != "" {
+		if err := beego.LoadAppConfig("ini", confFile); err == nil {
+			configLoaded = true
+		}
+	}
+
 	green := color.New(color.FgGreen).SprintFunc()
-	// 第一次输入，如果输入 1,2,3，4 则需要输入秘钥，否则
+	w := color.Output
 
-	fmt.Printf("%s", green(""))
+	fmt.Fprintf(w, "%s", green(""))
 
-	fmt.Printf("\033[32;0m欢迎使用 NPS 管理脚本，当前版本：v%s\n", version.VERSION)
-	fmt.Printf("\033[0m") // 重置颜色
+	fmt.Fprintf(w, "\033[32;0m###########################################################\n")
+	fmt.Fprintf(w, "\033[32;0m#                   \033[31mNPS内网穿透服务端\033[0m                     #\n")
+	fmt.Fprintf(w, "\033[32;0m#                                                         #\n")
+	fmt.Fprintf(w, "\033[32;0m#\033[32m 地址：\033[31;0mhttps://github.com/yisier/nps\033[0m                     #\n")
+	fmt.Fprintf(w, "\033[32;0m#\033[32m 提示：\033[32;0m1、涉及到系统服务的需要以管理员/root身份运行\033[0m      #\n")
+	fmt.Fprintf(w, "\033[32;0m#\033[32m       \033[32;0m2、安装/卸载/更新请选择对应的菜单项\033[0m               #\n")
+	fmt.Fprintf(w, "\033[32;0m#\033[32m       \033[32;0m3、启动/停止/重启操作的是系统服务\033[0m                 #\n")
+	fmt.Fprintf(w, "\033[32;0m###########################################################\n")
+	fmt.Fprintf(w, "\033[0m") // 重置颜色
 
-	fmt.Printf("\n")
+	fmt.Fprintf(w, "\n")
 
-	fmt.Printf("\u001B[32m输入[1]\u001B[0m - 安装 NPS\n")
-	fmt.Printf("\u001B[32m输入[2]\u001B[0m - 卸载 NPS\n")
-	fmt.Printf("\u001B[32m输入[3]\u001B[0m - 更新 NPS\n")
-	fmt.Printf("---------------------\n")
-	fmt.Printf("\u001B[32m输入[4]\u001B[0m - 查看状态\n")
-	fmt.Printf("---------------------\n")
-	fmt.Printf("\u001B[32m输入[5]\u001B[0m - 启动 NPS\n")
-	fmt.Printf("\u001B[32m输入[6]\u001B[0m - 停止 NPS\n")
-	fmt.Printf("\u001B[32m输入[7]\u001B[0m - 重启 NPS\n")
-	fmt.Printf("---------------------\n")
-	fmt.Printf("\u001B[32m输入[0]\u001B[0m - 退出脚本\n")
-	fmt.Printf("---------------------\n")
-	fmt.Printf("\n")
+	fmt.Fprintf(w, "\u001B[32m输入 [1]\u001B[0m - 安装 NPS\n")
+	fmt.Fprintf(w, "\u001B[32m输入 [2]\u001B[0m - 卸载 NPS\n")
+	fmt.Fprintf(w, "\u001B[32m输入 [3]\u001B[0m - 更新 NPS\n")
+	fmt.Fprintf(w, "---------------------\n")
+	fmt.Fprintf(w, "\u001B[32m输入 [4]\u001B[0m - 启动 NPS\n")
+	fmt.Fprintf(w, "\u001B[32m输入 [5]\u001B[0m - 停止 NPS\n")
+	fmt.Fprintf(w, "\u001B[32m输入 [6]\u001B[0m - 重启 NPS\n")
+	fmt.Fprintf(w, "---------------------\n")
+	fmt.Fprintf(w, "\u001B[32m输入 [0]\u001B[0m - 退出脚本\n")
+	fmt.Fprintf(w, "---------------------\n")
 
+	status := npsServiceStatus()
+	fmt.Fprintf(w, "\u001B[32m当前版本：v%s\u001B[0m\n", version.VERSION)
+	fmt.Fprintf(w, "\u001B[32m服务状态：%s\u001B[0m\n", status)
+	// 管理面板地址仅当服务已启动时显示
+	if status == "运行中" {
+		fmt.Fprintf(w, "\u001B[32m管理面板：%s\u001B[0m\n", npsPanelAddr(configLoaded))
+	}
+	fmt.Fprintf(w, "\n")
+}
+
+// npsServiceStatus 返回 Nps 系统服务的运行状态描述。
+func npsServiceStatus() string {
+	prg := &nps{exit: make(chan struct{})}
+	s, err := service.New(prg, &service.Config{Name: "Nps"})
+	if err != nil {
+		return "未知"
+	}
+	st, err := s.Status()
+	if err != nil {
+		return "未安装"
+	}
+	switch st {
+	case service.StatusRunning:
+		return "运行中"
+	case service.StatusStopped:
+		return "已停止"
+	}
+	return "未知"
+}
+
+// npsPanelAddr 返回管理面板的访问地址（基于当前配置）。
+// configLoaded 为 false 表示未找到配置文件，无法判断面板地址。
+func npsPanelAddr(configLoaded bool) string {
+	if !configLoaded {
+		return "未找到配置文件 conf/nps.conf"
+	}
+	port := strings.TrimSpace(beego.AppConfig.String("web_port"))
+	if port == "" {
+		return "未配置 web_port（管理面板已关闭）"
+	}
+	scheme := "http"
+	if beego.AppConfig.DefaultBool("web_open_ssl", false) {
+		scheme = "https"
+	}
+	host := strings.TrimSpace(beego.AppConfig.String("web_host"))
+	if host == "" || host == "a.o.com" {
+		host = "127.0.0.1"
+	}
+	base := strings.TrimSuffix(beego.AppConfig.String("web_base_url"), "/")
+	return scheme + "://" + host + ":" + port + base
+}
+
+// restartNpsService 在更新完成后自动重启已安装的 Nps 系统服务，使新版本生效。
+// 未安装为系统服务时不改动当前进程，仅提示手动重启。
+func restartNpsService(s service.Service) {
+	if _, err := s.Status(); err != nil {
+		fmt.Println("未检测到已安装的 Nps 服务，请手动重启 nps 使新版本生效")
+		return
+	}
+	if err := service.Control(s, "restart"); err != nil {
+		fmt.Println("Nps 服务自动重启失败，请手动重启：", err)
+		return
+	}
+	fmt.Println("Nps 服务已自动重启，新版本已生效")
 }
 
 func inputCmd() {
 	var flag string
-	fmt.Printf("请输入[0-7]：")
+	fmt.Print("请输入[0-6]：")
 
 	stdin := bufio.NewReader(os.Stdin)
 	_, err := fmt.Fscanln(stdin, &flag)
@@ -348,24 +435,13 @@ func inputCmd() {
 			}
 			break
 		case "3":
-			install.UpdateNpsNew()
+			if updated, err := install.UpdateNps(); err != nil {
+				fmt.Println("更新失败：", err)
+			} else if updated {
+				restartNpsService(s)
+			}
 			break
 		case "4":
-			// 查看状态
-			var statusMsg = ""
-			status, err := s.Status()
-			if err != nil {
-				statusMsg = "\u001B[31m未运行\u001B[0m"
-			} else {
-				if status == 1 {
-					statusMsg = "\u001B[32m运行中\u001B[0m"
-				} else {
-					statusMsg = "\u001B[31m未运行\u001B[0m"
-				}
-			}
-			fmt.Println("NPS服务状态：" + statusMsg)
-			break
-		case "5":
 			// 启动 NPS
 			err := service.Control(s, "start")
 			if err != nil {
@@ -375,7 +451,7 @@ func inputCmd() {
 			}
 
 			break
-		case "6":
+		case "5":
 			// 停止 NPS
 			err := service.Control(s, "stop")
 			if err != nil {
@@ -385,7 +461,7 @@ func inputCmd() {
 			}
 
 			break
-		case "7":
+		case "6":
 			// 重启 NPS
 			err := service.Control(s, "restart")
 			if err != nil {

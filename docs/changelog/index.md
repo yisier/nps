@@ -5,6 +5,7 @@
     - Web 面板语言机制：浏览器语言按前缀归一化匹配（`zh*`→`zh-CN`、`en*`→`en-US`），匹配不到时回退默认 `en-US`；用户手动切换语言后长期持久化，不再因关闭浏览器而失效 [#356](https://github.com/yisier/nps/issues/356)
     - SOCKS5（私密代理）UDP ASSOCIATE 回复的中继地址 `BND.ADDR` 优先使用客户端实际连接到的服务端地址，避免外网 IP 探测被运营商 HTTP 劫持返回错误 IP 导致 UDP 不通；外网探测改为 HTTPS 端点并加超时与校验 [#355](https://github.com/yisier/nps/issues/355)
     - 开启 `web_open_ssl=true` 后以系统服务方式启动时 Web 面板无法访问：证书相对路径按进程工作目录解析失败，改为基于 nps 运行目录解析 `web_cert_file` / `web_key_file` [#353](https://github.com/yisier/nps/issues/353)
+    - `nps` 服务端升级后自动重启服务 [#47](https://github.com/yisier/nps/issues/347)
 
 - 2026-08-24  v0.26.38
   - 新增：
