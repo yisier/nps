@@ -1,4 +1,9 @@
 ﻿# 更新日志
+- 2026-10-10  v0.26.39
+  - 修复：
+    - 同时开启 `web_base_url` 与 `open_captcha` 时，验证码图片路径未跟随 `web_base_url`，反向代理到子路径后无法登录 [#359](https://github.com/yisier/nps/pull/359)
+    - Web 面板语言机制：浏览器语言按前缀归一化匹配（`zh*`→`zh-CN`、`en*`→`en-US`），匹配不到时回退默认 `en-US`；用户手动切换语言后长期持久化，不再因关闭浏览器而失效 [#356](https://github.com/yisier/nps/issues/356)
+
 - 2026-08-24  v0.26.38
   - 新增：
     - GUI 客户端（npc-gui）迁移到 Wails v3

@@ -56,6 +56,23 @@
 		if (flag) { return {'value':(langobj[languages['current']] || langobj[languages['default']] || 'N/A')}}
 	}
 
+	// Match a browser language (e.g. "zh", "zh-TW", "en-GB") to an available
+	// menu language key (e.g. "zh-CN", "en-US"). Exact match wins, then the
+	// primary subtag (before the first "-"). Returns null when nothing matches
+	// so the caller can fall back to the default language.
+	function normalizeLang (lang) {
+		if (!lang) return null;
+		var lower = ('' + lang).toLowerCase();
+		var primary = lower.split('-')[0];
+		var fallback = null;
+		for (var key in languages['menu']) {
+			var k = key.toLowerCase();
+			if (k === lower) return key;
+			if (fallback == null && k.split('-')[0] === primary) fallback = key;
+		}
+		return fallback;
+	}
+
 	$.fn.cloudLang = function () {
 		$.ajax({
 			type: 'GET',
@@ -65,7 +82,7 @@
 				languages['content'] = xml2json($(xml).children())['content'];
 				languages['menu'] = languages['content']['languages'];
 				languages['default'] = languages['content']['default'];
-				languages['navigator'] = (getCookie ('lang') || navigator.language || navigator.browserLanguage);
+				languages['navigator'] = (getCookie ('lang') || normalizeLang(navigator.language || navigator.browserLanguage) || languages['default']);
 				for(var key in languages['menu']){
 					$('#languagemenu').next().append('<li lang="' + key + '"><a><img src="' + window.nps.web_base_url + '/static/img/flag/' + key + '.png"> ' + languages['menu'][key] +'</a></li>');
 					if ( key == languages['navigator'] ) languages['current'] = key;
@@ -76,11 +93,11 @@
 		});
 	};
 
-	$.fn.setLang = function (dom) {
+	$.fn.setLang = function (dom, persistLang) {
 		languages['current'] = $('#languagemenu').attr('lang');
 		if ( dom == '' ) {
 			$('#languagemenu span').text(' ' + languages['menu'][languages['current']]);
-			if (languages['current'] != getCookie('lang')) setCookie('lang', languages['current']);
+			if (persistLang && languages['current'] != getCookie('lang')) setCookie('lang', languages['current'], 36500);
 			if($("#table").length>0) $('#table').bootstrapTable('refreshOptions', { 'locale': languages['current']});
 		}
 		$.each($(dom + ' [langtag]'), function (i, item) {
@@ -122,7 +139,7 @@ $(document).ready(function () {
 	$('body').cloudLang();
 	$('body').on('click','li[lang]',function(){
 		$('#languagemenu').attr('lang',$(this).attr('lang'));
-		$('body').setLang ('');
+		$('body').setLang ('', true);
 	});
 });
 
