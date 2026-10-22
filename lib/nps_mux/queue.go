@@ -275,6 +275,11 @@ startPop:
 		if element != nil {
 			return
 		}
+		// the element counted in length may have been taken by release() when the
+		// window was closed concurrently, re-check the length instead of spinning forever
+		if length, _ = Self.chain.head.unpack(atomic.LoadUint64(&Self.lengthWait)); length == 0 {
+			goto startPop
+		}
 		runtime.Gosched() // another goroutine is still pushing
 	}
 }
