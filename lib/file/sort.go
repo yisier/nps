@@ -37,10 +37,11 @@ func lessString(a, b string, asc bool) bool {
 }
 
 // SortClients sorts clients in-place by the given field (bootstrap-table sort name).
+// With no explicit sort field the list defaults to newest (highest id) first.
 func SortClients(list []*Client, sortField, order string) {
 	if sortField == "" || len(list) < 2 {
 		if sortField == "" && len(list) > 1 {
-			sort.SliceStable(list, func(i, j int) bool { return list[i].Id < list[j].Id })
+			sort.SliceStable(list, func(i, j int) bool { return list[i].Id > list[j].Id })
 		}
 		return
 	}

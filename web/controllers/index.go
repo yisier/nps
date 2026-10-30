@@ -114,13 +114,11 @@ func (s *IndexController) Add() {
 		s.SetInfo("add tunnel")
 		s.display()
 	} else {
-		id := int(file.GetDb().JsonDb.GetTaskId())
 		t := &file.Tunnel{
 			Port:         s.GetIntNoErr("port"),
 			ServerIp:     s.getEscapeString("server_ip"),
 			Mode:         s.getEscapeString("type"),
 			Target:       &file.Target{TargetStr: s.getEscapeString("target"), LocalProxy: s.GetBoolNoErr("local_proxy")},
-			Id:           id,
 			Status:       true,
 			Remark:       s.getEscapeString("remark"),
 			Password:     s.getEscapeString("password"),
@@ -136,22 +134,27 @@ func (s *IndexController) Add() {
 
 		if !tool.TestServerPort(t.Port, t.Mode) {
 			s.AjaxErr("The port cannot be opened because it may has been occupied or is no longer allowed.")
+			return
 		}
-		var err error
-		if t.Client, err = file.GetDb().GetClient(s.GetIntNoErr("client_id")); err != nil {
+		client, err := file.GetDb().GetClient(s.GetIntNoErr("client_id"))
+		if err != nil {
 			s.AjaxErr(err.Error())
+			return
 		}
-		if t.Client.MaxTunnelNum != 0 && t.Client.GetTunnelNum() >= t.Client.MaxTunnelNum {
+		t.Client = client
+		if client.MaxTunnelNum != 0 && client.GetTunnelNum() >= client.MaxTunnelNum {
 			s.AjaxErr("The number of tunnels exceeds the limit")
+			return
 		}
 		if err := file.GetDb().NewTask(t); err != nil {
 			s.AjaxErr(err.Error())
+			return
 		}
 		if err := server.AddTask(t); err != nil {
 			s.AjaxErr(err.Error())
-		} else {
-			s.AjaxOkWithId("add success", id)
+			return
 		}
+		s.AjaxOkWithId("add success", t.Id)
 	}
 }
 
@@ -167,14 +170,12 @@ func (s *IndexController) Copy() {
 			oldTask.Client = client
 		}
 
-		id := int(file.GetDb().JsonDb.GetTaskId())
 		newTask := &file.Tunnel{
 			Client:       oldTask.Client,
 			Port:         tool.GenerateServerPort(oldTask.Mode),
 			ServerIp:     oldTask.ServerIp,
 			Mode:         oldTask.Mode,
 			Target:       oldTask.Target,
-			Id:           id,
 			Status:       true,
 			Remark:       oldTask.Remark,
 			Password:     oldTask.Password,
@@ -185,19 +186,22 @@ func (s *IndexController) Copy() {
 		}
 		if !tool.TestServerPort(newTask.Port, newTask.Mode) {
 			s.AjaxErr("The port cannot be opened because it may has been occupied or is no longer allowed.")
+			return
 		}
 
 		if newTask.Client.MaxTunnelNum != 0 && newTask.Client.GetTunnelNum() >= newTask.Client.MaxTunnelNum {
 			s.AjaxErr("The number of tunnels exceeds the limit")
+			return
 		}
 		if err := file.GetDb().NewTask(newTask); err != nil {
 			s.AjaxErr(err.Error())
+			return
 		}
 		if err := server.AddTask(newTask); err != nil {
 			s.AjaxErr(err.Error())
-		} else {
-			s.AjaxOkWithId("add success", id)
+			return
 		}
+		s.AjaxOkWithId("add success", newTask.Id)
 	}
 }
 
@@ -273,6 +277,7 @@ func (s *IndexController) Stop() {
 	id := s.GetIntNoErr("id")
 	if err := server.StopServer(id); err != nil {
 		s.AjaxErr("stop error")
+		return
 	}
 	s.AjaxOk("stop success")
 }
@@ -281,6 +286,7 @@ func (s *IndexController) Del() {
 	id := s.GetIntNoErr("id")
 	if err := server.DelTask(id); err != nil {
 		s.AjaxErr("delete error")
+		return
 	}
 	s.AjaxOk("delete success")
 }
@@ -289,6 +295,7 @@ func (s *IndexController) Start() {
 	id := s.GetIntNoErr("id")
 	if err := server.StartTask(id); err != nil {
 		s.AjaxErr("start error")
+		return
 	}
 	s.AjaxOk("start success")
 }
@@ -325,6 +332,7 @@ func (s *IndexController) DelHost() {
 	id := s.GetIntNoErr("id")
 	if err := file.GetDb().DelHost(id); err != nil {
 		s.AjaxErr("delete error")
+		return
 	}
 	s.AjaxOk("delete success")
 }
@@ -333,6 +341,7 @@ func (s *IndexController) HostStop() {
 	id := s.GetIntNoErr("id")
 	if h, err := file.GetDb().GetHostById(id); err != nil {
 		s.AjaxErr("stop error")
+		return
 	} else {
 		h.IsClose = true
 	}
@@ -343,6 +352,7 @@ func (s *IndexController) HostStart() {
 	id := s.GetIntNoErr("id")
 	if h, err := file.GetDb().GetHostById(id); err != nil {
 		s.AjaxErr("start error")
+		return
 	} else {
 		h.IsClose = false
 	}
@@ -356,9 +366,7 @@ func (s *IndexController) AddHost() {
 		s.SetInfo("add host")
 		s.display("index/hadd")
 	} else {
-		id := int(file.GetDb().JsonDb.GetHostId())
 		h := &file.Host{
-			Id:           id,
 			Host:         s.getEscapeString("host"),
 			Target:       &file.Target{TargetStr: s.getEscapeString("target"), LocalProxy: s.GetBoolNoErr("local_proxy")},
 			HeaderChange: s.getEscapeString("header"),
@@ -376,18 +384,22 @@ func (s *IndexController) AddHost() {
 			h.AutoHttps = false
 		}
 
-		var err error
-		if h.Client, err = file.GetDb().GetClient(s.GetIntNoErr("client_id")); err != nil {
+		client, err := file.GetDb().GetClient(s.GetIntNoErr("client_id"))
+		if err != nil {
 			s.AjaxErr("add error the client can not be found")
+			return
 		}
-		if h.Client.MaxTunnelNum != 0 && h.Client.GetTunnelNum() >= h.Client.MaxTunnelNum {
+		h.Client = client
+		if client.MaxTunnelNum != 0 && client.GetTunnelNum() >= client.MaxTunnelNum {
 			s.AjaxErr("The number of tunnels exceeds the limit")
+			return
 		}
 
 		if err := file.GetDb().NewHost(h); err != nil {
 			s.AjaxErr("add fail" + err.Error())
+			return
 		}
-		s.AjaxOkWithId("add success", id)
+		s.AjaxOkWithId("add success", h.Id)
 	}
 }
 
@@ -418,6 +430,7 @@ func (s *IndexController) EditHost() {
 			}
 			if client, err := file.GetDb().GetClient(s.GetIntNoErr("client_id")); err != nil {
 				s.AjaxErr("modified error,the client is not exist")
+				return
 			} else {
 				h.Client = client
 			}

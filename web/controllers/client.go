@@ -46,10 +46,8 @@ func (s *ClientController) Add() {
 		s.SetInfo("add client")
 		s.display()
 	} else {
-		id := int(file.GetDb().JsonDb.GetClientId())
 		t := &file.Client{
 			VerifyKey: s.getEscapeString("vkey"),
-			Id:        id,
 			Status:    true,
 			Remark:    s.getEscapeString("remark"),
 			Cnf: &file.Config{
@@ -78,8 +76,9 @@ func (s *ClientController) Add() {
 		}
 		if err := file.GetDb().NewClient(t); err != nil {
 			s.AjaxErr(err.Error())
+			return
 		}
-		s.AjaxOkWithId("add success", id)
+		s.AjaxOkWithId("add success", t.Id)
 	}
 }
 func (s *ClientController) GetClient() {
@@ -230,14 +229,16 @@ func normalizeExpireTime(s string) string {
 // 更改状态
 func (s *ClientController) ChangeStatus() {
 	id := s.GetIntNoErr("id")
-	if client, err := file.GetDb().GetClient(id); err == nil {
-		client.Status = s.GetBoolNoErr("status")
-		if client.Status == false {
-			server.DelClientConnect(client.Id)
-		}
-		s.AjaxOk("modified success")
+	client, err := file.GetDb().GetClient(id)
+	if err != nil {
+		s.AjaxErr("modified fail")
+		return
 	}
-	s.AjaxErr("modified fail")
+	client.Status = s.GetBoolNoErr("status")
+	if client.Status == false {
+		server.DelClientConnect(client.Id)
+	}
+	s.AjaxOk("modified success")
 }
 
 // 删除客户端
@@ -245,6 +246,7 @@ func (s *ClientController) Del() {
 	id := s.GetIntNoErr("id")
 	if err := file.GetDb().DelClient(id); err != nil {
 		s.AjaxErr("delete error")
+		return
 	}
 	server.DelTunnelAndHostByClientId(id, false)
 	server.DelClientConnect(id)
