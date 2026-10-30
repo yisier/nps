@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"ehang.io/nps/lib/file"
+	"ehang.io/nps/lib/install"
+	"ehang.io/nps/lib/version"
 	"ehang.io/nps/server"
 	"ehang.io/nps/server/tool"
 
@@ -21,6 +23,26 @@ func (s *IndexController) Index() {
 func (s *IndexController) Help() {
 	s.SetInfo("about")
 	s.display("index/help")
+}
+
+// CheckUpdate 检查是否有新版本，供 Web 首页异步展示
+func (s *IndexController) CheckUpdate() {
+	latest, hasUpdate, err := install.CheckLatestVersion()
+	if err != nil {
+		s.Data["json"] = map[string]interface{}{
+			"status": 0,
+			"msg":    "检查更新失败：" + err.Error(),
+		}
+	} else {
+		s.Data["json"] = map[string]interface{}{
+			"status":          1,
+			"has_update":      hasUpdate,
+			"current_version": version.VERSION,
+			"latest_version":  latest,
+		}
+	}
+	s.ServeJSON()
+	s.StopRun()
 }
 
 func (s *IndexController) Tcp() {

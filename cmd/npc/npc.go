@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -23,6 +24,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/kardianos/service"
 )
+
+const serviceNamePrefix = "nps-client-"
 
 var (
 	serverAddr     = flag.String("server", "", "Server addr (ip:port)")
@@ -280,9 +283,9 @@ func printSlogan() {
 	fmt.Printf("\033[32;0m#                   \033[31mNPS内网穿透客户端\033[0m                     #\n")
 	fmt.Printf("\033[32;0m#                            			          #\n")
 	fmt.Printf("\033[32;0m#\033[32m 地址：\033[31;0mhttps://github.com/yisier/nps\033[0m                     #\n")
-	fmt.Printf("\033[32;0m#\033[32m 提示：\033[32;0m1、涉及到系统服务的需要以管理员/root身份运行\033[0m\033[32;0m	          #\n")
+	fmt.Printf("\033[32;0m#\033[32m 提示：\033[32;0m1、涉及到系统服务的需要以管理员/root身份运行\033[0m\033[32;0m	  #\n")
 	fmt.Printf("\033[32;0m#\033[32m       \033[32;0m2、直接启动或[注册系统服务]需要使用[快捷启动命令]\033[0m\033[32;0m #\n")
-	fmt.Printf("\033[32;0m#\033[32m       \033[32;0m3、其他命令如卸载/启动/停止只需要输入[vkey]\033[0m\033[32;0m	  #\n")
+	fmt.Printf("\033[32;0m#\033[32m       \033[32;0m3、卸载/启动/停止服务只需要输入[vkey]\033[0m\033[32;0m	          #\n")
 	fmt.Printf("\033[32;0m###########################################################\n")
 	fmt.Printf("\033[0m") // 重置颜色
 
@@ -293,13 +296,166 @@ func printSlogan() {
 	fmt.Printf("---------------------\n")
 	fmt.Printf("\u001B[32m输入[3]\u001B[0m - 启动系统服务\n")
 	fmt.Printf("\u001B[32m输入[4]\u001B[0m - 停止系统服务\n")
+	fmt.Printf("\u001B[32m输入[5]\u001B[0m - 查看系统服务\n")
 	fmt.Printf("---------------------\n")
-	fmt.Printf("\u001B[32m输入[5]\u001B[0m - 更新客户端\n")
+	fmt.Printf("\u001B[32m输入[6]\u001B[0m - 更新客户端\n")
 	fmt.Printf("\u001B[32m输入[0]\u001B[0m - 退出\n")
 	fmt.Printf("---------------------\n")
 	fmt.Printf("\u001B[32m当前版本：%s\u001B[0m\n", version.VERSION)
 	fmt.Printf("直接输入[快捷启动命令]则是启动隧道,多个[快捷启动命令]用英文逗号拼接\n")
 	fmt.Printf("\n")
+}
+
+// installedServiceVkeys 获取当前已注册到系统的 npc 服务密钥
+func installedServiceVkeys() ([]string, error) {
+	if common.IsWindows() {
+		return installedServiceVkeysWindows()
+	}
+	return installedServiceVkeysUnix()
+}
+
+func installedServiceVkeysWindows() ([]string, error) {
+	out, err := exec.Command("sc", "query", "state=", "all").Output()
+	if err != nil {
+		return nil, err
+	}
+
+	const serviceNameField = "SERVICE_NAME:"
+	vkeys := make([]string, 0)
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimSpace(line)
+		if len(line) <= len(serviceNameField) || !strings.EqualFold(line[:len(serviceNameField)], serviceNameField) {
+			continue
+		}
+		name := strings.TrimSpace(line[len(serviceNameField):])
+		if len(name) <= len(serviceNamePrefix) || !strings.HasPrefix(strings.ToLower(name), serviceNamePrefix) {
+			continue
+		}
+		vkeys = append(vkeys, name[len(serviceNamePrefix):])
+	}
+	sort.Strings(vkeys)
+	return vkeys, nil
+}
+
+func installedServiceVkeysUnix() ([]string, error) {
+	// 各平台服务定义文件所在目录及文件后缀
+	unitDirs := []struct {
+		dir    string
+		suffix string
+	}{
+		// systemd
+		{"/etc/systemd/system", ".service"},
+		{"/lib/systemd/system", ".service"},
+		{"/usr/lib/systemd/system", ".service"},
+		// sysv（含 OpenWrt）
+		{"/etc/init.d", ""},
+		// upstart
+		{"/etc/init", ".conf"},
+		// launchd
+		{"/Library/LaunchDaemons", ".plist"},
+		{"/Library/LaunchAgents", ".plist"},
+	}
+
+	seen := make(map[string]struct{})
+	vkeys := make([]string, 0)
+	for _, unit := range unitDirs {
+		entries, err := os.ReadDir(unit.dir)
+		if err != nil {
+			continue
+		}
+		for _, entry := range entries {
+			name := entry.Name()
+			if unit.suffix != "" {
+				if !strings.HasSuffix(name, unit.suffix) {
+					continue
+				}
+				name = strings.TrimSuffix(name, unit.suffix)
+			}
+			if len(name) <= len(serviceNamePrefix) || !strings.HasPrefix(name, serviceNamePrefix) {
+				continue
+			}
+			vkey := name[len(serviceNamePrefix):]
+			if _, ok := seen[vkey]; ok {
+				continue
+			}
+			seen[vkey] = struct{}{}
+			vkeys = append(vkeys, vkey)
+		}
+	}
+	sort.Strings(vkeys)
+	return vkeys, nil
+}
+
+// listSystemServices 列出当前已注册到系统的 npc 服务，方便进行启动、停止、卸载等操作
+func listSystemServices() {
+	vkeys, err := installedServiceVkeys()
+	if err != nil {
+		fmt.Println("获取系统服务列表失败：", err)
+		return
+	}
+	if len(vkeys) == 0 {
+		fmt.Println("无注册 NPC 服务")
+		return
+	}
+
+	for _, vkey := range vkeys {
+		status := getServiceStatus(vkey)
+		switch status {
+		case "运行中":
+			status = color.GreenString("[%s]", status)
+		case "已停止":
+			status = color.RedString("[%s]", status)
+		default:
+			status = fmt.Sprintf("[%s]", status)
+		}
+		fmt.Printf("%s  %s\n", vkey, status)
+	}
+}
+
+// restartSystemServices 重启当前正在运行的 npc 系统服务，使更新后的客户端生效
+func restartSystemServices() {
+	vkeys, err := installedServiceVkeys()
+	if err != nil {
+		fmt.Println("获取系统服务列表失败：", err)
+		return
+	}
+	for _, vkey := range vkeys {
+		s, err := service.New(&npc{exit: make(chan struct{})}, &service.Config{Name: serviceNamePrefix + vkey})
+		if err != nil {
+			fmt.Println("隧道["+vkey+"]服务重启失败", err)
+			continue
+		}
+		status, err := s.Status()
+		if err != nil || status != service.StatusRunning {
+			// 未运行的服务保持原状态，下次启动时自然使用新版本
+			continue
+		}
+		if err := service.Control(s, "restart"); err != nil {
+			fmt.Println("隧道["+vkey+"]服务重启失败", err)
+			continue
+		}
+		fmt.Println("隧道[" + vkey + "]服务已重启")
+	}
+}
+
+// getServiceStatus 获取指定vkey对应系统服务的运行状态
+func getServiceStatus(vkey string) string {
+	s, err := service.New(&npc{exit: make(chan struct{})}, &service.Config{Name: serviceNamePrefix + vkey})
+	if err != nil {
+		return "状态未知"
+	}
+	status, err := s.Status()
+	if err != nil {
+		return "状态未知"
+	}
+	switch status {
+	case service.StatusRunning:
+		return "运行中"
+	case service.StatusStopped:
+		return "已停止"
+	default:
+		return "状态未知"
+	}
 }
 
 func inputCmd() {
@@ -318,8 +474,8 @@ func inputCmd() {
 
 		flag := strings.Replace(flag, " ", "", -1)
 
-		// 如果输入不等于 1,2,3,4,5，则启动隧道
-		if flag != "1" && flag != "2" && flag != "3" && flag != "4" && flag != "5" {
+		// 如果输入不等于 1,2,3,4,5,6，则启动隧道
+		if flag != "1" && flag != "2" && flag != "3" && flag != "4" && flag != "5" && flag != "6" {
 
 			vkeys := strings.Split(flag, `,`)
 			var cmdArray []string
@@ -340,10 +496,16 @@ func inputCmd() {
 			}
 
 		} else {
-			if flag == "5" {
-				install.UpdateNpcNew()
+			switch flag {
+			case "5":
+				listSystemServices()
 				inputCmd()
-			} else {
+			case "6":
+				if install.UpdateNpcNew() {
+					restartSystemServices()
+				}
+				inputCmd()
+			default:
 				systemService(flag)
 			}
 		}
@@ -449,8 +611,8 @@ func systemPro(flag string, serAddr string, vkey string, tls bool) {
 	}
 	options := make(service.KeyValue)
 	svcConfig := &service.Config{
-		Name:        "nps-client-" + vkey,
-		DisplayName: "nps-client-" + vkey,
+		Name:        serviceNamePrefix + vkey,
+		DisplayName: serviceNamePrefix + vkey,
 		Description: "NPS内网穿透客户端，支持tcp、udp流量转发，支持内网http代理，地址：https://github.com/yisier/nps",
 		Option:      options,
 	}

@@ -586,6 +586,18 @@
 		<zh-CN>版本</zh-CN>
 		<en-US>Version</en-US>
 	</lang>
+	<lang id="word-newversionavailable">
+		<zh-CN>发现新版本</zh-CN>
+		<en-US>New version available</en-US>
+	</lang>
+	<lang id="word-alreadylatest">
+		<zh-CN>已是最新版本</zh-CN>
+		<en-US>Up to date</en-US>
+	</lang>
+	<lang id="word-updatecheckfailed">
+		<zh-CN>检查更新失败</zh-CN>
+		<en-US>Update check failed</en-US>
+	</lang>
 	<lang id="word-virtualmemory">
 		<zh-CN>虚拟内存</zh-CN>
 		<en-US>Virtual memory</en-US>

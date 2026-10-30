@@ -14,7 +14,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 )
 
@@ -162,7 +161,7 @@ func UpdateNps() (updated bool, err error) {
 }
 
 func fetchLatestVersion() (string, error) {
-	resp, err := http.Get("https://api.github.com/repos/yisier/nps/releases/latest")
+	resp, err := metadataClient.Get("https://api.github.com/repos/yisier/nps/releases/latest")
 	if err != nil {
 		return "", err
 	}
@@ -184,16 +183,41 @@ func fetchLatestVersion() (string, error) {
 	return rl.TagName, nil
 }
 
+// compareVersion 按版本号逐段比较，返回 -1、0、1
 func compareVersion(a, b string) int {
-	ai, _ := strconv.Atoi(strings.ReplaceAll(strings.TrimPrefix(a, "v"), ".", ""))
-	bi, _ := strconv.Atoi(strings.ReplaceAll(strings.TrimPrefix(b, "v"), ".", ""))
-	if ai < bi {
-		return -1
-	}
-	if ai > bi {
-		return 1
+	av := parseVersion(a)
+	bv := parseVersion(b)
+	for i := 0; i < len(av) || i < len(bv); i++ {
+		var x, y int
+		if i < len(av) {
+			x = av[i]
+		}
+		if i < len(bv) {
+			y = bv[i]
+		}
+		if x < y {
+			return -1
+		}
+		if x > y {
+			return 1
+		}
 	}
 	return 0
+}
+
+func parseVersion(v string) []int {
+	v = strings.TrimPrefix(strings.TrimSpace(v), "v")
+	parts := strings.Split(v, ".")
+	nums := make([]int, len(parts))
+	for i, part := range parts {
+		for _, c := range part {
+			if c < '0' || c > '9' {
+				break
+			}
+			nums[i] = nums[i]*10 + int(c-'0')
+		}
+	}
+	return nums
 }
 
 func UpdateNpc() {
@@ -210,28 +234,31 @@ func UpdateNpc() {
 	fmt.Println("Update completed, please restart")
 }
 
-func UpdateNpcNew() {
+// UpdateNpcNew 检查并替换客户端到最新版本。
+// 返回 true 表示已用新版本替换当前二进制，调用方可以据此重启已注册的系统服务。
+func UpdateNpcNew() bool {
 	latest, err := fetchLatestVersion()
 	if err != nil {
 		log.Println("获取最新版本失败：", err)
-		return
+		return false
 	}
 	fmt.Println("最新版本为：", latest)
 	if compareVersion(version.VERSION, latest) >= 0 {
 		fmt.Println("当前已是最新版本，无需更新")
-		return
+		return false
 	}
 	tempDir := filepath.Join(common.GetAppPath(), "temp")
 	destPath, err := downloadLatest2("client", tempDir)
 	if err != nil {
 		log.Println("下载更新失败：", err)
-		return
+		return false
 	}
 	if err := copyStaticFileReplaceNpc(destPath, common.GetAppPath()); err != nil {
 		log.Println("替换客户端文件失败：", err)
-		return
+		return false
 	}
-	fmt.Println("更新成功，请重启客户端")
+	fmt.Println("更新成功")
+	return true
 }
 
 type release struct {
@@ -249,7 +276,7 @@ func downloadLatest2(bin string, path string) (string, error) {
 // downloadAndUnpack fetches the latest release package for the current OS/arch.
 // Releases ship as .tar.gz (see build.assets.sh / release.yml).
 func downloadAndUnpack(bin, unpackPath string) (string, error) {
-	data, err := http.Get("https://api.github.com/repos/yisier/nps/releases/latest")
+	data, err := metadataClient.Get("https://api.github.com/repos/yisier/nps/releases/latest")
 	if err != nil {
 		return "", err
 	}
@@ -281,7 +308,9 @@ func downloadAndUnpack(bin, unpackPath string) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("下载失败: HTTP %d %s", resp.StatusCode, downloadUrl)
 	}
-	destPath, err := unpackit.Unpack(resp.Body, unpackPath)
+	reader := newProgressReader(resp.Body, resp.ContentLength)
+	destPath, err := unpackit.Unpack(reader, unpackPath)
+	reader.finish()
 	if err != nil {
 		return "", err
 	}

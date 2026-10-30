@@ -150,6 +150,13 @@
                                 </div>
                                 <div class="col-sm-6 text-right">
                                     <strong>{{.data.version}}</strong>
+                                    <span id="update_check_result" style="display:none;">
+                                        <a id="update_available" class="label label-warning" style="display:none;margin-left:6px;" href="https://github.com/yisier/nps/releases/latest" target="_blank" rel="noopener noreferrer">
+                                            <span langtag="word-newversionavailable"></span> <span id="update_latest_version"></span>
+                                        </a>
+                                        <span id="update_latest" class="label label-success" style="display:none;margin-left:6px;" langtag="word-alreadylatest"></span>
+                                        <span id="update_failed" class="label label-default" style="display:none;margin-left:6px;" langtag="word-updatecheckfailed"></span>
+                                    </span>
                                 </div>
                             </div>
                         </li>
@@ -736,6 +743,28 @@
     window.addEventListener('resize', () => {
         for(var key in charts){
             charts[key].resize();
+        }
+    });
+
+    // 异步检查服务端是否有新版本，避免阻塞首页渲染
+    $.ajax({
+        url: "{{.web_base_url}}/index/checkupdate",
+        type: "GET",
+        dataType: "json",
+        success: function (res) {
+            $("#update_check_result").show();
+            if (res.status == 1 && res.has_update) {
+                $("#update_latest_version").text(res.latest_version);
+                $("#update_available").show();
+            } else if (res.status == 1) {
+                $("#update_latest").show();
+            } else {
+                $("#update_failed").attr("title", res.msg || "").show();
+            }
+        },
+        error: function () {
+            $("#update_check_result").show();
+            $("#update_failed").show();
         }
     });
 </script>
