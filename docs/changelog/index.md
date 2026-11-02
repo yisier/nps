@@ -1,19 +1,20 @@
 ﻿# 更新日志
 - 2026-11-02  v0.26.40
   - 新增：
-    - 全局参数支持热更新：`allow_ports`、`ip_limit`、`show_http_proxy_port`、`http_add_origin_header`、全部 `allow_*`、`open_captcha`、`system_info_display` 迁移到 `conf/global.json`，Web 后台保存后立即生效
-    - 全新安装自动生成 `conf/global.json`；升级时自动从 `nps.conf` 迁移，已经通过 Web 保存过的值不会被覆盖
-    - 重构 Web 管理端「全局参数」页面，按基础设置、安全设置、客户端能力、登录与账号、展示与高级分组展示
+    - 全局参数支持热更新：`nps.conf` 中的 `allow_ports`、`ip_limit`、`show_http_proxy_port`、`http_add_origin_header`、`allow_flow_limit`、`allow_rate_limit`、`allow_connection_num_limit`、`allow_tunnel_num_limit`、`allow_multi_ip`、`allow_local_proxy`、`allow_user_login`、`allow_user_register`、`allow_user_change_username`、`open_captcha`、`system_info_display` 迁移到 `conf/global.json`，新生成的 `nps.conf` 不再包含这些参数；升级时首次启动自动迁移，Web 后台保存后立即生效；「全局参数」页面同时按基础设置、安全设置、客户端能力、登录与账号、展示与高级分组重构
+
+      <img src="/image/new/setting.png" alt="全局参数" style="max-width: 620px; width: 100%;" />
     - 新增客户端、隧道、域名解析必填校验，并兼容隧道各模式下的动态字段
-    - 客户端更新后自动替换并重启已注册的客户端服务
+    - 客户端交互菜单新增「查看系统服务」，可列出本机已注册的 `nps-client-<vkey>` 服务及运行状态；「更新客户端」自动重启已注册的客户端服务
+
+      <img src="/image/new/npc_service.png" alt="查看系统服务" style="max-width: 420px; width: 100%;" />
+    - Web 管理首页自动检测服务端新版本，并提示当前版本与最新版本
     - Web 管理端客户端、隧道、域名列表每页条数支持 `20/50/100/200`，并记住用户选择 [#363](https://github.com/yisier/nps/issues/363)
   - 优化：
     - 新增/编辑客户端、隧道、域名解析表单改为紧凑分组布局，减少页面高度并修复字段对齐
-    - 全局参数、表单校验和错误提示支持中英文
-    - `allow_ports`、`ip_limit`、`http_add_origin_header`、`system_info_display` 改为运行时读取，修改后无需重启
-    - 优化 `nps_mux.receiveWindowQueue.Pop`，避免并发释放后持续空转
+    - 优化 `nps_mux.receiveWindowQueue.Pop`，避免并发释放后持续空转 [#364](https://github.com/yisier/nps/pull/364)
   - 修复：
-    - 客户端、隧道、域名解析 ID 在删除后继续增长导致跳跃的问题
+    - 客户端、隧道、域名解析 ID 在删除后继续增长导致跳跃的问题 [#362](https://github.com/yisier/nps/issues/362)
 
 - 2026-10-10  v0.26.39
   - 修复：
