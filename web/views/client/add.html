@@ -2,8 +2,9 @@
     <div class="col-md-12 col-md-auto">
         <div class="ibox float-e-margins">
             <h3 class="ibox-title" langtag="page-clientadd"></h3>
-            <div class="ibox-content">
-                <form class="form-horizontal">
+            <div class="ibox-content compact-box">
+                <form class="compact-form">
+                    <div class="form-section"><i class="fa fa-id-card"></i><span langtag="word-formbasic"></span></div>
                     <div class="form-group" id="remark">
                         <label class="control-label font-bold" langtag="word-remark"></label>
                         <div class="col-sm-10">
@@ -44,6 +45,14 @@
                         </div>
                     </div>
                 {{end}}
+                    <div class="form-group" id="expire_time">
+                        <label class="control-label font-bold" langtag="word-expiretime"></label>
+                        <div class="col-sm-10">
+                            <input class="form-control flatpickr-expire" type="text" name="expire_time" placeholder="2026-12-31 23:59:59" autocomplete="off">
+                            <span class="help-block m-b-none" langtag="info-expiretime"></span>
+                        </div>
+                    </div>
+                    <div class="form-section"><i class="fa fa-user-lock"></i><span langtag="word-formauth"></span></div>
                     <div class="form-group" id="u">
                         <label class="control-label font-bold" langtag="word-basicusername"></label>
                         <div class="col-sm-10">
@@ -107,6 +116,7 @@
 <!--                        </div>-->
 <!--                    </div>-->
 
+                    <div class="form-section"><i class="fa fa-shield-alt"></i><span langtag="word-formaccess"></span></div>
                     <div class="form-group" id="ip_white">
                         <label class="control-label font-bold" langtag="word-ipwhite"></label>
                         <div class="col-sm-10">
@@ -126,32 +136,24 @@
                         </div>
                     </div>
 
-                    <div class="form-group" id="ip_white_list" style="display: none;">
+                    <div class="form-group span-2" id="ip_white_list" style="display: none;">
                         <label class="control-label font-bold" langtag="word-ipwhitelist"></label>
                         <div class="col-sm-10">
-                            <textarea class="form-control" rows="4" type="text" name="ipwhitelist" placeholder="" langtag="info-suchasblackiplist">{{.BlackIpList}}</textarea>
+                            <textarea class="form-control" rows="3" type="text" name="ipwhitelist" placeholder="" langtag="info-suchasblackiplist">{{.BlackIpList}}</textarea>
                             <span class="help-block m-b-none" langtag="info-descblackiplist"></span>
                         </div>
                     </div>
 
-                    <div class="form-group" id="black_ip_list">
+                    <div class="form-group span-2" id="black_ip_list">
                         <label class="control-label font-bold" langtag="word-blackiplist"></label>
                         <div class="col-sm-10">
-                            <textarea class="form-control" rows="4" type="text" name="blackiplist" placeholder="" langtag="info-suchasblackiplist">{{.BlackIpList}}</textarea>
+                            <textarea class="form-control" rows="3" type="text" name="blackiplist" placeholder="" langtag="info-suchasblackiplist">{{.BlackIpList}}</textarea>
                             <span class="help-block m-b-none" langtag="info-descblackiplist"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-group" id="expire_time">
-                        <label class="control-label font-bold" langtag="word-expiretime"></label>
-                        <div class="col-sm-10">
-                            <input class="form-control flatpickr-expire" type="text" name="expire_time" placeholder="2026-12-31 23:59:59" autocomplete="off">
-                            <span class="help-block m-b-none" langtag="info-expiretime"></span>
                         </div>
                     </div>
 
                     <div class="hr-line-dashed"></div>
-                    <div class="form-group">
+                    <div class="form-group form-actions">
                         <div class="col-sm-4 col-sm-offset-2">
                             <button class="btn btn-success" type="button" onclick="submitform('add', '{{.web_base_url}}/client/add', $('form').serializeArray())">
                                 <i class="fa fa-fw fa-lg fa-check-circle"></i> <span langtag="word-add"></span>

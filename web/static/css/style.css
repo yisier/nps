@@ -9814,3 +9814,126 @@ body.md-skin {
     margin: 0;
   }
 }
+
+/* required field validation */
+.form-control.is-invalid {
+  border-color: #ed5565 !important;
+  box-shadow: 0 0 0 0.1rem rgba(237, 85, 101, .15);
+}
+
+/* compact add/edit forms */
+.compact-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 16px;
+  row-gap: 0;
+  max-width: 1280px;
+}
+.compact-form .form-group {
+  margin-bottom: 8px;
+  min-width: 0;
+}
+.compact-form .form-group.span-2 {
+  grid-column: span 2;
+}
+.compact-form .form-group.span-full {
+  grid-column: 1 / -1;
+}
+.compact-form .form-group > label {
+  display: block;
+  float: none;
+  width: 100%;
+  max-width: 100%;
+  flex: 0 0 100%;
+  margin-bottom: 3px;
+  padding: 0;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f4050;
+}
+.compact-form .form-group > div[class*="col-sm-"] {
+  float: none;
+  width: 100%;
+  max-width: 100%;
+  flex: 0 0 100%;
+  padding: 0;
+  margin: 0;
+}
+.compact-form .form-group > div.col-sm-offset-2 {
+  margin-left: 0;
+}
+.compact-form .form-control {
+  height: 30px;
+  padding: 3px 8px;
+  font-size: 13px;
+}
+.compact-form textarea.form-control {
+  height: auto;
+}
+.compact-form .help-block {
+  margin-top: 2px;
+  margin-bottom: 0;
+  font-size: 11px;
+  line-height: 1.25;
+  color: #98a6ad;
+}
+.compact-form .form-section {
+  grid-column: 1 / -1;
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eef1f4;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f4050;
+}
+.compact-form .form-section i {
+  width: 16px;
+  margin-right: 5px;
+  color: #1ab394;
+  text-align: center;
+}
+.compact-form .form-section:first-child {
+  margin-top: 0;
+}
+.compact-form .form-actions {
+  grid-column: 1 / -1;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 10px;
+  border-top: 1px solid #eef1f4;
+  text-align: right;
+}
+.compact-form .form-actions .btn {
+  min-width: 100px;
+  padding: 5px 16px;
+}
+.compact-form .hr-line-dashed {
+  display: none;
+}
+.compact-box {
+  padding: 14px 18px !important;
+}
+@media (max-width: 1199px) {
+  .compact-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .compact-form {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+  .compact-form .form-group.span-2,
+  .compact-form .form-group.span-full,
+  .compact-form .form-actions,
+  .compact-form .form-section {
+    grid-column: auto;
+  }
+  .compact-form .form-actions {
+    text-align: left;
+  }
+  .compact-form .form-actions .btn {
+    width: 100%;
+  }
+}

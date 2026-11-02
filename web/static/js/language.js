@@ -141,6 +141,9 @@ $(document).ready(function () {
 		$('#languagemenu').attr('lang',$(this).attr('lang'));
 		$('body').setLang ('', true);
 	});
+	$('body').on('input change', '[data-required="true"]', function () {
+		$(this).removeClass('is-invalid');
+	});
 });
 
 var languages = {};
@@ -156,10 +159,34 @@ function langreply(langstr) {
     return langobj
 }
 
+function validateRequiredFields(formSelector) {
+    var $form = $(formSelector || 'form').first();
+    if ($form.length === 0) return true;
+
+    var $fields = $form.find('[data-required="true"]').filter(':visible');
+    $fields.removeClass('is-invalid');
+
+    var $invalid = $fields.filter(function () {
+        return $.trim($(this).val()) === '';
+    });
+    if ($invalid.length === 0) return true;
+
+    $invalid.addClass('is-invalid');
+    var msg = 'Please fill in the required fields';
+    if (languages && languages['content'] && languages['content']['info-requiredfields']) {
+        var requiredMsg = languages['content']['info-requiredfields'];
+        msg = requiredMsg[languages['current']] || requiredMsg[languages['default']] || msg;
+    }
+    alert(msg);
+    $invalid.first().focus();
+    return false;
+}
+
 var nps_submitting = false;
 var nps_batch_submitting = false;
 function submitform(action, url, postdata) {
     if (nps_submitting) return;
+    if ((action === 'add' || action === 'edit') && !validateRequiredFields('form')) return;
     postsubmit = false;
     switch (action) {
         case 'start':

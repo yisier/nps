@@ -55,12 +55,11 @@ type Bridge struct {
 	CloseTask      chan *file.Tunnel
 	CloseClient    chan int
 	SecretChan     chan *conn.Secret
-	ipVerify       bool
 	runList        sync.Map //map[int]interface{}
 	disconnectTime int
 }
 
-func NewTunnel(tunnelPort int, tunnelType string, ipVerify bool, runList sync.Map, disconnectTime int) *Bridge {
+func NewTunnel(tunnelPort int, tunnelType string, runList sync.Map, disconnectTime int) *Bridge {
 	return &Bridge{
 		TunnelPort:     tunnelPort,
 		tunnelType:     tunnelType,
@@ -68,7 +67,6 @@ func NewTunnel(tunnelPort int, tunnelType string, ipVerify bool, runList sync.Ma
 		CloseTask:      make(chan *file.Tunnel),
 		CloseClient:    make(chan int),
 		SecretChan:     make(chan *conn.Secret),
-		ipVerify:       ipVerify,
 		runList:        runList,
 		disconnectTime: disconnectTime,
 	}
@@ -418,7 +416,7 @@ func (s *Bridge) SendLinkInfo(clientId int, link *conn.Link, t *file.Tunnel) (ta
 	}
 	if v, ok := s.Client.Load(clientId); ok {
 		//If ip is restricted to do ip verification
-		if s.ipVerify {
+		if file.GetDb().GetGlobalSettings().IpLimit {
 			ip := common.GetIpByAddr(link.RemoteAddr)
 			if v, ok := s.Register.Load(ip); !ok {
 				return nil, errors.New(fmt.Sprintf("The ip %s is not in the validation list", ip))

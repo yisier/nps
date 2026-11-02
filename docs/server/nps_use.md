@@ -28,7 +28,7 @@ nps_dir/
 │   └── client.json // 客户端列表配置文件
 │   └── tasks.json  // 隧道列表配置文件
 │   └── hosts.json  // 域名解析列表配置文件
-│   └── global.json // 全局参数配置文件
+│   └── global.json // 全局参数配置文件（首次启动自动生成，可热更新）
 ├── nps // nps主程序
 ```
 

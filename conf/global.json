@@ -1,1 +1,1 @@
-{"BlackIpList":[],"ServerUrl":""}
+{"BlackIpList":[],"ServerUrl":"","AllowPorts":"","IpLimit":false,"ShowHttpProxyPort":true,"AllowFlowLimit":true,"AllowRateLimit":true,"AllowConnectionNumLimit":true,"AllowTunnelNumLimit":true,"AllowMultiIp":true,"AllowLocalProxy":false,"AllowUserLogin":true,"AllowUserRegister":false,"AllowUserChangeUsername":true,"OpenCaptcha":false,"SystemInfoDisplay":true,"HttpAddOriginHeader":true}

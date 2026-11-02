@@ -46,10 +46,17 @@ func (s *ClientController) Add() {
 		s.SetInfo("add client")
 		s.display()
 	} else {
+		remark := s.getEscapeString("remark")
+		webUserName := s.getEscapeString("web_username")
+		webPassword := s.getEscapeString("web_password")
+		if msg := validateClientWebPair(webUserName, webPassword); msg != "" {
+			s.AjaxErr(msg)
+			return
+		}
 		t := &file.Client{
 			VerifyKey: s.getEscapeString("vkey"),
 			Status:    true,
-			Remark:    s.getEscapeString("remark"),
+			Remark:    remark,
 			Cnf: &file.Config{
 				U:        s.getEscapeString("u"),
 				P:        s.getEscapeString("p"),
@@ -59,8 +66,8 @@ func (s *ClientController) Add() {
 			ConfigConnAllow: s.GetBoolNoErr("config_conn_allow"),
 			RateLimit:       s.GetIntNoErr("rate_limit"),
 			MaxConn:         s.GetIntNoErr("max_conn"),
-			WebUserName:     s.getEscapeString("web_username"),
-			WebPassword:     s.getEscapeString("web_password"),
+			WebUserName:     webUserName,
+			WebPassword:     webPassword,
 			MaxTunnelNum:    s.GetIntNoErr("max_tunnel"),
 			Flow: &file.Flow{
 				ExportFlow: 0,
@@ -116,8 +123,18 @@ func (s *ClientController) Edit() {
 			s.AjaxErr("client ID not found")
 			return
 		} else {
-			if s.getEscapeString("web_username") != "" {
-				if s.getEscapeString("web_username") == beego.AppConfig.String("web_username") || !file.GetDb().VerifyUserName(s.getEscapeString("web_username"), c.Id) {
+			remark := s.getEscapeString("remark")
+			webUserName := s.getEscapeString("web_username")
+			webPassword := s.getEscapeString("web_password")
+			canChangeUserName := s.GetSession("isAdmin").(bool) || file.GetDb().GetGlobalSettings().AllowUserChangeUsername
+			if canChangeUserName {
+				if msg := validateClientWebPair(webUserName, webPassword); msg != "" {
+					s.AjaxErr(msg)
+					return
+				}
+			}
+			if webUserName != "" {
+				if webUserName == beego.AppConfig.String("web_username") || !file.GetDb().VerifyUserName(webUserName, c.Id) {
 					s.AjaxErr("web login username duplicate, please reset")
 					return
 				}
@@ -139,16 +156,15 @@ func (s *ClientController) Edit() {
 			if s.GetString("flow_export") != "" {
 				c.Flow.ExportFlow = int64(s.GetIntNoErr("flow_export"))
 			}
-			c.Remark = s.getEscapeString("remark")
+			c.Remark = remark
 			c.Cnf.U = s.getEscapeString("u")
 			c.Cnf.P = s.getEscapeString("p")
 			c.Cnf.Compress = common.GetBoolByStr(s.getEscapeString("compress"))
 			c.Cnf.Crypt = s.GetBoolNoErr("crypt")
-			b, err := beego.AppConfig.Bool("allow_user_change_username")
-			if s.GetSession("isAdmin").(bool) || (err == nil && b) {
-				c.WebUserName = s.getEscapeString("web_username")
+			if canChangeUserName {
+				c.WebUserName = webUserName
 			}
-			c.WebPassword = s.getEscapeString("web_password")
+			c.WebPassword = webPassword
 			c.ConfigConnAllow = s.GetBoolNoErr("config_conn_allow")
 			c.IpWhite = s.GetBoolNoErr("ipwhite")
 			c.IpWhitePass = s.getEscapeString("ipwhitepass")

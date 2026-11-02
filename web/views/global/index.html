@@ -1,52 +1,460 @@
-<div class="wrapper wrapper-content">
-    <!--全局参数-->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h5 langtag="word-globalparam"></h5>
-                </div>
-                <div class="ibox-content">
+<style>
+    .global-param-page .global-hero {
+        background: linear-gradient(135deg, #1ab394 0%, #18a689 55%, #12876f 100%);
+        border-radius: 6px;
+        color: #fff;
+        padding: 12px 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(26, 179, 148, .18);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .global-param-page .global-hero .hero-text {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+    .global-param-page .global-hero h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+    }
+    .global-param-page .global-hero p {
+        margin: 0;
+        opacity: .85;
+        font-size: 12px;
+    }
+    .global-param-page .global-hero .btn-save {
+        background: #fff;
+        border-color: #fff;
+        color: #12876f;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 6px 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+        flex: 0 0 auto;
+    }
+    .global-param-page .global-hero .btn-save:hover,
+    .global-param-page .global-hero .btn-save:focus {
+        background: #f1fbf7;
+        border-color: #f1fbf7;
+        color: #0f7460;
+    }
+    .global-param-page .setting-card {
+        background: #fff;
+        border: 1px solid #e7eaec;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+        overflow: hidden;
+    }
+    .global-param-page .setting-card-head {
+        padding: 14px 20px;
+        border-bottom: 1px solid #f0f2f5;
+        font-size: 15px;
+        font-weight: 600;
+        color: #2f4050;
+        background: #fbfcfd;
+    }
+    .global-param-page .setting-card-head i {
+        color: #1ab394;
+        margin-right: 8px;
+        width: 18px;
+        text-align: center;
+    }
+    .global-param-page .setting-card-body {
+        padding: 8px 20px 18px;
+    }
+    .global-param-page .setting-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 15px 0;
+        border-bottom: 1px dashed #eef1f4;
+    }
+    .global-param-page .setting-row:last-child {
+        border-bottom: none;
+        padding-bottom: 4px;
+    }
+    .global-param-page .setting-title {
+        font-weight: 600;
+        color: #2f4050;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+    .global-param-page .setting-desc {
+        color: #98a6ad;
+        font-size: 12px;
+        line-height: 1.6;
+        max-width: 460px;
+    }
+    .global-param-page .setting-control {
+        flex: 0 0 auto;
+        padding-top: 2px;
+    }
+    .global-param-page .setting-field {
+        padding: 15px 0;
+        border-bottom: 1px dashed #eef1f4;
+    }
+    .global-param-page .setting-field:last-child {
+        border-bottom: none;
+    }
+    .global-param-page .setting-field > label {
+        font-weight: 600;
+        color: #2f4050;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .global-param-page .setting-field .help-block {
+        margin-top: 6px;
+        color: #98a6ad;
+        font-size: 12px;
+    }
+    @media (max-width: 767px) {
+        .global-param-page .setting-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .global-param-page .setting-desc {
+            max-width: none;
+        }
+        .global-param-page .global-hero .hero-text {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .global-param-page .global-hero .btn-save {
+            width: 100%;
+        }
+    }
+</style>
 
-                    <form class="form-horizontal">
-                        <div class="form-group" id="black_ip_list">
-                            <label class="control-label font-bold" langtag="word-globalblackiplist"></label>
-                            <div class="col-sm-4">
-                                <textarea class="form-control" rows="10" type="text" name="globalBlackIpList" placeholder=""
-                                          langtag="info-suchasblackiplist">{{.globalBlackIpList}}</textarea>
-                                <span class="help-block m-b-none" langtag="info-descblackiplist"></span>
-                            </div>
-                        </div>
-
-                        <div class="form-group" id="server_url">
-                            <label class="control-label font-bold" langtag="word-serverurl"></label>
-                            <div class="col-sm-10">
-                                <input class="form-control" value="{{.serverUrl}}" type="text" name="serverUrl"
-                                       placeholder="" langtag="info-servertips">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="col-sm-4 col-sm-offset-2">
-                                <button class="btn btn-success" type="button"
-                                        onclick="submitform('global', '{{.web_base_url}}/global/save', $('form').serializeArray())">
-                                    <i class="fa fa-fw fa-lg fa-check-circle"></i> <span langtag="word-save"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+<div class="wrapper wrapper-content global-param-page">
+    <form class="form-horizontal" id="globalParamForm">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="global-hero">
+                    <div class="hero-text">
+                        <h2 langtag="word-globalparam"></h2>
+                        <p langtag="info-globalparamsdesc"></p>
+                    </div>
+                    <button class="btn btn-save" type="button"
+                            onclick="submitform('global', '{{.web_base_url}}/global/save', $('form').serializeArray())">
+                        <i class="fa fa-fw fa-check-circle"></i> <span langtag="word-save"></span>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
 
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="setting-card">
+                    <div class="setting-card-head">
+                        <i class="fa fa-server"></i><span langtag="word-basicsettings"></span>
+                    </div>
+                    <div class="setting-card-body">
+                        <div class="setting-field" id="server_url">
+                            <label langtag="word-serverurl"></label>
+                            <input class="form-control" value="{{.serverUrl}}" type="text" name="serverUrl"
+                                   placeholder="" langtag="info-servertips">
+                            <span class="help-block m-b-none" langtag="info-servertips"></span>
+                        </div>
 
+                        <div class="setting-field" id="allow_ports">
+                            <label langtag="word-allowports"></label>
+                            <input class="form-control" value="{{.allowPorts}}" type="text" name="allowPorts"
+                                   placeholder="" langtag="info-allowportstips">
+                            <span class="help-block m-b-none" langtag="info-allowportstips"></span>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-showhttpport"></div>
+                                <div class="setting-desc" langtag="info-showhttptips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="showHttpProxyPort" value="1" class="onoffswitch-checkbox"
+                                           id="showHttpProxyPort" {{if .showHttpProxyPort}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="showHttpProxyPort">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <div class="setting-card-head">
+                        <i class="fa fa-shield-alt"></i><span langtag="word-securitysettings"></span>
+                    </div>
+                    <div class="setting-card-body">
+                        <div class="setting-field" id="black_ip_list">
+                            <label langtag="word-globalblackiplist"></label>
+                            <textarea class="form-control" rows="6" type="text" name="globalBlackIpList"
+                                      placeholder="" langtag="info-suchasblackiplist">{{.globalBlackIpList}}</textarea>
+                            <span class="help-block m-b-none" langtag="info-descblackiplist"></span>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-iplimit"></div>
+                                <div class="setting-desc" langtag="info-iplimittips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="ipLimit" value="1" class="onoffswitch-checkbox"
+                                           id="ipLimit" {{if .ipLimit}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="ipLimit">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="setting-card">
+                    <div class="setting-card-head">
+                        <i class="fa fa-laptop"></i><span langtag="word-clientsettings"></span>
+                    </div>
+                    <div class="setting-card-body">
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowflowlimit"></div>
+                                <div class="setting-desc" langtag="info-allowflowlimittips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowFlowLimit" value="1" class="onoffswitch-checkbox"
+                                           id="allowFlowLimit" {{if .allowFlowLimit}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowFlowLimit">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowratelimit"></div>
+                                <div class="setting-desc" langtag="info-allowratelimittips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowRateLimit" value="1" class="onoffswitch-checkbox"
+                                           id="allowRateLimit" {{if .allowRateLimit}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowRateLimit">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowconnlimit"></div>
+                                <div class="setting-desc" langtag="info-allowconnlimittips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowConnectionNumLimit" value="1"
+                                           class="onoffswitch-checkbox" id="allowConnectionNumLimit"
+                                           {{if .allowConnectionNumLimit}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowConnectionNumLimit">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowtunnellimit"></div>
+                                <div class="setting-desc" langtag="info-allowtunnellimittips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowTunnelNumLimit" value="1"
+                                           class="onoffswitch-checkbox" id="allowTunnelNumLimit"
+                                           {{if .allowTunnelNumLimit}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowTunnelNumLimit">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowmultiip"></div>
+                                <div class="setting-desc" langtag="info-allowmultiipstips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowMultiIp" value="1" class="onoffswitch-checkbox"
+                                           id="allowMultiIp" {{if .allowMultiIp}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowMultiIp">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowlocalproxy"></div>
+                                <div class="setting-desc" langtag="info-allowlocalproxytips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowLocalProxy" value="1" class="onoffswitch-checkbox"
+                                           id="allowLocalProxy" {{if .allowLocalProxy}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowLocalProxy">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <div class="setting-card-head">
+                        <i class="fa fa-user-lock"></i><span langtag="word-loginsettings"></span>
+                    </div>
+                    <div class="setting-card-body">
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowuserlogin"></div>
+                                <div class="setting-desc" langtag="info-allowuserlogintips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowUserLogin" value="1" class="onoffswitch-checkbox"
+                                           id="allowUserLogin" {{if .allowUserLogin}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowUserLogin">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowuserregister"></div>
+                                <div class="setting-desc" langtag="info-allowuserregistertips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowUserRegister" value="1"
+                                           class="onoffswitch-checkbox" id="allowUserRegister"
+                                           {{if .allowUserRegister}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowUserRegister">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-allowuserchangeusername"></div>
+                                <div class="setting-desc" langtag="info-allowuserchangeusernametips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="allowUserChangeUsername" value="1"
+                                           class="onoffswitch-checkbox" id="allowUserChangeUsername"
+                                           {{if .allowUserChangeUsername}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="allowUserChangeUsername">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-captcha"></div>
+                                <div class="setting-desc" langtag="info-captchatips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="openCaptcha" value="1" class="onoffswitch-checkbox"
+                                           id="openCaptcha" {{if .openCaptcha}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="openCaptcha">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <div class="setting-card-head">
+                        <i class="fa fa-chart-line"></i><span langtag="word-displaysettings"></span>
+                    </div>
+                    <div class="setting-card-body">
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-systeminfo"></div>
+                                <div class="setting-desc" langtag="info-systeminfotips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="systemInfoDisplay" value="1" class="onoffswitch-checkbox"
+                                           id="systemInfoDisplay" {{if .systemInfoDisplay}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="systemInfoDisplay">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-main">
+                                <div class="setting-title" langtag="word-addoriginheader"></div>
+                                <div class="setting-desc" langtag="info-addoriginheadertips"></div>
+                            </div>
+                            <div class="setting-control">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="httpAddOriginHeader" value="1" class="onoffswitch-checkbox"
+                                           id="httpAddOriginHeader" {{if .httpAddOriginHeader}}checked{{end}}>
+                                    <label class="onoffswitch-label" for="httpAddOriginHeader">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
-
-<script>
-    window.addEventListener('resize', () => {
-        for (var key in charts) {
-            charts[key].resize();
-        }
-    });
-</script>

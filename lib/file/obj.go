@@ -234,8 +234,28 @@ func (s *Target) GetRandomTarget() (string, error) {
 	return addr, nil
 }
 
+// Glob 保存管理端「全局参数」，可通过 Web 页面热更新。
+// 指针字段用于区分「尚未初始化」和「显式设置为 false/空」：
+// 首次启动时会从 nps.conf 迁移，之后以 global.json 为准。
 type Glob struct {
 	BlackIpList []string
 	ServerUrl   string
+
+	AllowPorts              *string `json:"AllowPorts,omitempty"`
+	IpLimit                 *bool   `json:"IpLimit,omitempty"`
+	ShowHttpProxyPort       *bool   `json:"ShowHttpProxyPort,omitempty"`
+	AllowFlowLimit          *bool   `json:"AllowFlowLimit,omitempty"`
+	AllowRateLimit          *bool   `json:"AllowRateLimit,omitempty"`
+	AllowConnectionNumLimit *bool   `json:"AllowConnectionNumLimit,omitempty"`
+	AllowTunnelNumLimit     *bool   `json:"AllowTunnelNumLimit,omitempty"`
+	AllowMultiIp            *bool   `json:"AllowMultiIp,omitempty"`
+	AllowLocalProxy         *bool   `json:"AllowLocalProxy,omitempty"`
+	AllowUserLogin          *bool   `json:"AllowUserLogin,omitempty"`
+	AllowUserRegister       *bool   `json:"AllowUserRegister,omitempty"`
+	AllowUserChangeUsername *bool   `json:"AllowUserChangeUsername,omitempty"`
+	OpenCaptcha             *bool   `json:"OpenCaptcha,omitempty"`
+	SystemInfoDisplay       *bool   `json:"SystemInfoDisplay,omitempty"`
+	HttpAddOriginHeader     *bool   `json:"HttpAddOriginHeader,omitempty"`
+
 	sync.RWMutex
 }

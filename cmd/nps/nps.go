@@ -81,6 +81,10 @@ func main() {
 		log.Fatalln("load config file error", err.Error())
 	}
 
+	// 首次启动/升级时，把 nps.conf 中可热更新的参数迁移到 global.json。
+	// 已通过 Web 全局参数页面保存过的值不会被覆盖。
+	file.GetDb().MigrateGlobalFromAppConfig()
+
 	common.InitPProfFromFile()
 	if level = beego.AppConfig.String("log_level"); level == "" {
 		level = "7"
@@ -533,7 +537,6 @@ func run() {
 	connection.InitConnectionService()
 	//crypt.InitTls(filepath.Join(common.GetRunPath(), "conf", "server.pem"), filepath.Join(common.GetRunPath(), "conf", "server.key"))
 	crypt.InitTls()
-	tool.InitAllowPort()
 	tool.StartSystemInfo()
 	timeout, err := beego.AppConfig.Int("disconnect_timeout")
 	if err != nil {
@@ -547,7 +550,8 @@ func initConfig(confDir string) {
 		os.MkdirAll(confDir, 0755)
 	}
 	confPath := filepath.Join(confDir, "nps.conf")
-	if !common.FileExists(confPath) {
+	confExisted := common.FileExists(confPath)
+	if !confExisted {
 		webPassword := crypt.GetRandomString(8)
 		authKey := crypt.GetRandomString(8)
 		authCryptKey := crypt.GetRandomString(16)
@@ -565,12 +569,32 @@ func initConfig(confDir string) {
 		logs.Info("auth_key:", authKey)
 		logs.Info("auth_crypt_key:", authCryptKey)
 	}
+	// 全新安装直接生成默认 global.json；升级场景交给 MigrateGlobalFromAppConfig
+	// 从已有的 nps.conf 迁移，避免覆盖用户原有配置。
+	if !confExisted {
+		initGlobalConfig(confDir)
+	}
 }
+
+// initGlobalConfig 生成默认的 conf/global.json。
+// 可热更新的开关已从 nps.conf 迁移到这里，首次启动即生效。
+func initGlobalConfig(confDir string) {
+	globalPath := filepath.Join(confDir, "global.json")
+	if common.FileExists(globalPath) {
+		return
+	}
+	if err := os.WriteFile(globalPath, []byte(defaultGlobalJson), 0644); err != nil {
+		logs.Error("Auto-generated default global config file error:", err)
+		return
+	}
+	logs.Info("Auto-generated default global config file:", globalPath)
+}
+
+const defaultGlobalJson = `{"BlackIpList":[],"ServerUrl":"","AllowPorts":"","IpLimit":false,"ShowHttpProxyPort":true,"AllowFlowLimit":true,"AllowRateLimit":true,"AllowConnectionNumLimit":true,"AllowTunnelNumLimit":true,"AllowMultiIp":true,"AllowLocalProxy":false,"AllowUserLogin":true,"AllowUserRegister":false,"AllowUserChangeUsername":true,"OpenCaptcha":false,"SystemInfoDisplay":true,"HttpAddOriginHeader":true}`
 
 const defaultNpsConf = `http_proxy_ip=0.0.0.0
 http_proxy_port=80
 https_proxy_port=443
-show_http_proxy_port=true
 
 bridge_type=tcp
 bridge_port=8024
@@ -596,26 +620,10 @@ web_key_file=conf/server.key
 auth_key=123
 auth_crypt_key =213
 
-allow_user_login=true
-allow_user_register=false
-allow_user_change_username=true
-
-allow_flow_limit=true
-allow_rate_limit=true
-allow_tunnel_num_limit=true
-allow_local_proxy=false
-allow_connection_num_limit=true
-allow_multi_ip=true
-system_info_display=true
-
-http_add_origin_header=true
-
 http_cache=false
 http_cache_length=100
 
 disconnect_timeout=60
-
-open_captcha=false
 
 tls_enable=true
 tls_bridge_port=8025

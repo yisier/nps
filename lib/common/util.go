@@ -7,7 +7,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"html/template"
 	"io"
@@ -104,7 +103,7 @@ func Getverifyval(vkey string) string {
 }
 
 // Change headers and host of request
-func ChangeHostAndHeader(r *http.Request, host string, header string, addr string) {
+func ChangeHostAndHeader(r *http.Request, host string, header string, addr string, addOrigin bool) {
 	if host != "" {
 		r.Host = host
 	}
@@ -121,8 +120,6 @@ func ChangeHostAndHeader(r *http.Request, host string, header string, addr strin
 	if prior, ok := r.Header["X-Forwarded-For"]; ok {
 		addr = strings.Join(prior, ", ") + ", " + addr
 	}
-
-	addOrigin, _ := beego.AppConfig.Bool("http_add_origin_header")
 
 	if addOrigin {
 		logs.Debug("set X-Forwarded-For X-Real-IP = " + addr)

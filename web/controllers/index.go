@@ -128,6 +128,16 @@ func (s *IndexController) Add() {
 			Flow:         &file.Flow{},
 		}
 
+		if msg := validateTunnelInput(t.Mode, t.Target.TargetStr, t.Password, t.LocalPath); msg != "" {
+			s.AjaxErr(msg)
+			return
+		}
+		clientId := s.GetIntNoErr("client_id")
+		if clientId <= 0 {
+			s.AjaxErr("client is required")
+			return
+		}
+
 		if t.Port <= 0 {
 			t.Port = tool.GenerateServerPort(t.Mode)
 		}
@@ -136,7 +146,7 @@ func (s *IndexController) Add() {
 			s.AjaxErr("The port cannot be opened because it may has been occupied or is no longer allowed.")
 			return
 		}
-		client, err := file.GetDb().GetClient(s.GetIntNoErr("client_id"))
+		client, err := file.GetDb().GetClient(clientId)
 		if err != nil {
 			s.AjaxErr(err.Error())
 			return
@@ -231,12 +241,26 @@ func (s *IndexController) Edit() {
 		if t, err := file.GetDb().GetTask(id); err != nil {
 			s.error()
 		} else {
-			if client, err := file.GetDb().GetClient(s.GetIntNoErr("client_id")); err != nil {
+			mode := s.getEscapeString("type")
+			target := s.getEscapeString("target")
+			password := s.getEscapeString("password")
+			localPath := s.getEscapeString("local_path")
+			if msg := validateTunnelInput(mode, target, password, localPath); msg != "" {
+				s.AjaxErr(msg)
+				return
+			}
+			clientId := s.GetIntNoErr("client_id")
+			if clientId <= 0 {
+				s.AjaxErr("client is required")
+				return
+			}
+			if client, err := file.GetDb().GetClient(clientId); err != nil {
 				s.AjaxErr("modified error,the client is not exist")
 				return
 			} else {
 				t.Client = client
 			}
+			t.Mode = mode
 			if s.GetIntNoErr("port") != t.Port {
 				t.Port = s.GetIntNoErr("port")
 
@@ -250,11 +274,10 @@ func (s *IndexController) Edit() {
 				}
 			}
 			t.ServerIp = s.getEscapeString("server_ip")
-			t.Mode = s.getEscapeString("type")
-			t.Target = &file.Target{TargetStr: s.getEscapeString("target")}
-			t.Password = s.getEscapeString("password")
+			t.Target = &file.Target{TargetStr: target}
+			t.Password = password
 			t.Id = id
-			t.LocalPath = s.getEscapeString("local_path")
+			t.LocalPath = localPath
 			t.ProtoVersion = s.getEscapeString("proto_version")
 			t.StripPre = s.getEscapeString("strip_pre")
 			t.Remark = s.getEscapeString("remark")
@@ -366,9 +389,20 @@ func (s *IndexController) AddHost() {
 		s.SetInfo("add host")
 		s.display("index/hadd")
 	} else {
+		host := s.getEscapeString("host")
+		target := s.getEscapeString("target")
+		if msg := validateHostInput(host, target); msg != "" {
+			s.AjaxErr(msg)
+			return
+		}
+		clientId := s.GetIntNoErr("client_id")
+		if clientId <= 0 {
+			s.AjaxErr("client is required")
+			return
+		}
 		h := &file.Host{
-			Host:         s.getEscapeString("host"),
-			Target:       &file.Target{TargetStr: s.getEscapeString("target"), LocalProxy: s.GetBoolNoErr("local_proxy")},
+			Host:         host,
+			Target:       &file.Target{TargetStr: target, LocalProxy: s.GetBoolNoErr("local_proxy")},
 			HeaderChange: s.getEscapeString("header"),
 			HostChange:   s.getEscapeString("hostchange"),
 			Remark:       s.getEscapeString("remark"),
@@ -384,7 +418,7 @@ func (s *IndexController) AddHost() {
 			h.AutoHttps = false
 		}
 
-		client, err := file.GetDb().GetClient(s.GetIntNoErr("client_id"))
+		client, err := file.GetDb().GetClient(clientId)
 		if err != nil {
 			s.AjaxErr("add error the client can not be found")
 			return
@@ -418,9 +452,20 @@ func (s *IndexController) EditHost() {
 		if h, err := file.GetDb().GetHostById(id); err != nil {
 			s.error()
 		} else {
-			if h.Host != s.getEscapeString("host") {
+			host := s.getEscapeString("host")
+			target := s.getEscapeString("target")
+			if msg := validateHostInput(host, target); msg != "" {
+				s.AjaxErr(msg)
+				return
+			}
+			clientId := s.GetIntNoErr("client_id")
+			if clientId <= 0 {
+				s.AjaxErr("client is required")
+				return
+			}
+			if h.Host != host {
 				tmpHost := new(file.Host)
-				tmpHost.Host = s.getEscapeString("host")
+				tmpHost.Host = host
 				tmpHost.Location = s.getEscapeString("location")
 				tmpHost.Scheme = s.getEscapeString("scheme")
 				if file.GetDb().IsHostExist(tmpHost) {
@@ -428,14 +473,14 @@ func (s *IndexController) EditHost() {
 					return
 				}
 			}
-			if client, err := file.GetDb().GetClient(s.GetIntNoErr("client_id")); err != nil {
+			if client, err := file.GetDb().GetClient(clientId); err != nil {
 				s.AjaxErr("modified error,the client is not exist")
 				return
 			} else {
 				h.Client = client
 			}
-			h.Host = s.getEscapeString("host")
-			h.Target = &file.Target{TargetStr: s.getEscapeString("target")}
+			h.Host = host
+			h.Target = &file.Target{TargetStr: target}
 			h.HeaderChange = s.getEscapeString("header")
 			h.HostChange = s.getEscapeString("hostchange")
 			h.Remark = s.getEscapeString("remark")

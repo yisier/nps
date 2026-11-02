@@ -1152,4 +1152,189 @@
 
 
 	</charts>
+
+	<lang id="info-globalparamsdesc">
+		<zh-CN>集中管理可热更新的服务端参数，保存后立即生效，无需重启</zh-CN>
+		<en-US>Manage hot-reloadable server settings. Changes take effect immediately after saving, no restart required.</en-US>
+	</lang>
+	<lang id="info-applyimmediately">
+		<zh-CN>保存后立即生效，无需重启</zh-CN>
+		<en-US>Takes effect immediately after saving, no restart required</en-US>
+	</lang>
+	<lang id="word-basicsettings">
+		<zh-CN>基础设置</zh-CN>
+		<en-US>Basic settings</en-US>
+	</lang>
+	<lang id="word-securitysettings">
+		<zh-CN>安全设置</zh-CN>
+		<en-US>Security</en-US>
+	</lang>
+	<lang id="word-clientsettings">
+		<zh-CN>客户端能力</zh-CN>
+		<en-US>Client capabilities</en-US>
+	</lang>
+	<lang id="word-loginsettings">
+		<zh-CN>登录与账号</zh-CN>
+		<en-US>Login &amp; accounts</en-US>
+	</lang>
+	<lang id="word-displaysettings">
+		<zh-CN>展示与高级</zh-CN>
+		<en-US>Display &amp; advanced</en-US>
+	</lang>
+	<lang id="word-iplimit">
+		<zh-CN>IP 校验</zh-CN>
+		<en-US>IP verification</en-US>
+	</lang>
+	<lang id="info-iplimittips">
+		<zh-CN>开启后，客户端必须完成 IP 授权后才能建立隧道</zh-CN>
+		<en-US>When enabled, clients must complete IP authorization before tunnels can be created</en-US>
+	</lang>
+	<lang id="word-allowports">
+		<zh-CN>允许端口</zh-CN>
+		<en-US>Allowed ports</en-US>
+	</lang>
+	<lang id="info-allowportstips">
+		<zh-CN>例如 9001-9009,10001；留空表示不限制</zh-CN>
+		<en-US>e.g. 9001-9009,10001; leave empty for no restriction</en-US>
+	</lang>
+	<lang id="word-showhttpport">
+		<zh-CN>显示 HTTP 代理端口</zh-CN>
+		<en-US>Show HTTP proxy port</en-US>
+	</lang>
+	<lang id="info-showhttptips">
+		<zh-CN>在管理面板中展示 HTTP 代理端口</zh-CN>
+		<en-US>Show the HTTP proxy port in the admin panel</en-US>
+	</lang>
+	<lang id="word-allowflowlimit">
+		<zh-CN>允许流量限制</zh-CN>
+		<en-US>Allow flow limit</en-US>
+	</lang>
+	<lang id="info-allowflowlimittips">
+		<zh-CN>在客户端编辑页开放流量上限设置</zh-CN>
+		<en-US>Allow setting a flow limit on the client edit page</en-US>
+	</lang>
+	<lang id="word-allowratelimit">
+		<zh-CN>允许限速</zh-CN>
+		<en-US>Allow rate limit</en-US>
+	</lang>
+	<lang id="info-allowratelimittips">
+		<zh-CN>在客户端编辑页开放限速设置</zh-CN>
+		<en-US>Allow setting a rate limit on the client edit page</en-US>
+	</lang>
+	<lang id="word-allowconnlimit">
+		<zh-CN>允许连接数限制</zh-CN>
+		<en-US>Allow connection limit</en-US>
+	</lang>
+	<lang id="info-allowconnlimittips">
+		<zh-CN>在客户端编辑页开放最大连接数设置</zh-CN>
+		<en-US>Allow setting max connections on the client edit page</en-US>
+	</lang>
+	<lang id="word-allowtunnellimit">
+		<zh-CN>允许隧道数限制</zh-CN>
+		<en-US>Allow tunnel limit</en-US>
+	</lang>
+	<lang id="info-allowtunnellimittips">
+		<zh-CN>在客户端编辑页开放最大隧道数设置</zh-CN>
+		<en-US>Allow setting max tunnels on the client edit page</en-US>
+	</lang>
+	<lang id="word-allowmultiip">
+		<zh-CN>一隧道多 IP</zh-CN>
+		<en-US>Multiple IPs per tunnel</en-US>
+	</lang>
+	<lang id="info-allowmultiipstips">
+		<zh-CN>允许为单个隧道配置多个服务端 IP</zh-CN>
+		<en-US>Allow multiple server IPs for one tunnel</en-US>
+	</lang>
+	<lang id="word-allowlocalproxy">
+		<zh-CN>允许本地代理</zh-CN>
+		<en-US>Allow local proxy</en-US>
+	</lang>
+	<lang id="info-allowlocalproxytips">
+		<zh-CN>允许隧道直接使用服务端本地代理</zh-CN>
+		<en-US>Allow tunnels to use the local proxy on the server</en-US>
+	</lang>
+	<lang id="word-allowuserlogin">
+		<zh-CN>客户端账号登录</zh-CN>
+		<en-US>Client account login</en-US>
+	</lang>
+	<lang id="info-allowuserlogintips">
+		<zh-CN>允许客户端使用自己的账号登录管理面板</zh-CN>
+		<en-US>Allow clients to log in to the admin panel with their own accounts</en-US>
+	</lang>
+	<lang id="word-allowuserregister">
+		<zh-CN>允许注册</zh-CN>
+		<en-US>Allow registration</en-US>
+	</lang>
+	<lang id="info-allowuserregistertips">
+		<zh-CN>允许在登录页注册新账号</zh-CN>
+		<en-US>Allow registering new accounts on the login page</en-US>
+	</lang>
+	<lang id="word-allowuserchangeusername">
+		<zh-CN>允许修改用户名</zh-CN>
+		<en-US>Allow username change</en-US>
+	</lang>
+	<lang id="info-allowuserchangeusernametips">
+		<zh-CN>允许客户端修改自己的登录用户名</zh-CN>
+		<en-US>Allow clients to change their own login username</en-US>
+	</lang>
+	<lang id="info-captchatips">
+		<zh-CN>登录时需要输入图形验证码</zh-CN>
+		<en-US>Require a captcha when logging in</en-US>
+	</lang>
+	<lang id="word-systeminfo">
+		<zh-CN>系统监控图表</zh-CN>
+		<en-US>System info charts</en-US>
+	</lang>
+	<lang id="info-systeminfotips">
+		<zh-CN>在仪表盘展示 CPU、内存、负载等图表</zh-CN>
+		<en-US>Show CPU, memory and load charts on the dashboard</en-US>
+	</lang>
+	<lang id="word-addoriginheader">
+		<zh-CN>注入真实 IP 头</zh-CN>
+		<en-US>Add real IP headers</en-US>
+	</lang>
+	<lang id="info-addoriginheadertips">
+		<zh-CN>转发请求时写入 X-Forwarded-For 和 X-Real-IP</zh-CN>
+		<en-US>Set X-Forwarded-For and X-Real-IP when forwarding requests</en-US>
+	</lang>
+	<lang id="info-requiredfields">
+		<zh-CN>请填写必填项</zh-CN>
+		<en-US>Please fill in the required fields</en-US>
+	</lang>
+	<lang id="word-formbasic">
+		<zh-CN>基础信息</zh-CN>
+		<en-US>Basic info</en-US>
+	</lang>
+	<lang id="word-formauth">
+		<zh-CN>认证与登录</zh-CN>
+		<en-US>Authentication</en-US>
+	</lang>
+	<lang id="word-formaccess">
+		<zh-CN>访问控制</zh-CN>
+		<en-US>Access control</en-US>
+	</lang>
+	<lang id="word-formother">
+		<zh-CN>其他</zh-CN>
+		<en-US>Other</en-US>
+	</lang>
+	<lang id="word-formconnection">
+		<zh-CN>连接设置</zh-CN>
+		<en-US>Connection</en-US>
+	</lang>
+	<lang id="word-formadvanced">
+		<zh-CN>高级设置</zh-CN>
+		<en-US>Advanced</en-US>
+	</lang>
+	<lang id="word-formhttps">
+		<zh-CN>HTTPS 设置</zh-CN>
+		<en-US>HTTPS</en-US>
+	</lang>
+	<lang id="word-formforward">
+		<zh-CN>转发设置</zh-CN>
+		<en-US>Forwarding</en-US>
+	</lang>
+	<lang id="word-belongclient">
+		<zh-CN>所属客户端</zh-CN>
+		<en-US>Client</en-US>
+	</lang>
 </content>

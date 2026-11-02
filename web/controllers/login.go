@@ -53,8 +53,9 @@ func (self *LoginController) Index() {
 		self.Redirect(webBaseUrl+"/index/index", 302)
 	}
 	self.Data["web_base_url"] = webBaseUrl
-	self.Data["register_allow"], _ = beego.AppConfig.Bool("allow_user_register")
-	self.Data["captcha_open"], _ = beego.AppConfig.Bool("open_captcha")
+	globalSettings := file.GetDb().GetGlobalSettings()
+	self.Data["register_allow"] = globalSettings.AllowUserRegister
+	self.Data["captcha_open"] = globalSettings.OpenCaptcha
 	self.Data["version"] = version.VERSION
 	self.TplName = "login/index.html"
 }
@@ -62,7 +63,7 @@ func (self *LoginController) Index() {
 func (self *LoginController) Verify() {
 	username := self.GetString("username")
 	password := self.GetString("password")
-	captchaOpen, _ := beego.AppConfig.Bool("open_captcha")
+	captchaOpen := file.GetDb().GetGlobalSettings().OpenCaptcha
 	if captchaOpen {
 		if !cpt.VerifyReq(self.Ctx.Request) {
 			self.Data["json"] = map[string]interface{}{"status": 0, "msg": "the verification code is wrong, please get it again and try again"}
@@ -97,8 +98,8 @@ func (self *LoginController) doLogin(username, password string, explicit bool) b
 		auth = true
 		server.Bridge.Register.Store(common.GetIpByAddr(self.Ctx.Input.IP()), time.Now().Add(time.Hour*time.Duration(2)))
 	}
-	b, err := beego.AppConfig.Bool("allow_user_login")
-	if err == nil && b && !auth {
+	allowUserLogin := file.GetDb().GetGlobalSettings().AllowUserLogin
+	if allowUserLogin && !auth {
 		file.GetDb().JsonDb.Clients.Range(func(key, value interface{}) bool {
 			v := value.(*file.Client)
 			if !v.Status || v.NoDisplay {
@@ -143,7 +144,7 @@ func (self *LoginController) Register() {
 		self.Data["version"] = version.VERSION
 		self.TplName = "login/register.html"
 	} else {
-		if b, err := beego.AppConfig.Bool("allow_user_register"); err != nil || !b {
+		if !file.GetDb().GetGlobalSettings().AllowUserRegister {
 			self.Data["json"] = map[string]interface{}{"status": 0, "msg": "register is not allow"}
 			self.ServeJSON()
 			return

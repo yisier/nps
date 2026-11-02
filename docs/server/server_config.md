@@ -5,6 +5,8 @@
 
 > 首次启动时若 `conf/nps.conf` 不存在会**自动生成默认配置**，其中 `web_username`（默认 `admin`）、`web_password`、`auth_key`、`auth_crypt_key` **均为随机值**并打印到终端，请在启动日志或配置文件中查看。
 
+> `allow_ports`、`ip_limit`、`show_http_proxy_port`、`http_add_origin_header`、全部 `allow_*`、`open_captcha`、`system_info_display` 已迁移到 `conf/global.json`：全新安装会直接生成默认文件，升级时首次启动会从 `nps.conf` 迁移。之后请在 **Web 后台 → 全局参数** 中修改（保存立即生效）。
+
 ## 通用配置
 
 | 名称 | 含义 | 默认值 |

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"ehang.io/nps/lib/common"
-	"github.com/astaxie/beego"
+	"ehang.io/nps/lib/file"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -17,25 +17,25 @@ import (
 )
 
 var (
-	ports          []int
 	ServerStatus   []map[string]interface{}
 	ServerStatusMu sync.RWMutex
 	IORateCache    atomic.Value
 )
 
 func StartSystemInfo() {
-	if b, err := beego.AppConfig.Bool("system_info_display"); err == nil && b {
-		ServerStatus = make([]map[string]interface{}, 0, 1500)
-		go getSeverStatus()
-	}
+	ServerStatus = make([]map[string]interface{}, 0, 1500)
+	go getSeverStatus()
 }
 
-func InitAllowPort() {
-	p := beego.AppConfig.String("allow_ports")
-	ports = common.GetPorts(p)
+func allowPorts() []int {
+	return common.GetPorts(file.GetDb().GetGlobalSettings().AllowPorts)
 }
 
 func TestServerPort(p int, m string) (b bool) {
+	return testServerPort(p, m, allowPorts())
+}
+
+func testServerPort(p int, m string, ports []int) (b bool) {
 	if m == "p2p" || m == "secret" {
 		return true
 	}
@@ -56,6 +56,7 @@ func TestServerPort(p int, m string) (b bool) {
 }
 
 func GenerateServerPort(m string) int {
+	ports := allowPorts()
 	// allow_ports 已配置：在允许范围内随机选取，打乱顺序后逐个尝试以避免重复命中已占用端口
 	if len(ports) != 0 {
 		shuffled := make([]int, len(ports))
@@ -64,7 +65,7 @@ func GenerateServerPort(m string) int {
 			shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
 		})
 		for _, p := range shuffled {
-			if TestServerPort(p, m) {
+			if testServerPort(p, m, ports) {
 				return p
 			}
 		}
@@ -77,7 +78,7 @@ func GenerateServerPort(m string) int {
 			serverPort = 1024
 		}
 
-		if TestServerPort(serverPort, m) {
+		if testServerPort(serverPort, m, ports) {
 			return serverPort
 		}
 	}
@@ -86,6 +87,10 @@ func GenerateServerPort(m string) int {
 
 func getSeverStatus() {
 	for {
+		if !file.GetDb().GetGlobalSettings().SystemInfoDisplay {
+			time.Sleep(time.Second)
+			continue
+		}
 		if len(ServerStatus) < 10 {
 			time.Sleep(time.Second)
 		} else {

@@ -2,21 +2,12 @@
     <div class="col-md-12 col-md-auto">
         <div class="ibox float-e-margins">
             <h3 class="ibox-title" langtag="page-add"></h3>
-            <div class="ibox-content">
-                <form class="form-horizontal">
+            <div class="ibox-content compact-box">
+                <form class="compact-form">
+                    <div class="form-section"><i class="fa fa-id-card"></i><span langtag="word-formbasic"></span></div>
                     <div class="form-group">
                         <label class="control-label font-bold" langtag="word-scheme"></label>
                         <div class="col-sm-10">
-                            <span class="help-block m-b-none font-bold" langtag="word-usecase"></span>:
-                            <span id="usecase">
-                                <span id="casetcp" langtag="info-casetcp"></span>
-                                <span id="caseudp" langtag="info-caseudp"></span>
-                                <span id="casehttpProxy" langtag="info-casehttpproxy"></span>
-                                <span id="casesocks5" langtag="info-casesocks5"></span>
-                                <span id="casesecret" langtag="info-casesecret"></span>
-                                <span id="casep2p" langtag="info-casep2p"></span>
-                                <span id="casefile" langtag="info-casefile"></span>
-                            </span>
                             <select class="form-control" name="type" id="type">
                                 <option value="tcp" langtag="scheme-tcp"></option>
                                 <option value="udp" langtag="scheme-udp"></option>
@@ -28,14 +19,24 @@
                                 <option value="file" langtag="scheme-file"></option>
                                 */}}
                             </select>
+                            <span class="help-block m-b-none font-bold" langtag="word-usecase"></span>:
+                            <span id="usecase">
+                                <span id="casetcp" langtag="info-casetcp"></span>
+                                <span id="caseudp" langtag="info-caseudp"></span>
+                                <span id="casehttpProxy" langtag="info-casehttpproxy"></span>
+                                <span id="casesocks5" langtag="info-casesocks5"></span>
+                                <span id="casesecret" langtag="info-casesecret"></span>
+                                <span id="casep2p" langtag="info-casep2p"></span>
+                                <span id="casefile" langtag="info-casefile"></span>
+                            </span>
                         </div>
                     </div>
 
                     <div class="form-group" id="client_id">
-                        <label class="control-label font-bold" langtag="word-clientid"></label>
+                        <label class="control-label font-bold"><span langtag="word-clientid"></span><span class="text-danger"> *</span></label>
                         <div class="col-sm-10">
                             <select class="form-control" name="client_id" placeholder="" id="nps_client_id"
-                                    langtag="word-belongclient"></select>
+                                    langtag="word-belongclient" data-required="true"></select>
 
                             <!--                            <input value="{{.client_id}}" class="form-control" type="text" name="client_id"-->
                             <!--                                   placeholder="" langtag="word-clientid">-->
@@ -49,6 +50,7 @@
                                    langtag="info-unrestricted">
                         </div>
                     </div>
+                    <div class="form-section"><i class="fa fa-plug"></i><span langtag="word-formconnection"></span></div>
                     {{if eq true .allow_multi_ip}}
                     <div class="form-group" id="server_ip">
                         <label class="control-label font-bold" langtag="word-serverip"></label>
@@ -78,20 +80,20 @@
                     </div>
                     {{end}}
 
-                    <div class="form-group" id="target">
-                        <label class="control-label font-bold" langtag="word-target"></label>
+                    <div class="form-group span-full" id="target">
+                        <label class="control-label font-bold"><span langtag="word-target"></span><span class="text-danger"> *</span></label>
                         <div class="col-sm-10">
-                            <textarea class="form-control" name="target" rows="4" placeholder=""
-                                      langtag="info-suchasiplist"></textarea>
+                            <textarea class="form-control" name="target" rows="3" placeholder=""
+                                      langtag="info-suchasiplist" data-required="true"></textarea>
                             <span class="help-block m-b-none" langtag="info-targettunnel"></span>
                         </div>
                     </div>
 
                     <div class="form-group" id="local_path">
-                        <label class="control-label font-bold" langtag="word-localpath"></label>
+                        <label class="control-label font-bold"><span langtag="word-localpath"></span><span class="text-danger"> *</span></label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="local_path" placeholder=""
-                                   langtag="info-suchaslocalpath">
+                                   langtag="info-suchaslocalpath" data-required="true">
                         </div>
                     </div>
 
@@ -104,10 +106,10 @@
                     </div>
 
                     <div class="form-group" id="password">
-                        <label class="control-label font-bold" langtag="word-identificationkey"></label>
+                        <label class="control-label font-bold"><span langtag="word-identificationkey"></span><span class="text-danger"> *</span></label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="password" placeholder=""
-                                   langtag="word-identificationkey">
+                                   langtag="word-identificationkey" data-required="true">
                             <span class="help-block m-b-none" langtag="info-identificationkey"></span>
                         </div>
                     </div>
@@ -126,7 +128,7 @@
 
 
                     <div class="hr-line-dashed"></div>
-                    <div class="form-group">
+                    <div class="form-group form-actions">
                         <div class="col-sm-4 col-sm-offset-2">
                             <button class="btn btn-success" type="button"
                                     onclick="submitform('add', '{{.web_base_url}}/index/add', $('form').serializeArray())">

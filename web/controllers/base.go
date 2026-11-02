@@ -56,18 +56,18 @@ func (s *BaseController) Prepare() {
 	} else {
 		s.Data["isAdmin"] = true
 	}
-	s.Data["allow_user_login"], _ = beego.AppConfig.Bool("allow_user_login")
-	s.Data["allow_flow_limit"], _ = beego.AppConfig.Bool("allow_flow_limit")
-	s.Data["allow_rate_limit"], _ = beego.AppConfig.Bool("allow_rate_limit")
-	s.Data["allow_connection_num_limit"], _ = beego.AppConfig.Bool("allow_connection_num_limit")
-	s.Data["allow_multi_ip"], _ = beego.AppConfig.Bool("allow_multi_ip")
-	s.Data["system_info_display"], _ = beego.AppConfig.Bool("system_info_display")
-	s.Data["allow_tunnel_num_limit"], _ = beego.AppConfig.Bool("allow_tunnel_num_limit")
-	s.Data["allow_local_proxy"], _ = beego.AppConfig.Bool("allow_local_proxy")
-	s.Data["allow_user_change_username"], _ = beego.AppConfig.Bool("allow_user_change_username")
-	showHttpProxyPort := beego.AppConfig.DefaultBool("show_http_proxy_port", true)
+	globalSettings := file.GetDb().GetGlobalSettings()
+	s.Data["allow_user_login"] = globalSettings.AllowUserLogin
+	s.Data["allow_flow_limit"] = globalSettings.AllowFlowLimit
+	s.Data["allow_rate_limit"] = globalSettings.AllowRateLimit
+	s.Data["allow_connection_num_limit"] = globalSettings.AllowConnectionNumLimit
+	s.Data["allow_multi_ip"] = globalSettings.AllowMultiIp
+	s.Data["system_info_display"] = globalSettings.SystemInfoDisplay
+	s.Data["allow_tunnel_num_limit"] = globalSettings.AllowTunnelNumLimit
+	s.Data["allow_local_proxy"] = globalSettings.AllowLocalProxy
+	s.Data["allow_user_change_username"] = globalSettings.AllowUserChangeUsername
 	httpPort := beego.AppConfig.String("http_proxy_port")
-	if httpPort != "80" && showHttpProxyPort {
+	if httpPort != "80" && globalSettings.ShowHttpProxyPort {
 		s.Data["http_proxy_port"] = ":" + httpPort
 	}
 }

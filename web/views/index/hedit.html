@@ -2,14 +2,15 @@
     <div class="col-md-12 col-md-auto">
         <div class="ibox float-e-margins">
             <h3 class="ibox-title" langtag="page-hostedit"></h3>
-            <div class="ibox-content">
-                <form class="form-horizontal">
+            <div class="ibox-content compact-box">
+                <form class="compact-form">
                     <input type="hidden" name="id" value="{{.h.Id}}">
+                    <div class="form-section"><i class="fa fa-id-card"></i><span langtag="word-formbasic"></span></div>
                     <div class="form-group">
-                        <label class="control-label font-bold" langtag="word-clientid"></label>
+                        <label class="control-label font-bold"><span langtag="word-clientid"></span><span class="text-danger"> *</span></label>
                         <div class="col-sm-10">
                             <select class="form-control" name="client_id" placeholder=""
-                                    langtag="word-belongclient"></select>
+                                    langtag="word-belongclient" data-required="true"></select>
                         </div>
                     </div>
                     <div class="form-group">
@@ -20,9 +21,9 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label font-bold" langtag="word-host"></label>
+                        <label class="control-label font-bold"><span langtag="word-host"></span><span class="text-danger"> *</span></label>
                         <div class="col-sm-10">
-                            <input value="{{.h.Host}}" class="form-control" type="text" name="host" placeholder="" langtag="info-suchashost">
+                            <input value="{{.h.Host}}" class="form-control" type="text" name="host" placeholder="" langtag="info-suchashost" data-required="true">
                         </div>
                     </div>
                     <div class="form-group" id="scheme">
@@ -36,6 +37,7 @@
                         </div>
                     </div>
 
+                    <div class="form-section" id="https_section"><i class="fa fa-lock"></i><span langtag="word-formhttps"></span></div>
                     <div class="form-group" id="AutoHttps">
                         <label class="control-label font-bold">自动HTTPS（301）</label>
                         <div class="col-sm-10">
@@ -49,7 +51,7 @@
                     <div class="form-group" id="cert_file">
                         <label class="control-label font-bold" langtag="word-httpscert"></label>
                         <div class="col-sm-10">
-                            <textarea rows="6" class="form-control" type="text" name="cert_file_path" id="pemText"
+                            <textarea rows="4" class="form-control" type="text" name="cert_file_path" id="pemText"
                                       placeholder="请将证书文件拖拽或将内容复制粘贴到此处，证书文件格式为：xxxx_example.com.pem。
 或者配置证书文件路径。">{{.h.CertFilePath}}</textarea>
                         </div>
@@ -57,11 +59,12 @@
                     <div class="form-group" id="key_file">
                         <label class="control-label font-bold" langtag="word-httpskey"></label>
                         <div class="col-sm-10">
-                            <textarea rows="6" class="form-control" type="text" name="key_file_path" id="pemKey"
+                            <textarea rows="4" class="form-control" type="text" name="key_file_path" id="pemKey"
                                       placeholder="请将私钥文件拖拽或复制粘贴到此处，证书秘钥格式为：xxxx_example.com.key。
 或者配置秘钥文件路径。">{{.h.KeyFilePath}}</textarea>
                         </div>
                     </div>
+                    <div class="form-section"><i class="fa fa-exchange-alt"></i><span langtag="word-formforward"></span></div>
                     <div class="form-group">
                         <label class="control-label font-bold" langtag="word-urlroute"></label>
                         <div class="col-sm-10">
@@ -79,18 +82,18 @@
                         </div>
                     </div>
                 {{end}}
-                    <div class="form-group">
-                        <label class="control-label font-bold" langtag="word-target"></label>
+                    <div class="form-group span-2">
+                        <label class="control-label font-bold"><span langtag="word-target"></span><span class="text-danger"> *</span></label>
                         <div class="col-sm-10">
-                        <textarea class="form-control" rows="4" type="text" name="target" placeholder="" langtag="info-suchasiplist">{{.h.Target.TargetStr}}</textarea>
+                        <textarea class="form-control" rows="3" type="text" name="target" placeholder="" langtag="info-suchasiplist" data-required="true">{{.h.Target.TargetStr}}</textarea>
                             <span class="help-block m-b-none" langtag="info-targethost"></span>
 
                         </div>
                     </div>
-                    <div class="form-group" id="header">
+                    <div class="form-group span-2" id="header">
                         <label class="control-label font-bold" langtag="word-requestheader"></label>
                         <div class="col-sm-10">
-                        <textarea class="form-control" rows="4" type="text" name="header" placeholder="Cache-Control: no-cache">{{.h.HeaderChange}}</textarea>
+                        <textarea class="form-control" rows="3" type="text" name="header" placeholder="Cache-Control: no-cache">{{.h.HeaderChange}}</textarea>
                             <span class="help-block m-b-none" langtag="info-header"></span>
                         </div>
 
@@ -102,7 +105,7 @@
                         </div>
                     </div>
                     <div class="hr-line-dashed"></div>
-                    <div class="form-group">
+                    <div class="form-group form-actions">
                         <div class="col-sm-4 col-sm-offset-2">
                             <button class="btn btn-success" type="button" onclick="submitform('edit', '{{.web_base_url}}/index/edithost', $('form').serializeArray())">
                                 <i class="fa fa-fw fa-lg fa-save"></i> <span langtag="word-save"></span>
@@ -117,15 +120,15 @@
 
 <script>
     $(function () {
-        if ($("#scheme_select").val() == "all" || $("#scheme_select").val() == "https") {
-            $("#cert_file").css("display", "block")
-            $("#key_file").css("display", "block")
-            $("#AutoHttps").css("display", "block")
-        } else {
-            $("#cert_file").css("display", "none")
-            $("#key_file").css("display", "none")
-            $("#AutoHttps").css("display", "none")
+        function toggleHttpsFields() {
+            var show = $("#scheme_select").val() == "all" || $("#scheme_select").val() == "https";
+            $("#https_section").toggle(show);
+            $("#cert_file").toggle(show);
+            $("#key_file").toggle(show);
+            $("#AutoHttps").toggle(show);
         }
+        $("#scheme_select").on("change", toggleHttpsFields);
+        toggleHttpsFields();
 
 
         const pemText = document.getElementById("pemText");
@@ -167,18 +170,6 @@
 
 
 
-
-        $("#scheme_select").on("change", function () {
-            if ($("#scheme_select").val() == "all" || $("#scheme_select").val() == "https") {
-                $("#cert_file").css("display", "block")
-                $("#key_file").css("display", "block")
-                $("#AutoHttps").css("display", "block")
-            } else {
-                $("#cert_file").css("display", "none")
-                $("#key_file").css("display", "none")
-                $("#AutoHttps").css("display", "none")
-            }
-        })
 
         getClientList();
     })
