@@ -17,7 +17,7 @@
         PackageDisplayName="NPS Client"
         PublisherName="CN=NPS"
         PublisherDisplayName="NPS"
-        Version="0.26.39.0"
+        Version="0.26.40.0"
         PackageDescription="NPS 客户端">
         <Capabilities>
             <Capability Name="runFullTrust" />
