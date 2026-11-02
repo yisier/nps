@@ -1,11 +1,24 @@
 ﻿# 更新日志
-- 2026-10-10  v0.26.39
+- 2026-11-02  v0.26.39
+  - 新增：
+    - 全局参数支持热更新：`allow_ports`、`ip_limit`、`show_http_proxy_port`、`http_add_origin_header`、全部 `allow_*`、`open_captcha`、`system_info_display` 迁移到 `conf/global.json`，Web 后台保存后立即生效
+    - 全新安装自动生成 `conf/global.json`；升级时自动从 `nps.conf` 迁移，已经通过 Web 保存过的值不会被覆盖
+    - 重构 Web 管理端「全局参数」页面，按基础设置、安全设置、客户端能力、登录与账号、展示与高级分组展示
+    - 新增客户端、隧道、域名解析必填校验，并兼容隧道各模式下的动态字段
+    - 客户端更新后自动替换并重启已注册的客户端服务
+    - Web 管理端客户端、隧道、域名列表每页条数支持 `20/50/100/200`，并记住用户选择 [#363](https://github.com/yisier/nps/issues/363)
+  - 优化：
+    - 新增/编辑客户端、隧道、域名解析表单改为紧凑分组布局，减少页面高度并修复字段对齐
+    - 全局参数、表单校验和错误提示支持中英文
+    - `allow_ports`、`ip_limit`、`http_add_origin_header`、`system_info_display` 改为运行时读取，修改后无需重启
+    - 优化 `nps_mux.receiveWindowQueue.Pop`，避免并发释放后持续空转
   - 修复：
     - 同时开启 `web_base_url` 与 `open_captcha` 时，验证码图片路径未跟随 `web_base_url`，反向代理到子路径后无法登录 [#359](https://github.com/yisier/nps/pull/359)
     - Web 面板语言机制：浏览器语言按前缀归一化匹配（`zh*`→`zh-CN`、`en*`→`en-US`），匹配不到时回退默认 `en-US`；用户手动切换语言后长期持久化，不再因关闭浏览器而失效 [#356](https://github.com/yisier/nps/issues/356)
     - SOCKS5（私密代理）UDP ASSOCIATE 回复的中继地址 `BND.ADDR` 优先使用客户端实际连接到的服务端地址，避免外网 IP 探测被运营商 HTTP 劫持返回错误 IP 导致 UDP 不通；外网探测改为 HTTPS 端点并加超时与校验 [#355](https://github.com/yisier/nps/issues/355)
     - 开启 `web_open_ssl=true` 后以系统服务方式启动时 Web 面板无法访问：证书相对路径按进程工作目录解析失败，改为基于 nps 运行目录解析 `web_cert_file` / `web_key_file` [#353](https://github.com/yisier/nps/issues/353)
-    - `nps` 服务端升级后自动重启服务 [#47](https://github.com/yisier/nps/issues/347)
+    - `nps` 服务端升级后自动重启服务 [#347](https://github.com/yisier/nps/issues/347)
+    - 客户端、隧道、域名解析 ID 在删除后继续增长导致跳跃的问题
 
 - 2026-08-24  v0.26.38
   - 新增：

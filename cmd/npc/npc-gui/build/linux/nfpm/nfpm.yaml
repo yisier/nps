@@ -6,7 +6,7 @@
 name: "npc-gui"
 arch: ${GOARCH}
 platform: "linux"
-version: "0.26.38"
+version: "0.26.39"
 section: "default"
 priority: "extra"
 maintainer: ${GIT_COMMITTER_NAME} <${GIT_COMMITTER_EMAIL}>
