@@ -5,8 +5,6 @@
 
 > 首次启动时若 `conf/nps.conf` 不存在会**自动生成默认配置**，其中 `web_username`（默认 `admin`）、`web_password`、`auth_key`、`auth_crypt_key` **均为随机值**并打印到终端，请在启动日志或配置文件中查看。
 
-> `allow_ports`、`ip_limit`、`show_http_proxy_port`、`http_add_origin_header`、全部 `allow_*`、`open_captcha`、`system_info_display` 已迁移到 `conf/global.json`：全新安装会直接生成默认文件，升级时首次启动会从 `nps.conf` 迁移。之后请在 **Web 后台 → 全局参数** 中修改（保存立即生效）。
-
 ## 通用配置
 
 | 名称 | 含义 | 默认值 |
@@ -20,8 +18,6 @@
 | flow_store_interval | 流量数据持久化间隔，单位分钟；忽略表示不持久化| `1` |
 | log_level | 日志级别 0~7 | `6` |
 | log_path | 日志文件路径 | `nps.log` |
-| ip_limit | 是否限制 IP 访问，`true` / `false` / 忽略 | - |
-
 
 ## HTTP(S) 代理
 
@@ -30,8 +26,6 @@
 | http_proxy_ip | http(s) 代理监听 IP，默认 `0.0.0.0` | `0.0.0.0` |
 | http_proxy_port | 域名代理 http 监听端口（默认 `80`），留空关闭 | `80` |
 | https_proxy_port | 域名代理 https 监听端口（默认 `443`），留空关闭。详见 [使用 https](/server/nps_extend.html#使用-https) | `443` |
-| show_http_proxy_port | 域名隧道访问地址是否拼接非 80/443 端口，`true` / `false` | `true` |
-| http_add_origin_header | 是否在 http(s) 请求头中追加 `X-Forwarded-For` / `X-Real-IP`，用于内网获取真实 IP | `true` |
 | http_cache | 是否开启静态文件缓存 | `false` |
 | http_cache_length | 缓存条目数上限，`0` 表示不限制 | `100` |
 
@@ -49,10 +43,6 @@
 | web_open_ssl | web 管理是否启用 https | `false` |
 | web_cert_file | web 管理 https 证书路径 | `conf/server.pem` |
 | web_key_file | web 管理 https 私钥路径 | `conf/server.key` |
-| open_captcha | 登录是否开启验证码校验 | `false` |
-| allow_user_login | 是否允许多用户登录，开启后用户名 `user`，密码为客户端的验证密钥 | `true` |
-| allow_user_register | 是否允许从登录页注册账号 | `false` |
-| allow_user_change_username | 多用户登录后是否允许修改用户名 | `true` |
 
 ## API 鉴权
 
@@ -68,20 +58,13 @@
 | p2p_ip | 服务端 IP，使用 p2p 模式必填 | - |
 | p2p_port | p2p 模式开启的 UDP 起始端口。若设为 `6000`，请额外开放 `6001`、`6002` | - |
 
-## 限制开关
+## 全局参数（原限制开关）
 
-> 这些开关默认关闭。开启后才会在 web 管理中暴露对应字段。
+以下配置已从 `nps.conf` 迁移到 `conf/global.json`，请在 **Web 后台 → 全局参数** 中修改，保存后立即生效：
 
-| 名称 | 含义 | 默认值 |
-| --- | --- | --- |
-| allow_flow_limit | 是否启用客户端流量限制 | `true` |
-| allow_rate_limit | 是否启用客户端带宽限制 | `true` |
-| allow_tunnel_num_limit | 是否启用客户端最大隧道数限制 | `true` |
-| allow_connection_num_limit | 是否启用客户端最大连接数限制 | `true` |
-| allow_multi_ip | 是否允许每个隧道监听不同的服务端 IP | `true` |
-| allow_local_proxy | 是否允许把隧道目标转发到 nps 所在服务器本地 | `false` |
-| allow_ports | 限制可开放的隧道端口范围，例如 `9001-9009,10001,11000-12000`，留空不限制 | （空） |
-| system_info_display | 是否在 web 上展示服务器系统监控信息图表 | `true` |
+`allow_flow_limit`、`allow_rate_limit`、`allow_tunnel_num_limit`、`allow_connection_num_limit`、`allow_multi_ip`、`allow_local_proxy`、`allow_ports`、`system_info_display`
+
+完整字段说明见 [全局参数](/nps/server/nps_extend.html#全局参数)。
 
 ## debug / pprof
 

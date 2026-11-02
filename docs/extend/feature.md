@@ -1,5 +1,5 @@
 ## 获取用户真实ip
-如需使用需要在`nps.conf`中设置`http_add_origin_header=true`
+如需使用请在 **Web 后台 → 全局参数** 中开启「注入真实 IP 头」（对应 `conf/global.json` 的 `http_add_origin_header`）。
 
 在域名代理模式中，可以通过request请求 header 中的 X-Forwarded-For 和 X-Real-IP 来获取用户真实 IP。
 
@@ -28,7 +28,7 @@
 ## web管理保护
 当一个 ip 连续登陆失败次数超过 10 次，将在一分钟内禁止该 ip 再次尝试。
 
-可在 `nps.conf` 设置 `open_captcha=true` 进一步开启图形验证码
+可在 **Web 后台 → 全局参数** 中开启「登录验证码」（对应 `conf/global.json` 的 `open_captcha`），进一步开启图形验证码
 
 
 
@@ -66,11 +66,11 @@
 ## 流量限制
 
 支持客户端级流量限制，当该客户端入口流量与出口流量达到设定的总量后会拒绝服务
-，域名代理会返回404页面，其他代理会拒绝连接,使用该功能需要在`nps.conf`中设置`allow_flow_limit`，默认是关闭的。
+，域名代理会返回404页面，其他代理会拒绝连接。使用该功能需要在 **Web 后台 → 全局参数** 中开启「允许流量限制」（对应 `conf/global.json` 的 `allow_flow_limit`），默认开启。
 
 ## 带宽限制
 
-支持客户端级带宽限制，带宽计算方式为入口和出口总和，权重均衡,使用该功能需要在`nps.conf`中设置`allow_rate_limit`，默认是关闭的。
+支持客户端级带宽限制，带宽计算方式为入口和出口总和，权重均衡。使用该功能需要在 **Web 后台 → 全局参数** 中开启「允许限速」（对应 `conf/global.json` 的 `allow_rate_limit`），默认开启。
 
 ## 负载均衡
 本代理支持域名解析模式和tcp代理的负载均衡，在web域名添加或者编辑中内网目标分行填写多个目标即可实现轮训级别的负载均衡
@@ -85,13 +85,13 @@
 两种方式选一：
 
 1. **[Proxy Protocol](/server/nps_extend.html#tcp-隧道-proxy-protocolv02623)**：在 web 上勾选开关，后端以 PROXY v1/v2 协议解析。
-2. **HTTP 域名解析**：使用域名代理模式，配合 `http_add_origin_header=true` 通过 `X-Forwarded-For` / `X-Real-IP` 获取（见 [说明](/extend/description.html#获取用户真实ip)）。
+2. **HTTP 域名解析**：使用域名代理模式，配合 **Web 后台 → 全局参数** 中的「注入真实 IP 头」，通过 `X-Forwarded-For` / `X-Real-IP` 获取（见 [说明](/extend/description.html#获取用户真实ip)）。
 
 ## 端口白名单
-为了防止服务端上的端口被滥用，可在nps.conf中配置allow_ports限制可开启的端口，忽略或者不填表示端口不受限制，格式：
+为了防止服务端上的端口被滥用，可在 **Web 后台 → 全局参数** 的「允许端口」中限制可开启的端口（对应 `conf/global.json` 的 `allow_ports`），留空表示端口不受限制，格式：
 
-```ini
-allow_ports=9001-9009,10001,11000-12000
+```text
+9001-9009,10001,11000-12000
 ```
 
 ## 端口范围映射
@@ -131,10 +131,10 @@ target_ip=10.1.50.2
 
 
 ## 客户端最大连接数
-为防止恶意大量长连接，影响服务端程序的稳定性，可以在web或客户端配置文件中为每个客户端设置最大连接数。该功能针对`socks5`、`http正向代理`、`域名代理`、`tcp代理`、`udp代理`、`私密代理`生效,使用该功能需要在`nps.conf`中设置`allow_connection_num_limit=true`，默认是关闭的。
+为防止恶意大量长连接，影响服务端程序的稳定性，可以在web或客户端配置文件中为每个客户端设置最大连接数。该功能针对`socks5`、`http正向代理`、`域名代理`、`tcp代理`、`udp代理`、`私密代理`生效。使用该功能需要在 **Web 后台 → 全局参数** 中开启「允许连接数限制」（对应 `conf/global.json` 的 `allow_connection_num_limit`），默认开启。
 
 ## 客户端最大隧道数限制
-nps支持对客户端的隧道数量进行限制，该功能默认是关闭的，如需开启，请在`nps.conf`中设置`allow_tunnel_num_limit=true`。
+nps支持对客户端的隧道数量进行限制。如需开启，请在 **Web 后台 → 全局参数** 中开启「允许隧道数限制」（对应 `conf/global.json` 的 `allow_tunnel_num_limit`），默认开启。
 ## 端口复用
 在一些严格的网络环境中，对端口的个数等限制较大，nps支持强大端口复用功能。将`bridge_port`、 `http_proxy_port`、 `https_proxy_port` 、`web_port`都设置为同一端口，也能正常使用。
 

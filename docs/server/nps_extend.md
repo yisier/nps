@@ -52,7 +52,7 @@ npc.exe -server=1.1.1.1:8025 -vkey=xxx -tls_enable=true      # TLS 桥接（tls_
 
 web 后台 → 全局参数 页面（对应 `conf/global.json`）：
 
-| 字段 | 对应 nps.conf | 含义 |
+| 字段 | 原 nps.conf 参数 | 含义 |
 | --- | --- | --- |
 | 全局 IP 黑名单 | - | 一行一个 IPv4，不支持范围匹配。命中后所有 TCP/HTTP/HTTPS/UDP 入口请求都会被直接关闭。用于防止扫描和暴力破解 |
 | 服务地址 | - | 用于在 web 上生成 [客户端快捷启动命令]、隧道访问 URL 时拼接的服务端地址。留空则使用浏览器当前访问地址 |
@@ -97,11 +97,7 @@ web 后台 → 全局参数 页面（对应 `conf/global.json`）：
 
 ## WEB登录验证码
 
-`nps.conf` 中：
-
-```ini
-open_captcha=true
-```
+在 **Web 后台 → 全局参数** 中开启「登录验证码」（对应 `conf/global.json` 的 `open_captcha`）。
 
 开启后 web 登录页会要求图形验证码。结合「web 管理保护」（连续 10 次失败封禁 1 分钟，见 [说明](/extend/description.html#web管理保护)），可以有效缓解暴力破解。
 
@@ -115,21 +111,21 @@ open_captcha=true
 **注意：** nps 不会持久化通过公钥连接的客户端。
 
 ## 系统信息显示
-nps 服务端支持在 web 上显示和统计服务器相关信息，但默认部分统计图表是关闭的。如需开启请在 `nps.conf` 中设置 `system_info_display=true`。
+nps 服务端支持在 web 上显示和统计服务器相关信息。如需开启请在 **Web 后台 → 全局参数** 中开启「系统监控图表」（对应 `conf/global.json` 的 `system_info_display`）。
 
 
 ## 关闭 web 管理
 将 `nps.conf` 中的 `web_port` 设置为空或删除。
 
 ## 服务端多用户登录
-将 `allow_user_login=true`，登录用户名 `user`，密码为对应客户端的验证密钥。登录后可进入客户端编辑修改 web 登录用户名密码。默认关闭。
+在 **Web 后台 → 全局参数** 中开启「客户端账号登录」（对应 `conf/global.json` 的 `allow_user_login`）。登录用户名 `user`，密码为对应客户端的验证密钥。登录后可进入客户端编辑修改 web 登录用户名密码，默认开启。
 
 ## 用户注册功能
-将 `allow_user_register=true` 后登录页会出现注册入口。
+在 **Web 后台 → 全局参数** 中开启「允许注册」（对应 `conf/global.json` 的 `allow_user_register`）后，登录页会出现注册入口。
 
 ## 监听指定 IP
 
-nps 支持每个隧道监听不同的服务端 IP，`nps.conf` 中设置 `allow_multi_ip=true` 后，可在 web 中控制，或 npc 配置文件中指定：
+nps 支持每个隧道监听不同的服务端 IP。在 **Web 后台 → 全局参数** 中开启「一隧道多 IP」（对应 `conf/global.json` 的 `allow_multi_ip`）后，可在 web 中控制，或 npc 配置文件中指定：
 
 ```ini
 server_ip=xxx
