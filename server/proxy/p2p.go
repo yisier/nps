@@ -3,6 +3,7 @@ package proxy
 import (
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"ehang.io/nps/lib/common"
@@ -12,6 +13,7 @@ import (
 type P2PServer struct {
 	BaseServer
 	p2pPort  int
+	mu       sync.Mutex
 	p2p      map[string]*p2p
 	listener *net.UDPConn
 }
@@ -50,31 +52,49 @@ func (s *P2PServer) Start() error {
 }
 
 func (s *P2PServer) handleP2P(addr *net.UDPAddr, str string) {
-	var (
-		v  *p2p
-		ok bool
-	)
 	arr := strings.Split(str, common.CONN_DATA_SEQ)
 	if len(arr) < 2 {
 		return
 	}
-	if v, ok = s.p2p[arr[0]]; !ok {
+	key, role := arr[0], arr[1]
+	logs.Trace("new p2p connection ,role %s , password %s ,local address %s", role, key, addr.String())
+
+	// 每条 UDP 报文都在独立协程中处理，s.p2p 必须加锁访问。
+	// 并发写 map 是 fatal error，无法 recover，会直接终止 nps 进程（#227）。
+	s.mu.Lock()
+	v, ok := s.p2p[key]
+	if !ok {
 		v = new(p2p)
-		s.p2p[arr[0]] = v
+		s.p2p[key] = v
 	}
-	logs.Trace("new p2p connection ,role %s , password %s ,local address %s", arr[1], arr[0], addr.String())
-	if arr[1] == common.WORK_P2P_VISITOR {
+	if role == common.WORK_P2P_VISITOR {
 		v.visitorAddr = addr
-		for i := 20; i > 0; i-- {
-			if v.providerAddr != nil {
-				s.listener.WriteTo([]byte(v.providerAddr.String()), v.visitorAddr)
-				s.listener.WriteTo([]byte(v.visitorAddr.String()), v.providerAddr)
-				break
-			}
-			time.Sleep(time.Second)
-		}
-		delete(s.p2p, arr[0])
 	} else {
 		v.providerAddr = addr
 	}
+	s.mu.Unlock()
+
+	if role != common.WORK_P2P_VISITOR {
+		return
+	}
+
+	// 等待 provider 上线，最多 20 秒。等待期间不持锁，避免阻塞其他连接。
+	var providerAddr *net.UDPAddr
+	for i := 20; i > 0; i-- {
+		s.mu.Lock()
+		providerAddr = v.providerAddr
+		s.mu.Unlock()
+		if providerAddr != nil {
+			break
+		}
+		time.Sleep(time.Second)
+	}
+	if providerAddr != nil {
+		s.listener.WriteTo([]byte(providerAddr.String()), addr)
+		s.listener.WriteTo([]byte(addr.String()), providerAddr)
+	}
+
+	s.mu.Lock()
+	delete(s.p2p, key)
+	s.mu.Unlock()
 }
