@@ -373,12 +373,17 @@ func (s *IndexController) HostStop() {
 
 func (s *IndexController) HostStart() {
 	id := s.GetIntNoErr("id")
-	if h, err := file.GetDb().GetHostById(id); err != nil {
+	h, err := file.GetDb().GetHostById(id)
+	if err != nil {
 		s.AjaxErr("start error")
 		return
-	} else {
-		h.IsClose = false
 	}
+	// 同一域名允许有多条记录，但同一时间只能启用一条（#340）
+	if file.GetDb().IsHostExist(h) {
+		s.AjaxErr("another record with the same domain is already enabled, please stop it first")
+		return
+	}
+	h.IsClose = false
 	s.AjaxOk("start success")
 }
 

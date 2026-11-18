@@ -210,13 +210,21 @@ func (s *DbUtils) IsHostExist(h *Host) bool {
 	var exist bool
 	s.JsonDb.Hosts.Range(func(key, value interface{}) bool {
 		v := value.(*Host)
-		if v.Id != h.Id && v.Host == h.Host && h.Location == v.Location && (v.Scheme == "all" || v.Scheme == h.Scheme) {
+		// 已停用的记录不参与查重：允许为同一域名保留多条记录，但同一时间只能启用一条（#340）
+		if v.Id != h.Id && !v.IsClose && v.Host == h.Host && normalizeHostLocation(h.Location) == normalizeHostLocation(v.Location) && (v.Scheme == "all" || v.Scheme == h.Scheme) {
 			exist = true
 			return false
 		}
 		return true
 	})
 	return exist
+}
+
+func normalizeHostLocation(location string) string {
+	if location == "" {
+		return "/"
+	}
+	return location
 }
 
 func (s *DbUtils) NewHost(t *Host) error {
