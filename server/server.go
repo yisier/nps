@@ -70,7 +70,9 @@ func DealBridgeTask() {
 			logs.Trace("New secret connection, addr", s.Conn.Conn.RemoteAddr())
 			if t := file.GetDb().GetTaskByMd5Password(s.Password); t != nil {
 				if t.Status {
-					go proxy.NewBaseServer(Bridge, t).DealClient(s.Conn, t.Client, t.Target.TargetStr, nil, common.CONN_TCP, nil, t.Flow, t.Target.LocalProxy, nil, nil)
+					// 回退到服务端转发时也要计入客户端流量，否则客户端维度的统计缺失（#103）。
+					// 传入 task 后 CopyBuffer 会同时累加隧道流量。
+					go proxy.NewBaseServer(Bridge, t).DealClient(s.Conn, t.Client, t.Target.TargetStr, nil, common.CONN_TCP, nil, t.Client.Flow, t.Target.LocalProxy, t, nil)
 				} else {
 					s.Conn.Close()
 					logs.Trace("This key %s cannot be processed,status is close", s.Password)
@@ -234,6 +236,10 @@ func AddTask(t *file.Tunnel) error {
 		RunList.Store(t.Id, nil)
 		return nil
 	}
+	if err := ensureTaskPort(t); err != nil {
+		logs.Error("taskId %d task %s start error: %s", t.Id, t.Remark, err.Error())
+		return err
+	}
 	if b := tool.TestServerPort(t.Port, t.Mode); !b && t.Mode != "httpHostServer" {
 		logs.Error("taskId %d start error port %d open failed", t.Id, t.Port)
 		return errors.New("the port open error")
@@ -253,6 +259,25 @@ func AddTask(t *file.Tunnel) error {
 	} else {
 		return errors.New("the mode is not correct")
 	}
+	return nil
+}
+
+// ensureTaskPort 为未指定服务端端口的隧道自动分配一个可用端口（#144）。
+// secret/p2p 不监听独立端口，httpHostServer 使用 http_proxy_port，均无需分配。
+func ensureTaskPort(t *file.Tunnel) error {
+	if t.Port > 0 {
+		return nil
+	}
+	switch t.Mode {
+	case "secret", "p2p", "httpHostServer":
+		return nil
+	}
+	p := tool.GenerateServerPort(t.Mode)
+	if p <= 0 {
+		return errors.New("no available server port to assign")
+	}
+	logs.Info("task %s has no server port, auto assigned %d", t.Remark, p)
+	t.Port = p
 	return nil
 }
 
