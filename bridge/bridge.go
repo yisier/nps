@@ -384,10 +384,9 @@ func (s *Bridge) typeDeal(typeVal string, c *conn.Conn, id int, vs string) {
 				}
 				//向密钥对应的客户端发送与服务端udp建立连接信息，地址，密钥
 				sig.Write([]byte(common.NEW_UDP_CONN))
-				svrAddr := beego.AppConfig.String("p2p_ip") + ":" + beego.AppConfig.String("p2p_port")
-				if err != nil {
-					logs.Warn("get local udp addr error")
-					return
+				svrAddr := p2pAddr(c.Conn)
+				if svrAddr == "" {
+					logs.Error("p2p is not available: please set p2p_ip and p2p_port in nps.conf")
 				}
 				sig.WriteLenContent([]byte(svrAddr))
 				sig.WriteLenContent(b)
@@ -398,6 +397,28 @@ func (s *Bridge) typeDeal(typeVal string, c *conn.Conn, id int, vs string) {
 	}
 	c.SetAlive(s.tunnelType)
 	return
+}
+
+// p2pAddr 返回客户端应当使用的 p2p UDP 服务地址。
+// 未配置 p2p_ip（或配置为 0.0.0.0 / ::）时，使用客户端实际连接到的本地地址，
+// 避免客户端拿到 0.0.0.0 或空地址导致 P2P 完全不可用（#126、#344）。
+func p2pAddr(c net.Conn) string {
+	port := strings.TrimSpace(beego.AppConfig.String("p2p_port"))
+	if port == "" || port == "0" {
+		return ""
+	}
+	ip := strings.TrimSpace(beego.AppConfig.String("p2p_ip"))
+	switch ip {
+	case "", "0.0.0.0", "::", "[::]":
+		if c == nil || c.LocalAddr() == nil {
+			return ""
+		}
+		ip = common.GetIpByAddr(c.LocalAddr().String())
+	}
+	if ip == "" {
+		return ""
+	}
+	return net.JoinHostPort(ip, port)
 }
 
 // register ip

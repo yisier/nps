@@ -339,6 +339,17 @@ func getRemoteAddressFromServer(rAddr string, localConn *net.UDPConn, md5Passwor
 }
 
 func handleP2PUdp(localAddr, rAddr, md5Password, role string) (remoteAddress string, c net.PacketConn, err error) {
+	// 服务端未正确配置 p2p_ip / p2p_port 时会返回空地址或 ":0"，
+	// 这里提前校验并给出明确提示，避免只报 strconv.Atoi 之类的难懂错误（#126）
+	if host, port, e := net.SplitHostPort(rAddr); e != nil || host == "" || port == "" || port == "0" {
+		err = fmt.Errorf("invalid p2p server address %q, please set p2p_ip and p2p_port in nps.conf", rAddr)
+		logs.Error(err)
+		return
+	}
+	// 统一成 IP:port 形式，便于与对端报文中的地址做比较（p2p_ip 也支持域名）
+	if u, e := net.ResolveUDPAddr("udp", rAddr); e == nil {
+		rAddr = u.String()
+	}
 	localConn, err := newUdpConnByAddr(localAddr)
 	if err != nil {
 		return
@@ -387,6 +398,12 @@ func handleP2PUdp(localAddr, rAddr, md5Password, role string) (remoteAddress str
 	}
 	localConn.SetReadDeadline(time.Time{})
 	if remoteAddress, err = sendP2PTestMsg(localConn, remoteAddr1, remoteAddr2, remoteAddr3); err != nil {
+		return
+	}
+	// 重新绑定同一本地端口前必须先释放，否则会报 bind: address already in use，
+	// 导致 P2P 始终建立失败（#126）
+	if err = localConn.Close(); err != nil {
+		logs.Error(err)
 		return
 	}
 	c, err = newUdpConnByAddr(localAddr)
@@ -504,39 +521,27 @@ func newUdpConnByAddr(addr string) (*net.UDPConn, error) {
 }
 
 func getNextAddr(addr string, n int) (string, error) {
-	arr := strings.Split(addr, ":")
-	if len(arr) != 2 {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
 		return "", errors.New(fmt.Sprintf("the format of %s incorrect", addr))
 	}
-	if p, err := strconv.Atoi(arr[1]); err != nil {
+	if p, err := strconv.Atoi(port); err != nil {
 		return "", err
 	} else {
-		return arr[0] + ":" + strconv.Itoa(p+n), nil
+		return net.JoinHostPort(host, strconv.Itoa(p+n)), nil
 	}
 }
 
 func getAddrInterval(addr1, addr2, addr3 string) (int, error) {
-	arr1 := strings.Split(addr1, ":")
-	if len(arr1) != 2 {
-		return 0, errors.New(fmt.Sprintf("the format of %s incorrect", addr1))
-	}
-	arr2 := strings.Split(addr2, ":")
-	if len(arr2) != 2 {
-		return 0, errors.New(fmt.Sprintf("the format of %s incorrect", addr2))
-	}
-	arr3 := strings.Split(addr3, ":")
-	if len(arr3) != 2 {
-		return 0, errors.New(fmt.Sprintf("the format of %s incorrect", addr3))
-	}
-	p1, err := strconv.Atoi(arr1[1])
+	p1, err := getAddrPort(addr1)
 	if err != nil {
 		return 0, err
 	}
-	p2, err := strconv.Atoi(arr2[1])
+	p2, err := getAddrPort(addr2)
 	if err != nil {
 		return 0, err
 	}
-	p3, err := strconv.Atoi(arr3[1])
+	p3, err := getAddrPort(addr3)
 	if err != nil {
 		return 0, err
 	}
@@ -545,6 +550,15 @@ func getAddrInterval(addr1, addr2, addr3 string) (int, error) {
 		return -interVal, nil
 	}
 	return interVal, nil
+}
+
+// getAddrPort 从 host:port 中取出端口，兼容 IPv6（[::1]:8029）。
+func getAddrPort(addr string) (int, error) {
+	_, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return 0, errors.New(fmt.Sprintf("the format of %s incorrect", addr))
+	}
+	return strconv.Atoi(port)
 }
 
 func getRandomPortArr(min, max int) []int {
