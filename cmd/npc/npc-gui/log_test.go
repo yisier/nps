@@ -9,7 +9,7 @@ func TestFilteredLogs(t *testing.T) {
 		{Name: "two", Addr: "2.2.2.2:8000", Key: "k2"},
 	}
 	a.ui.logs = []ConnectionLog{
-		{Message: "[I] [1.1.1.1:8000|k1] start vkey:k1"},
+		{Message: "[I] [k1] start vkey:k1"},
 		{Message: "[I] [client.go:104] Successful connection with server 1.1.1.1:8000"},
 		{Message: "[E] [control.go:269] EOF"},
 		{Message: "[I] [client.go:104] Successful connection with server 2.2.2.2:8000"},
@@ -43,7 +43,7 @@ func TestFilteredLogs(t *testing.T) {
 		{Name: "b", Addr: "1.1.1.1:8000", Key: "k2", Status: "connected"},
 	}
 	a.ui.logs = []ConnectionLog{
-		{Message: "[I] [1.1.1.1:8000|k1] start vkey:k1"},
+		{Message: "[I] [k1] start vkey:k1"},
 		{Message: "[I] [client.go:104] Successful connection with server 1.1.1.1:8000"},
 		{Message: "[E] [control.go:269] EOF"},
 	}

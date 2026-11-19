@@ -411,24 +411,32 @@ type trpcLogger struct {
 func (l *trpcLogger) Info(format string, v ...interface{}) {
 	msg := formatLogMessage(format, v...)
 	l.store.log("info", "%s", msg)
-	appendRunMessage("info", fmt.Sprintf("[I] [%s] %s", l.store.clientId, msg))
+	appendRunMessage("info", fmt.Sprintf("[I] [%s] %s", l.tag(), msg))
 }
 
 func (l *trpcLogger) Error(format string, v ...interface{}) {
 	msg := formatLogMessage(format, v...)
 	l.store.log("error", "%s", msg)
-	appendRunMessage("error", fmt.Sprintf("[E] [%s] %s", l.store.clientId, msg))
+	appendRunMessage("error", fmt.Sprintf("[E] [%s] %s", l.tag(), msg))
 }
 
 func (l *trpcLogger) Warn(format string, v ...interface{}) {
 	msg := formatLogMessage(format, v...)
 	l.store.log("warning", "%s", msg)
-	appendRunMessage("warning", fmt.Sprintf("[W] [%s] %s", l.store.clientId, msg))
+	appendRunMessage("warning", fmt.Sprintf("[W] [%s] %s", l.tag(), msg))
 }
 
 func (l *trpcLogger) Trace(format string, v ...interface{}) {
 	msg := formatLogMessage(format, v...)
-	appendRunMessage("info", fmt.Sprintf("[D] [%s] %s", l.store.clientId, msg))
+	appendRunMessage("info", fmt.Sprintf("[D] [%s] %s", l.tag(), msg))
+}
+
+// tag 是日志里的客户端标识，只显示 vkey。
+func (l *trpcLogger) tag() string {
+	if _, key, ok := strings.Cut(l.store.clientId, "|"); ok {
+		return key
+	}
+	return l.store.clientId
 }
 
 // formatLogMessage 与 beego logs 的格式化规则一致：
