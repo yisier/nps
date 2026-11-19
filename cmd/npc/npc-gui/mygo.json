@@ -5,6 +5,7 @@
   "version": "0.26.40",
   "publisher": "yisier",
   "icon": "resources/icon.png",
+  "resourcesExclude": ["*.png"],
   "out": "bin",
   "windows": {
     "displayName": "NPS 客户端",
