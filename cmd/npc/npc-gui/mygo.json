@@ -2,7 +2,7 @@
   "name": "npc-gui",
   "slug": "npc-gui",
   "identifier": "com.yisier.npc-gui",
-  "version": "0.26.40",
+  "version": "0.26.41",
   "publisher": "yisier",
   "icon": "resources/icon.png",
   "resourcesExclude": ["*.png"],

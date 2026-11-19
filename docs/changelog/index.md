@@ -1,4 +1,13 @@
 ﻿# 更新日志
+- 2026-11-19  v0.26.41
+  - 优化：
+    - GUI 客户端由 Wails 改为 MyGo
+  - 修复：
+    - 同一域名允许多条记录，仅一条生效 [#340](https://github.com/yisier/nps/issues/340)
+    - P2P 并发读写 map 导致服务端崩溃 [#227](https://github.com/yisier/nps/issues/227)
+    - P2P 重建 UDP 连接时端口占用与地址校验 [#126](https://github.com/yisier/nps/issues/126)
+    - 回退转发统计客户端流量并自动分配隧道端口 [#103](https://github.com/yisier/nps/issues/103) [#144](https://github.com/yisier/nps/issues/144)
+
 - 2026-11-02  v0.26.40
   - 新增：
     - 全局参数支持热更新：`nps.conf` 中的 `allow_ports`、`ip_limit`、`show_http_proxy_port`、`http_add_origin_header`、`allow_flow_limit`、`allow_rate_limit`、`allow_connection_num_limit`、`allow_tunnel_num_limit`、`allow_multi_ip`、`allow_local_proxy`、`allow_user_login`、`allow_user_register`、`allow_user_change_username`、`open_captcha`、`system_info_display` 迁移到 `conf/global.json`，新生成的 `nps.conf` 不再包含这些参数；升级时首次启动自动迁移，Web 后台保存后立即生效；「全局参数」页面同时按基础设置、安全设置、客户端能力、登录与账号、展示与高级分组重构
