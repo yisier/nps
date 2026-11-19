@@ -661,12 +661,12 @@ func startNpcClientWithContext(ctx context.Context, id, server, vkey string, tls
 	clientLogger := &trpcLogger{store: store}
 
 	client.SetTlsEnable(tlsEnable)
-	clientLogger.Info("启动 NPC 客户端: server=%s, vkey=%s, tls=%v", server, vkey, tlsEnable)
+	clientLogger.Info("the version of client is %s, the core version of client is %s,tls enable is %t", version.VERSION, version.GetVersion(), tlsEnable)
+	clientLogger.Info("start vkey:%s", vkey)
 
 	for {
 		select {
 		case <-ctx.Done():
-			clientLogger.Info("停止 NPC 客户端")
 			statusMu.Lock()
 			delete(clientConnected, id)
 			delete(clientAttempted, id)
@@ -681,8 +681,6 @@ func startNpcClientWithContext(ctx context.Context, id, server, vkey string, tls
 			return
 		default:
 		}
-
-		clientLogger.Info("连接服务器")
 
 		// 重置连接状态，准备新的连接尝试
 		statusMu.Lock()
@@ -706,7 +704,6 @@ func startNpcClientWithContext(ctx context.Context, id, server, vkey string, tls
 		go func() {
 			select {
 			case <-ctx.Done():
-				clientLogger.Info("Context 已取消，关闭客户端")
 				rpcClient.Close()
 			}
 		}()
@@ -716,7 +713,6 @@ func startNpcClientWithContext(ctx context.Context, id, server, vkey string, tls
 		// 检查 context 是否已取消
 		select {
 		case <-ctx.Done():
-			clientLogger.Info("停止 NPC 客户端")
 			statusMu.Lock()
 			delete(clientConnected, id)
 			delete(clientAttempted, id)
@@ -743,8 +739,6 @@ func monitorFirstConnection(ctx context.Context, id string, rpcClient *client.TR
 	initialTimeout := time.After(5 * time.Second)
 	connected := false
 
-	clientLogger := &trpcLogger{store: getClientLogStore(id)}
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -756,7 +750,6 @@ func monitorFirstConnection(ctx context.Context, id string, rpcClient *client.TR
 				clientConnected[id] = false
 				clientErrors[id] = "连接服务器失败，正在重新连接..."
 				statusMu.Unlock()
-				clientLogger.Error("连接服务器失败 (timeout)，将自动重连")
 			}
 			// 即使超时，也继续监听连接状态变化
 		case <-ticker.C:
@@ -769,7 +762,6 @@ func monitorFirstConnection(ctx context.Context, id string, rpcClient *client.TR
 					clientConnected[id] = true
 					delete(clientErrors, id)
 					statusMu.Unlock()
-					clientLogger.Info("客户端连接成功")
 					connected = true
 				}
 			} else {
@@ -779,7 +771,6 @@ func monitorFirstConnection(ctx context.Context, id string, rpcClient *client.TR
 					clientConnected[id] = false
 					clientErrors[id] = "连接已断开，正在重新连接..."
 					statusMu.Unlock()
-					clientLogger.Warn("客户端连接已断开")
 					connected = false
 				}
 			}

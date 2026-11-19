@@ -28,8 +28,10 @@ type uiState struct {
 	clientList ui.ListState
 
 	// 日志（全局运行日志，与 npc 进程一致）
-	logs    []ConnectionLog
-	logList ui.ListState
+	logs        []ConnectionLog
+	logFilter   string
+	logFilterID string
+	logList     ui.ListState
 
 	// 手工添加 / 编辑
 	manualOpen   bool
@@ -644,13 +646,35 @@ func (a *App) refreshLogs() {
 func (a *App) logsView(c *ui.Context) {
 	t := c.Theme()
 
-	a.pageHeader(c, "日志", "与 npc 进程一致的完整运行日志")
+	a.pageHeader(c, "日志", "与 npc 进程一致的运行日志，可按客户端过滤")
+
+	names, ids := a.logOptions()
+	if !slices.Contains(names, a.ui.logFilter) {
+		a.ui.logFilter = names[0]
+		a.ui.logFilterID = ""
+	}
+	logs := a.filteredLogs()
 
 	ui.Column(c).Grow(1).Radius(12).Border(1, t.Border).Background(t.Background).Children(func() {
 		ui.Row(c).FillWidth().Gap(8).AlignItems(ui.Center).Padding(12, 16).
 			BorderWidth(0, 0, 1, 0).BorderColor(t.Border).Children(func() {
-			ui.Text(c, fmt.Sprintf("共 %d 条", len(a.ui.logs))).FontSize(12).TextColor(t.TextMuted)
+			if ui.Select(c, &a.ui.logFilter, names).Label("客户端").Width(280).Changed() {
+				idx := slices.Index(names, a.ui.logFilter)
+				if idx >= 0 {
+					a.ui.logFilterID = ids[idx]
+				}
+				a.ui.logList = ui.ListState{}
+			}
+			ui.Text(c, fmt.Sprintf("共 %d 条", len(logs))).FontSize(12).TextColor(t.TextMuted)
 			ui.Spacer(c)
+			ui.Button(c, "复制全部").OnClick(func() {
+				lines := make([]string, len(logs))
+				for i, l := range logs {
+					lines[i] = l.Timestamp + "  " + l.Message
+				}
+				c.WriteClipboard(strings.Join(lines, "\n"))
+				a.notify("日志已复制到剪贴板", "success")
+			})
 			if !a.ui.logList.AtEnd() {
 				ui.Button(c, "回到底部").OnClick(func() {
 					a.ui.logList.ScrollToEnd()
@@ -659,7 +683,7 @@ func (a *App) logsView(c *ui.Context) {
 			ui.Button(c, "清空日志").OnClick(a.clearLogs)
 		})
 
-		if len(a.ui.logs) == 0 {
+		if len(logs) == 0 {
 			ui.Column(c).Grow(1).Center().Children(func() {
 				ui.Text(c, "暂无日志记录").TextColor(t.TextMuted)
 			})
@@ -667,10 +691,44 @@ func (a *App) logsView(c *ui.Context) {
 		}
 
 		a.ui.logList.FollowEnd = true
-		ui.List(c, &a.ui.logList, len(a.ui.logs), func(i int) {
-			a.logRow(c, a.ui.logs[i])
+		ui.List(c, &a.ui.logList, len(logs), func(i int) {
+			a.logRow(c, logs[i])
 		}).Grow(1).Padding(8, 12)
 	})
+}
+
+func (a *App) logOptions() (names, ids []string) {
+	names = []string{"全部日志"}
+	ids = []string{""}
+	for _, cl := range a.ui.clients {
+		names = append(names, fmt.Sprintf("%s (%s)", clientName(cl), cl.Addr))
+		ids = append(ids, clientID(cl))
+	}
+	return names, ids
+}
+
+// filteredLogs 按客户端过滤：匹配日志里的 addr|key、地址或密钥。
+func (a *App) filteredLogs() []ConnectionLog {
+	if a.ui.logFilterID == "" {
+		return a.ui.logs
+	}
+	needles := []string{a.ui.logFilterID}
+	for _, cl := range a.ui.clients {
+		if clientID(cl) == a.ui.logFilterID {
+			needles = append(needles, cl.Addr, cl.Key)
+			break
+		}
+	}
+	out := make([]ConnectionLog, 0, 128)
+	for _, l := range a.ui.logs {
+		for _, n := range needles {
+			if n != "" && strings.Contains(l.Message, n) {
+				out = append(out, l)
+				break
+			}
+		}
+	}
+	return out
 }
 
 func (a *App) logRow(c *ui.Context, l ConnectionLog) {
@@ -686,8 +744,8 @@ func (a *App) logRow(c *ui.Context, l ConnectionLog) {
 	}
 	ui.Row(c).FillWidth().Gap(9).PaddingY(3).AlignItems(ui.Start).Children(func() {
 		ui.Box(c).Size(6, 6).Radius(3).Background(color).Margin(5, 4, 0, 0)
-		ui.Text(c, l.Timestamp).FontSize(11).TextColor(t.TextMuted)
-		ui.Text(c, l.Message).FontSize(12).TextColor(color).Grow(1)
+		ui.Text(c, l.Timestamp+"  "+l.Message).
+			FontSize(12).TextColor(color).Selectable().Grow(1)
 	})
 }
 
