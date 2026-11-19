@@ -24,7 +24,6 @@ type uiState struct {
 
 	settings      GuiSettings
 	settingsReady bool
-	themeIndex    int
 
 	clientList ui.ListState
 
@@ -53,6 +52,9 @@ type uiState struct {
 	checkingUpdate bool
 	updating       bool
 
+	// 标题栏主题菜单
+	themeMenuOpen bool
+
 	// 一次性提示，下一次绘制时转成 toast
 	notice     string
 	noticeType string
@@ -76,13 +78,41 @@ func (a *App) view(c *ui.Context) {
 			ui.Row(c).FillWidth().Height(bar.Height).
 				Padding(0, bar.Right, 0, bar.Left).
 				Background(t.Background).
-				BorderWidth(0, 0, 1, 0).BorderColor(t.Border).
-				DragWindow().Children(func() {
-				ui.Row(c).Grow(1).Padding(0, 12).Gap(8).AlignItems(ui.Center).Children(func() {
+				BorderWidth(0, 0, 1, 0).BorderColor(t.Border).Children(func() {
+				// 只有左侧这块区域拖动窗口，右侧按钮才能正常点击。
+				ui.Row(c).Grow(1).FillHeight().Padding(0, 10).Gap(8).
+					AlignItems(ui.Center).DragWindow().Children(func() {
 					if a.ui.icon != nil {
 						ui.Image(c, a.ui.icon).Height(16).AspectRatio(1)
 					}
 					ui.Text(c, "NPS 客户端").FontSize(12).TextColor(t.Text)
+				})
+
+				ui.Row(c).Padding(0, 8, 0, 4).Gap(4).AlignItems(ui.Center).Children(func() {
+					themeBtn := a.titleButton(c, themeIconFor(a.ui.settings.ThemeMode), "切换主题", false)
+					if themeBtn.Clicked() {
+						a.ui.themeMenuOpen = !a.ui.themeMenuOpen
+					}
+
+					githubBtn := a.titleButton(c, iconGitHub, "GitHub 项目地址", false)
+					if githubBtn.Clicked() {
+						go func() {
+							_ = mygo.Shell.OpenExternal("https://github.com/yisier/nps")
+						}()
+					}
+
+					settingsBtn := a.titleButton(c, iconGear, "设置", a.ui.page == 2)
+					if settingsBtn.Clicked() {
+						a.ui.page = 2
+					}
+
+					ui.Popover(c, themeBtn, &a.ui.themeMenuOpen, func() {
+						ui.Column(c).Width(180).Gap(2).Children(func() {
+							a.themeMenuItem(c, "auto", "跟随系统", iconMonitor)
+							a.themeMenuItem(c, "light", "亮色模式", iconSun)
+							a.themeMenuItem(c, "dark", "暗黑模式", iconMoon)
+						})
+					})
 				})
 			})
 		}
@@ -133,7 +163,6 @@ func (a *App) sidebar(c *ui.Context) {
 
 		a.navItem(c, 0, iconTerminal, "终端")
 		a.navItem(c, 1, iconLogs, "日志")
-		a.navItem(c, 2, iconSettings, "设置")
 
 		ui.Spacer(c)
 
@@ -160,6 +189,63 @@ func (a *App) navItem(c *ui.Context, page int, icon *ui.SVG, label string) {
 	if b.Clicked() && a.ui.page != page {
 		a.ui.page = page
 		a.onPageChanged()
+	}
+}
+
+// titleButton 是标题栏右侧的小图标按钮。
+func (a *App) titleButton(c *ui.Context, icon *ui.SVG, tip string, active bool) ui.Element {
+	t := c.Theme()
+	b := ui.ButtonBase(c).Size(30, 28).Radius(6).Center().Label(tip).Tooltip(tip)
+	if active {
+		b.Background(t.SurfaceHover)
+	} else if b.Hovered() {
+		b.Background(t.Surface)
+	}
+	b.Children(func() {
+		ui.Icon(c, icon).Size(16, 16).TextColor(t.Text)
+	})
+	return b
+}
+
+// themeMenuItem 是主题菜单中的一行。
+func (a *App) themeMenuItem(c *ui.Context, mode, label string, icon *ui.SVG) {
+	t := c.Theme()
+	selected := a.ui.settings.ThemeMode == mode
+
+	b := ui.ButtonBase(c).FillWidth().Padding(7, 9).Radius(6).Gap(10).Justify(ui.Start).Label(label)
+	if b.Hovered() {
+		b.Background(t.Surface)
+	}
+	b.Children(func() {
+		ui.Icon(c, icon).Size(16, 16).TextColor(t.Text)
+		ui.Text(c, label).FontSize(13).Grow(1)
+		if selected {
+			ui.Icon(c, iconCheck).Size(15, 15).TextColor(t.Accent)
+		}
+	})
+	if b.Clicked() {
+		a.setThemeMode(mode)
+	}
+}
+
+func (a *App) setThemeMode(mode string) {
+	a.ui.themeMenuOpen = false
+	if a.ui.settings.ThemeMode == mode {
+		return
+	}
+	a.ui.settings.ThemeMode = mode
+	a.applyThemeMode()
+	a.saveSettings()
+}
+
+func themeIconFor(mode string) *ui.SVG {
+	switch mode {
+	case "light":
+		return iconSun
+	case "dark":
+		return iconMoon
+	default:
+		return iconMonitor
 	}
 }
 
@@ -192,7 +278,6 @@ func (a *App) loadUISettings() {
 		s.ThemeMode = "auto"
 	}
 	a.ui.settings = s
-	a.ui.themeIndex = slices.Index(themeModes, s.ThemeMode)
 	a.ui.settingsReady = true
 }
 
@@ -655,16 +740,6 @@ func (a *App) settingsView(c *ui.Context) {
 	ui.Scroll(c).Grow(1).Children(func() {
 		ui.Column(c).MaxWidth(820).Radius(12).Border(1, t.Border).
 			Background(t.Background).Children(func() {
-			a.settingRow(c, "主题", "选择界面外观风格", func() {
-				if ui.Segmented(c, &a.ui.themeIndex, "跟随系统", "亮色", "暗色").Label("主题").Changed() {
-					if a.ui.themeIndex >= 0 && a.ui.themeIndex < len(themeModes) {
-						a.ui.settings.ThemeMode = themeModes[a.ui.themeIndex]
-						a.applyThemeMode()
-						a.saveSettings()
-					}
-				}
-			})
-			ui.Divider(c)
 			a.settingRow(c, "开机启动", "系统启动时自动运行客户端", func() {
 				if ui.Switch(c, &a.ui.settings.StartupEnabled).Label("开机启动").Changed() {
 					a.saveSettings()
@@ -720,7 +795,6 @@ func (a *App) settingsView(c *ui.Context) {
 					LogDir:              a.GetDefaultLogDir(),
 					ThemeMode:           "auto",
 				}
-				a.ui.themeIndex = 0
 				a.applyThemeMode()
 				a.saveSettings()
 				a.notify("已重置为默认值", "success")

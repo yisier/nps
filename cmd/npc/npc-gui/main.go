@@ -12,6 +12,14 @@ func main() {
 
 	svc := &App{}
 
+	// 只允许运行一个实例：再次启动时把已有窗口带到前面。
+	if !mygo.App.RequestSingleInstanceLock() {
+		return
+	}
+	mygo.App.OnSecondInstance(func([]string, string) {
+		svc.showMainWindow()
+	})
+
 	// 标记退出状态：真实的退出（托盘“退出”、系统关机、更新重启）都走
 	// OnBeforeQuit，窗口的关闭钩子据此区分“关闭窗口”与“退出程序”。
 	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) {

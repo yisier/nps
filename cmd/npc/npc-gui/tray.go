@@ -61,6 +61,7 @@ func (a *App) showMainWindow() {
 	if isQuitting() || a.window == nil {
 		return
 	}
+	a.window.Restore()
 	a.window.Show()
 	a.window.Focus()
 }
