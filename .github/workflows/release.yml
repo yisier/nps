@@ -310,3 +310,28 @@ jobs:
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==================== 发布说明 ====================
+  release_notes:
+    runs-on: ubuntu-latest
+    needs: [build_assets, build_android, build_windows_gui, build_macos_gui, build_linux_gui]
+    if: always() && github.ref_type == 'tag'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Update release notes from changelog
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          awk -v v="$tag" '
+            $0 ~ "^- .* " v "$" { f=1; next }
+            f && /^- / { exit }
+            f { print }
+          ' docs/changelog/index.md | sed 's/^  //' > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "No changelog entry for $tag"
+            exit 1
+          fi
+          gh release edit "$tag" --notes-file release-notes.md
