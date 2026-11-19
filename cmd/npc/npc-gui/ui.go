@@ -253,7 +253,9 @@ func (a *App) pageHeader(c *ui.Context, title, desc string) {
 	t := c.Theme()
 	ui.Column(c).Gap(4).Children(func() {
 		ui.Text(c, title).FontSize(26).Bold()
-		ui.Text(c, desc).FontSize(13).TextColor(t.TextMuted)
+		if desc != "" {
+			ui.Text(c, desc).FontSize(13).TextColor(t.TextMuted)
+		}
 	})
 }
 
@@ -646,7 +648,7 @@ func (a *App) refreshLogs() {
 func (a *App) logsView(c *ui.Context) {
 	t := c.Theme()
 
-	a.pageHeader(c, "日志", "与 npc 进程一致的运行日志，可按客户端过滤")
+	a.pageHeader(c, "日志", "")
 
 	names, ids := a.logOptions()
 	if !slices.Contains(names, a.ui.logFilter) {
@@ -665,16 +667,7 @@ func (a *App) logsView(c *ui.Context) {
 				}
 				a.ui.logList = ui.ListState{}
 			}
-			ui.Text(c, fmt.Sprintf("共 %d 条", len(logs))).FontSize(12).TextColor(t.TextMuted)
 			ui.Spacer(c)
-			ui.Button(c, "复制全部").OnClick(func() {
-				lines := make([]string, len(logs))
-				for i, l := range logs {
-					lines[i] = l.Timestamp + "  " + l.Message
-				}
-				c.WriteClipboard(strings.Join(lines, "\n"))
-				a.notify("日志已复制到剪贴板", "success")
-			})
 			if !a.ui.logList.AtEnd() {
 				ui.Button(c, "回到底部").OnClick(func() {
 					a.ui.logList.ScrollToEnd()
@@ -688,11 +681,6 @@ func (a *App) logsView(c *ui.Context) {
 				ui.Text(c, "暂无日志记录").TextColor(t.TextMuted)
 			})
 			return
-		}
-
-		if a.ui.logFilterID != "" {
-			ui.Text(c, "仅显示能归属到该客户端的日志；部分 npc 全局日志请在「全部日志」查看").
-				FontSize(11).TextColor(t.TextMuted).Padding(0, 16, 6, 16)
 		}
 
 		a.ui.logList.FollowEnd = true
