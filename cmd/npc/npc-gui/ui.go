@@ -703,7 +703,7 @@ func (a *App) logsView(c *ui.Context) {
 		a.ui.logList.FollowEnd = true
 		ui.List(c, &a.ui.logList, len(logs), func(i int) {
 			a.logRow(c, logs[i])
-		}).Grow(1).Padding(8, 12)
+		}).Grow(1).Padding(8, 12).Selectable()
 	})
 }
 
@@ -774,8 +774,7 @@ func (a *App) logRow(c *ui.Context, l ConnectionLog) {
 	}
 	ui.Row(c).FillWidth().Gap(9).PaddingY(3).AlignItems(ui.Start).Children(func() {
 		ui.Box(c).Size(6, 6).Radius(3).Background(color).Margin(5, 4, 0, 0)
-		ui.Text(c, l.Timestamp+"  "+l.Message).
-			FontSize(12).TextColor(color).Selectable().Grow(1)
+		ui.Text(c, l.Timestamp+"  "+l.Message).FontSize(12).TextColor(color).Grow(1)
 	})
 }
 
