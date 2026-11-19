@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -166,9 +167,25 @@ func (a *App) sidebar(c *ui.Context) {
 
 		ui.Spacer(c)
 
-		ui.Box(c).AlignSelf(ui.Start).Padding(4, 10).Radius(999).
-			Background(t.Background).Border(1, t.Border).Children(func() {
-			ui.Text(c, "v"+a.ui.version).FontSize(11).TextColor(t.TextMuted)
+		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
+			ui.Box(c).Padding(4, 10).Radius(999).
+				Background(t.Background).Border(1, t.Border).Children(func() {
+				ui.Text(c, "v"+a.ui.version).FontSize(11).TextColor(t.TextMuted)
+			})
+
+			if info := a.ui.updateInfo; info != nil && info.UpdateAvailable {
+				updateBtn := ui.ButtonBase(c).Size(28, 28).Radius(8).Center().
+					Label("发现新版本").Tooltip("发现新版本 v" + info.LatestVersion)
+				if updateBtn.Hovered() {
+					updateBtn.Background(t.Surface)
+				}
+				updateBtn.Children(func() {
+					ui.Icon(c, iconUpdate).Size(15, 15).TextColor(t.Accent)
+				})
+				if updateBtn.Clicked() {
+					a.ui.page = 2
+				}
+			}
 		})
 	})
 }
@@ -818,11 +835,11 @@ func (a *App) settingsView(c *ui.Context) {
 			})
 		})
 
-		if info := a.ui.updateInfo; info != nil && info.ReleaseNotes != "" {
+		if info := a.ui.updateInfo; info != nil && info.UpdateAvailable && info.ReleaseNotes != "" {
 			ui.Column(c).MaxWidth(820).Gap(4).Padding(12, 14).Radius(12).
 				Background(t.Surface).Border(1, t.Border).Children(func() {
 				ui.Text(c, "更新说明").FontSize(12).Bold()
-				ui.Text(c, info.ReleaseNotes).FontSize(12).TextColor(t.TextMuted)
+				ui.Text(c, cleanReleaseNotes(info.ReleaseNotes)).FontSize(12).TextColor(t.TextMuted)
 			})
 		}
 
@@ -871,6 +888,26 @@ func (a *App) updateDescription() string {
 	default:
 		return "启动时自动检查更新"
 	}
+}
+
+var htmlTagPattern = regexp.MustCompile(`<[^>]*>`)
+
+// cleanReleaseNotes 去掉 Markdown 里的 HTML 标签和图片，便于原生文本显示。
+func cleanReleaseNotes(s string) string {
+	s = htmlTagPattern.ReplaceAllString(s, "")
+	lines := strings.Split(s, "\n")
+	out := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if strings.HasPrefix(strings.TrimSpace(line), "![") {
+			continue
+		}
+		out = append(out, strings.TrimRight(line, " \t"))
+	}
+	res := strings.Join(out, "\n")
+	for strings.Contains(res, "\n\n\n") {
+		res = strings.ReplaceAll(res, "\n\n\n", "\n\n")
+	}
+	return strings.TrimSpace(res)
 }
 
 func (a *App) selectLogDir() {
