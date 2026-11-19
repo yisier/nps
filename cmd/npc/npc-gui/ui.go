@@ -13,7 +13,7 @@ import (
 
 // uiState 是原生界面在主线程上读写的状态。
 type uiState struct {
-	page int // 0 客户端，1 日志，2 设置
+	page int // 0 终端，1 日志，2 设置
 
 	clients []ShortClient
 	command string
@@ -60,32 +60,18 @@ var themeModes = []string{"auto", "light", "dark"}
 
 // view 是窗口的视图函数：每一帧都从状态重新构建界面。
 func (a *App) view(c *ui.Context) {
-	t := c.Theme()
-
-	ui.Column(c).Fill().Padding(16).Gap(12).Children(func() {
-		// 顶部：标题、版本、更新提示和页签
-		ui.Row(c).Gap(10).AlignItems(ui.Baseline).Children(func() {
-			ui.Text(c, "NPS 客户端").FontSize(18).Bold()
-			ui.Text(c, "v"+a.ui.version).FontSize(12).TextColor(t.TextMuted)
-			if info := a.ui.updateInfo; info != nil && info.UpdateAvailable {
-				if ui.Button(c, "发现新版本 v"+info.LatestVersion).Clicked() {
-					a.ui.page = 2
-				}
-			}
-			ui.Spacer(c)
-			if ui.Tabs(c, &a.ui.page, "客户端", "日志", "设置").Changed() {
-				a.onPageChanged()
+	ui.Row(c).Fill().Children(func() {
+		a.sidebar(c)
+		ui.Column(c).Grow(1).FillHeight().Padding(24, 28).Gap(18).Children(func() {
+			switch a.ui.page {
+			case 0:
+				a.clientsView(c)
+			case 1:
+				a.logsView(c)
+			case 2:
+				a.settingsView(c)
 			}
 		})
-
-		switch a.ui.page {
-		case 0:
-			a.clientsView(c)
-		case 1:
-			a.logsView(c)
-		case 2:
-			a.settingsView(c)
-		}
 	})
 
 	a.manualDialog(c)
@@ -96,6 +82,65 @@ func (a *App) view(c *ui.Context) {
 		c.AddToast(ui.Toast{Title: a.ui.notice, Type: a.ui.noticeType})
 		a.ui.notice, a.ui.noticeType = "", ""
 	}
+}
+
+// ---------------------------------------------------------------- 侧栏与页面标题
+
+func (a *App) sidebar(c *ui.Context) {
+	t := c.Theme()
+	sidebarBG := t.Background.Mix(t.Text, 0.035)
+
+	ui.Column(c).Width(212).FillHeight().Padding(16, 14).Gap(4).
+		Background(sidebarBG).BorderWidth(0, 1, 0, 0).BorderColor(t.Border).Children(func() {
+		// 品牌
+		ui.Row(c).Gap(10).AlignItems(ui.Center).Padding(4, 6, 20, 6).Children(func() {
+			ui.Box(c).Size(38, 38).Radius(10).Background(ui.Hex("#111114")).Center().Children(func() {
+				ui.Icon(c, iconLogo).Size(22, 22).TextColor(ui.Hex("#ffffff"))
+			})
+			ui.Column(c).Gap(1).Children(func() {
+				ui.Text(c, "NPS Client").FontSize(16).Bold()
+				ui.Text(c, "内网穿透客户端").FontSize(11).TextColor(t.TextMuted)
+			})
+		})
+
+		a.navItem(c, 0, iconTerminal, "终端")
+		a.navItem(c, 1, iconLogs, "日志")
+		a.navItem(c, 2, iconSettings, "设置")
+
+		ui.Spacer(c)
+
+		ui.Box(c).AlignSelf(ui.Start).Padding(4, 10).Radius(999).
+			Background(t.Background).Border(1, t.Border).Children(func() {
+			ui.Text(c, "v"+a.ui.version).FontSize(11).TextColor(t.TextMuted)
+		})
+	})
+}
+
+func (a *App) navItem(c *ui.Context, page int, icon *ui.SVG, label string) {
+	t := c.Theme()
+
+	b := ui.ButtonBase(c).FillWidth().Padding(9, 12).Radius(9).Gap(10).Justify(ui.Start).Label(label)
+	if a.ui.page == page {
+		b.Background(t.SurfaceHover)
+	} else if b.Hovered() {
+		b.Background(t.Surface)
+	}
+	b.Children(func() {
+		ui.Icon(c, icon).Size(17, 17).TextColor(t.Text)
+		ui.Text(c, label).FontSize(14)
+	})
+	if b.Clicked() && a.ui.page != page {
+		a.ui.page = page
+		a.onPageChanged()
+	}
+}
+
+func (a *App) pageHeader(c *ui.Context, title, desc string) {
+	t := c.Theme()
+	ui.Column(c).Gap(4).Children(func() {
+		ui.Text(c, title).FontSize(26).Bold()
+		ui.Text(c, desc).FontSize(13).TextColor(t.TextMuted)
+	})
 }
 
 // ---------------------------------------------------------------- 设置
@@ -206,16 +251,23 @@ func (a *App) persistClientStates() {
 func (a *App) clientsView(c *ui.Context) {
 	t := c.Theme()
 
-	ui.Row(c).Gap(8).Children(func() {
+	a.pageHeader(c, "终端", "管理你的内网穿透客户端连接")
+
+	// 工具栏
+	ui.Row(c).Gap(10).Children(func() {
 		input := ui.TextInput(c, &a.ui.command).
 			Placeholder("粘贴 Base64 快捷启动命令").
-			Label("快捷启动命令")
+			Label("快捷启动命令").Height(42)
 		if input.Submitted() {
 			a.addFromCommand()
 		}
 		input.Grow(1)
-		ui.Button(c, "连接").Disabled(strings.TrimSpace(a.ui.command) == "").OnClick(a.addFromCommand)
-		ui.Button(c, "手工添加").OnClick(func() {
+
+		connect := ui.PrimaryButton(c, "连接").
+			Disabled(strings.TrimSpace(a.ui.command) == "").
+			OnClick(a.addFromCommand)
+		connect.Label("连接")
+		ui.Button(c, "手工添加").Height(42).OnClick(func() {
 			a.ui.manualName = ""
 			a.ui.manualAddr = ""
 			a.ui.manualKey = ""
@@ -226,58 +278,90 @@ func (a *App) clientsView(c *ui.Context) {
 	})
 
 	if len(a.ui.clients) == 0 {
-		ui.Column(c).Fill().Center().Gap(6).Children(func() {
+		ui.Column(c).Fill().Center().Gap(10).Children(func() {
+			ui.Icon(c, iconLogo).Size(42, 42).TextColor(t.TextMuted.Alpha(0.5))
 			ui.Text(c, "暂无客户端").FontSize(16).TextColor(t.TextMuted)
-			ui.Text(c, "粘贴 Base64 快捷启动命令并点击连接，或手工添加").FontSize(12).TextColor(t.TextMuted)
+			ui.Text(c, "粘贴 Base64 格式的快捷命令并点击连接即可添加").FontSize(12).TextColor(t.TextMuted)
 		})
 		return
 	}
 
-	a.ui.clientList.Key = func(i int) any { return clientID(a.ui.clients[i]) }
-	a.ui.clientList.Label = func(i int) string { return clientName(a.ui.clients[i]) }
-	ui.List(c, &a.ui.clientList, len(a.ui.clients), func(i int) {
-		a.clientRow(c, i)
-	}).Grow(1).Gap(6)
+	ui.Scroll(c).Grow(1).Children(func() {
+		ui.Grid(c).Columns(2).Gap(16).FillWidth().Children(func() {
+			for i := range a.ui.clients {
+				a.clientCard(c, i)
+			}
+		})
+	})
 }
 
-func (a *App) clientRow(c *ui.Context, i int) {
+func (a *App) clientCard(c *ui.Context, i int) {
 	t := c.Theme()
 	cl := a.ui.clients[i]
 
-	statusText, statusColor := statusOf(t, cl.Status)
-
 	c.Key(clientID(cl))
-	ui.Row(c).FillWidth().AlignItems(ui.Center).Gap(12).Padding(12, 14).
-		Radius(8).Background(t.Surface).Border(1, t.Border).Children(func() {
-		ui.Column(c).Grow(1).Gap(4).Children(func() {
-			ui.Row(c).Gap(8).AlignItems(ui.Baseline).Children(func() {
-				ui.Text(c, clientName(cl)).Bold()
-				ui.Text(c, "● "+statusText).FontSize(12).TextColor(statusColor)
+	ui.Column(c).FillWidth().Radius(12).Border(1, t.Border).Background(t.Background).Children(func() {
+		// 卡片头部
+		ui.Row(c).FillWidth().Gap(8).AlignItems(ui.Center).Padding(14, 16).
+			BorderWidth(0, 0, 1, 0).BorderColor(t.Border).Children(func() {
+			ui.Text(c, clientName(cl)).FontSize(16).Bold()
+			a.statusPill(c, cl.Status)
+			ui.Spacer(c)
+
+			closeBtn := ui.ButtonBase(c).Size(26, 26).Radius(6).Center().Label("删除")
+			if closeBtn.Hovered() {
+				closeBtn.Background(t.Surface)
+			}
+			closeBtn.Children(func() {
+				ui.Icon(c, iconClose).Size(13, 13).TextColor(t.TextMuted)
 			})
-			ui.Text(c, fmt.Sprintf("%s  ·  %s  ·  TLS %s", cl.Addr, cl.Key, tlsLabel(cl.TLS))).
-				FontSize(12).TextColor(t.TextMuted)
+			closeBtn.Tooltip("删除")
+			if closeBtn.Clicked() {
+				a.ui.confirmIndex = i
+				a.ui.confirmText = fmt.Sprintf("确定要删除客户端 %q 吗？", clientName(cl))
+				a.ui.confirmOpen = true
+			}
+		})
+
+		// 卡片内容
+		ui.Column(c).Padding(14, 16).Gap(8).Children(func() {
+			a.infoRow(c, "地址", cl.Addr)
+			a.infoRow(c, "密钥", cl.Key)
+			a.infoRow(c, "TLS", tlsLabel(cl.TLS))
 			if cl.Error != "" && cl.Status != "stopped" {
 				ui.Text(c, cl.Error).FontSize(12).TextColor(t.Warning)
 			}
 		})
 
-		ui.Button(c, "日志").OnClick(func() {
-			a.showLogsFor(cl)
+		// 卡片底部
+		ui.Row(c).FillWidth().Padding(10, 16).AlignItems(ui.Center).Gap(10).
+			BorderWidth(1, 0, 0, 0).BorderColor(t.Border).Children(func() {
+			ui.Spacer(c)
+			running := cl.Status != "stopped"
+			if ui.Switch(c, &running).Label("连接").Changed() {
+				a.toggleClient(cl, running)
+			}
 		})
-		if cl.Status == "stopped" {
-			ui.PrimaryButton(c, "启动").OnClick(func() {
-				a.toggleClient(cl, true)
-			})
-		} else {
-			ui.Button(c, "停止").OnClick(func() {
-				a.toggleClient(cl, false)
-			})
-		}
-		ui.Button(c, "删除").OnClick(func() {
-			a.ui.confirmIndex = i
-			a.ui.confirmText = fmt.Sprintf("确定要删除客户端 %q 吗？", clientName(cl))
-			a.ui.confirmOpen = true
+	})
+}
+
+func (a *App) infoRow(c *ui.Context, label, value string) {
+	t := c.Theme()
+	ui.Row(c).Gap(10).AlignItems(ui.Center).Children(func() {
+		ui.Text(c, label).FontSize(13).TextColor(t.TextMuted).Width(42)
+		ui.Box(c).Grow(1).Padding(3, 8).Radius(5).Background(t.Surface).Children(func() {
+			ui.Text(c, value).FontSize(13)
 		})
+	})
+}
+
+func (a *App) statusPill(c *ui.Context, status string) {
+	t := c.Theme()
+	label, color := statusOf(t, status)
+	ui.Row(c).Gap(6).AlignItems(ui.Center).Padding(3, 9).Radius(999).
+		Background(t.Surface).Children(func() {
+		ui.Box(c).Size(7, 7).Radius(4).Background(color)
+		ui.Text(c, label).FontSize(12).TextColor(t.TextMuted)
 	})
 }
 
@@ -366,14 +450,6 @@ func (a *App) removeClient(i int) {
 
 // ---------------------------------------------------------------- 日志
 
-func (a *App) showLogsFor(cl ShortClient) {
-	a.ui.page = 1
-	a.ui.logFilter = fmt.Sprintf("%s (%s)", clientName(cl), cl.Addr)
-	a.ui.logFilterID = clientID(cl)
-	a.resetLogs()
-	a.refreshLogs()
-}
-
 func (a *App) onPageChanged() {
 	if a.ui.page == 1 {
 		a.ui.logFilter = "全部客户端"
@@ -427,6 +503,8 @@ func (a *App) refreshLogs() {
 func (a *App) logsView(c *ui.Context) {
 	t := c.Theme()
 
+	a.pageHeader(c, "日志", "查看各客户端连接日志")
+
 	names, ids := a.logOptions()
 	if !slices.Contains(names, a.ui.logFilter) {
 		a.ui.logFilter = names[0]
@@ -435,36 +513,38 @@ func (a *App) logsView(c *ui.Context) {
 		a.refreshLogs()
 	}
 
-	ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-		ui.Text(c, "连接日志").FontSize(16).Bold()
-		ui.Spacer(c)
-		if ui.Select(c, &a.ui.logFilter, names).Label("客户端").Width(280).Changed() {
-			idx := slices.Index(names, a.ui.logFilter)
-			if idx >= 0 {
-				a.ui.logFilterID = ids[idx]
+	ui.Column(c).Grow(1).Radius(12).Border(1, t.Border).Background(t.Background).Children(func() {
+		ui.Row(c).FillWidth().Gap(8).AlignItems(ui.Center).Padding(12, 16).
+			BorderWidth(0, 0, 1, 0).BorderColor(t.Border).Children(func() {
+			if ui.Select(c, &a.ui.logFilter, names).Label("客户端").Width(280).Changed() {
+				idx := slices.Index(names, a.ui.logFilter)
+				if idx >= 0 {
+					a.ui.logFilterID = ids[idx]
+				}
+				a.resetLogs()
+				a.refreshLogs()
 			}
-			a.resetLogs()
-			a.refreshLogs()
-		}
-		if !a.ui.logList.AtEnd() {
-			ui.Button(c, "回到底部").OnClick(func() {
-				a.ui.logList.ScrollToEnd()
-			})
-		}
-		ui.Button(c, "清空日志").OnClick(a.clearLogs)
-	})
-
-	if len(a.ui.logs) == 0 {
-		ui.Column(c).Fill().Center().Children(func() {
-			ui.Text(c, "暂无日志记录").TextColor(t.TextMuted)
+			ui.Spacer(c)
+			if !a.ui.logList.AtEnd() {
+				ui.Button(c, "回到底部").OnClick(func() {
+					a.ui.logList.ScrollToEnd()
+				})
+			}
+			ui.Button(c, "清空日志").OnClick(a.clearLogs)
 		})
-		return
-	}
 
-	a.ui.logList.FollowEnd = true
-	ui.List(c, &a.ui.logList, len(a.ui.logs), func(i int) {
-		a.logRow(c, a.ui.logs[i])
-	}).Grow(1)
+		if len(a.ui.logs) == 0 {
+			ui.Column(c).Grow(1).Center().Children(func() {
+				ui.Text(c, "暂无日志记录").TextColor(t.TextMuted)
+			})
+			return
+		}
+
+		a.ui.logList.FollowEnd = true
+		ui.List(c, &a.ui.logList, len(a.ui.logs), func(i int) {
+			a.logRow(c, a.ui.logs[i])
+		}).Grow(1).Padding(8, 12)
+	})
 }
 
 func (a *App) logOptions() (names, ids []string) {
@@ -488,7 +568,8 @@ func (a *App) logRow(c *ui.Context, l ConnectionLog) {
 	case "success":
 		color = t.Success
 	}
-	ui.Row(c).FillWidth().Gap(10).PaddingY(2).AlignItems(ui.Start).Children(func() {
+	ui.Row(c).FillWidth().Gap(9).PaddingY(3).AlignItems(ui.Start).Children(func() {
+		ui.Box(c).Size(6, 6).Radius(3).Background(color).Margin(5, 4, 0, 0)
 		ui.Text(c, l.Timestamp).FontSize(11).TextColor(t.TextMuted)
 		ui.Text(c, l.Message).FontSize(12).TextColor(color).Grow(1)
 		if a.ui.logFilterID == "" {
@@ -519,25 +600,11 @@ func (a *App) clearLogs() {
 func (a *App) settingsView(c *ui.Context) {
 	t := c.Theme()
 
-	ui.Scroll(c).Fill().Children(func() {
-		ui.Column(c).MaxWidth(720).Gap(14).Padding(0, 4).Children(func() {
-			ui.Text(c, "常规").FontSize(13).Bold().TextColor(t.TextMuted)
+	a.pageHeader(c, "设置", "配置客户端行为")
 
-			a.settingRow(c, "开机启动", "系统启动时自动运行客户端", func() {
-				if ui.Switch(c, &a.ui.settings.StartupEnabled).Label("开机启动").Changed() {
-					a.saveSettings()
-				}
-			})
-
-			a.settingRow(c, "记住客户端状态", "下次启动时自动恢复已连接的客户端", func() {
-				if ui.Switch(c, &a.ui.settings.RememberClientState).Label("记住客户端状态").Changed() {
-					a.saveSettings()
-				}
-			})
-
-			ui.Divider(c)
-
-			ui.Text(c, "外观").FontSize(13).Bold().TextColor(t.TextMuted)
+	ui.Scroll(c).Grow(1).Children(func() {
+		ui.Column(c).MaxWidth(820).Radius(12).Border(1, t.Border).
+			Background(t.Background).Children(func() {
 			a.settingRow(c, "主题", "选择界面外观风格", func() {
 				if ui.Segmented(c, &a.ui.themeIndex, "跟随系统", "亮色", "暗色").Label("主题").Changed() {
 					if a.ui.themeIndex >= 0 && a.ui.themeIndex < len(themeModes) {
@@ -547,61 +614,70 @@ func (a *App) settingsView(c *ui.Context) {
 					}
 				}
 			})
-
 			ui.Divider(c)
-
-			ui.Text(c, "日志").FontSize(13).Bold().TextColor(t.TextMuted)
+			a.settingRow(c, "开机启动", "系统启动时自动运行客户端", func() {
+				if ui.Switch(c, &a.ui.settings.StartupEnabled).Label("开机启动").Changed() {
+					a.saveSettings()
+				}
+			})
+			ui.Divider(c)
+			a.settingRow(c, "记住客户端状态", "下次启动时自动恢复已连接的客户端", func() {
+				if ui.Switch(c, &a.ui.settings.RememberClientState).Label("记住客户端状态").Changed() {
+					a.saveSettings()
+				}
+			})
+			ui.Divider(c)
 			a.settingRow(c, "日志目录", "日志文件的保存位置", func() {
 				ui.Row(c).Gap(8).Width(420).Children(func() {
 					ui.TextInput(c, &a.ui.settings.LogDir).ReadOnly(true).Grow(1)
 					ui.Button(c, "浏览...").OnClick(a.selectLogDir)
 				})
 			})
-
 			ui.Divider(c)
-
-			ui.Text(c, "版本").FontSize(13).Bold().TextColor(t.TextMuted)
-			ui.Row(c).Gap(12).AlignItems(ui.Center).Children(func() {
-				ui.Column(c).Grow(1).Gap(3).Children(func() {
-					ui.Text(c, "v"+a.ui.version)
-					ui.Text(c, a.updateDescription()).FontSize(12).TextColor(t.TextMuted)
-				})
-				if info := a.ui.updateInfo; info != nil && info.UpdateAvailable {
-					label := "立即更新"
-					if a.ui.updating {
-						label = "更新中..."
+			a.settingRow(c, "版本", a.updateDescription(), func() {
+				ui.Row(c).Gap(8).Children(func() {
+					if info := a.ui.updateInfo; info != nil && info.UpdateAvailable {
+						label := "立即更新"
+						if a.ui.updating {
+							label = "更新中..."
+						}
+						ui.PrimaryButton(c, label).Disabled(a.ui.updating).OnClick(a.startUpdate)
 					}
-					ui.PrimaryButton(c, label).Disabled(a.ui.updating).OnClick(a.startUpdate)
-				}
-				checkLabel := "检查更新"
-				if a.ui.checkingUpdate {
-					checkLabel = "检查中..."
-				}
-				ui.Button(c, checkLabel).Disabled(a.ui.checkingUpdate || a.ui.updating).OnClick(func() {
-					a.checkUpdate(false)
+					checkLabel := "检查更新"
+					if a.ui.checkingUpdate {
+						checkLabel = "检查中..."
+					}
+					ui.Button(c, checkLabel).Disabled(a.ui.checkingUpdate || a.ui.updating).OnClick(func() {
+						a.checkUpdate(false)
+					})
 				})
 			})
+		})
 
-			if info := a.ui.updateInfo; info != nil && info.ReleaseNotes != "" {
-				ui.Column(c).Gap(4).Padding(10).Radius(8).Background(t.Surface).Border(1, t.Border).Children(func() {
-					ui.Text(c, "更新说明").FontSize(12).Bold()
-					ui.Text(c, info.ReleaseNotes).FontSize(12).TextColor(t.TextMuted)
-				})
-			}
+		if info := a.ui.updateInfo; info != nil && info.ReleaseNotes != "" {
+			ui.Column(c).MaxWidth(820).Gap(4).Padding(12, 14).Radius(12).
+				Background(t.Surface).Border(1, t.Border).Children(func() {
+				ui.Text(c, "更新说明").FontSize(12).Bold()
+				ui.Text(c, info.ReleaseNotes).FontSize(12).TextColor(t.TextMuted)
+			})
+		}
 
-			ui.Row(c).Justify(ui.End).Children(func() {
-				ui.Button(c, "重置为默认值").OnClick(func() {
-					a.ui.settings = GuiSettings{
-						StartupEnabled:      true,
-						RememberClientState: true,
-						LogDir:              a.GetDefaultLogDir(),
-						ThemeMode:           "auto",
-					}
-					a.ui.themeIndex = 0
-					a.applyThemeMode()
-					a.saveSettings()
-					a.notify("已重置为默认值", "success")
-				})
+		ui.Row(c).Gap(8).Justify(ui.End).Padding(12, 0).Children(func() {
+			ui.Button(c, "重置").OnClick(func() {
+				a.ui.settings = GuiSettings{
+					StartupEnabled:      true,
+					RememberClientState: true,
+					LogDir:              a.GetDefaultLogDir(),
+					ThemeMode:           "auto",
+				}
+				a.ui.themeIndex = 0
+				a.applyThemeMode()
+				a.saveSettings()
+				a.notify("已重置为默认值", "success")
+			})
+			ui.PrimaryButton(c, "保存设置").OnClick(func() {
+				a.saveSettings()
+				a.notify("设置已保存", "success")
 			})
 		})
 	})
@@ -609,9 +685,9 @@ func (a *App) settingsView(c *ui.Context) {
 
 func (a *App) settingRow(c *ui.Context, title, desc string, control func()) {
 	t := c.Theme()
-	ui.Row(c).FillWidth().Gap(16).AlignItems(ui.Center).PaddingY(6).Children(func() {
+	ui.Row(c).FillWidth().Gap(16).AlignItems(ui.Center).Padding(14, 16).Children(func() {
 		ui.Column(c).Grow(1).Gap(2).Children(func() {
-			ui.Text(c, title)
+			ui.Text(c, title).FontSize(14)
 			ui.Text(c, desc).FontSize(12).TextColor(t.TextMuted)
 		})
 		control()
