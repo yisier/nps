@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"slices"
 	"strings"
@@ -10,6 +11,9 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 )
+
+//go:embed resources/icon-64.png
+var windowIcon []byte
 
 // uiState 是原生界面在主线程上读写的状态。
 type uiState struct {
@@ -54,23 +58,47 @@ type uiState struct {
 	noticeType string
 
 	version string
+
+	// 标题栏里的应用图标（解码一次）。
+	icon *ui.Bitmap
 }
 
 var themeModes = []string{"auto", "light", "dark"}
 
 // view 是窗口的视图函数：每一帧都从状态重新构建界面。
 func (a *App) view(c *ui.Context) {
-	ui.Row(c).Fill().Children(func() {
-		a.sidebar(c)
-		ui.Column(c).Grow(1).FillHeight().Padding(24, 28).Gap(18).Children(func() {
-			switch a.ui.page {
-			case 0:
-				a.clientsView(c)
-			case 1:
-				a.logsView(c)
-			case 2:
-				a.settingsView(c)
-			}
+	t := c.Theme()
+	bar := c.TitleBar()
+
+	ui.Column(c).Fill().Children(func() {
+		// 自绘标题栏：颜色完全跟随主题，而不是系统的标题栏。
+		if bar.Height > 0 {
+			ui.Row(c).FillWidth().Height(bar.Height).
+				Padding(0, bar.Right, 0, bar.Left).
+				Background(t.Background).
+				BorderWidth(0, 0, 1, 0).BorderColor(t.Border).
+				DragWindow().Children(func() {
+				ui.Row(c).Grow(1).Padding(0, 12).Gap(8).AlignItems(ui.Center).Children(func() {
+					if a.ui.icon != nil {
+						ui.Image(c, a.ui.icon).Height(16).AspectRatio(1)
+					}
+					ui.Text(c, "NPS 客户端").FontSize(12).TextColor(t.Text)
+				})
+			})
+		}
+
+		ui.Row(c).Grow(1).Children(func() {
+			a.sidebar(c)
+			ui.Column(c).Grow(1).FillHeight().Padding(24, 28).Gap(18).Children(func() {
+				switch a.ui.page {
+				case 0:
+					a.clientsView(c)
+				case 1:
+					a.logsView(c)
+				case 2:
+					a.settingsView(c)
+				}
+			})
 		})
 	})
 
@@ -176,6 +204,28 @@ func (a *App) applyThemeMode() {
 		mygo.Theme.SetSource(mygo.ThemeDark)
 	default:
 		mygo.Theme.SetSource(mygo.ThemeSystem)
+	}
+	a.syncTitleBar()
+}
+
+// syncTitleBar 让窗口控件（最小化/最大化/关闭）跟随应用外观。
+func (a *App) syncTitleBar() {
+	if a.window == nil {
+		return
+	}
+	dark := false
+	switch a.ui.settings.ThemeMode {
+	case "dark":
+		dark = true
+	case "light":
+		dark = false
+	default:
+		dark = mygo.Theme.IsDark()
+	}
+	if dark {
+		a.window.SetWindowButtonsTheme(mygo.ThemeDark)
+	} else {
+		a.window.SetWindowButtonsTheme(mygo.ThemeLight)
 	}
 }
 

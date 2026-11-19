@@ -70,17 +70,20 @@ func (a *App) startup() {
 	go syncStartupState()
 
 	a.loadUISettings()
+	a.ui.icon, _ = ui.DecodeBitmap(windowIcon)
 	a.applyThemeMode()
 	a.refreshClients()
 	a.restoreClientStates()
 
 	a.window = mygo.NewWindow(mygo.WindowOptions{
-		Title:     "NPS 客户端",
-		Width:     1100,
-		Height:    700,
-		MinWidth:  1000,
-		MinHeight: 600,
-		Content:   ui.View(a.view),
+		Title:          "NPS 客户端",
+		Width:          1100,
+		Height:         700,
+		MinWidth:       1000,
+		MinHeight:      600,
+		TitleBarStyle:  mygo.TitleBarHidden,
+		TitleBarHeight: 40,
+		Content:        ui.View(a.view),
 	})
 
 	// 点击关闭按钮时隐藏窗口而不是退出（托盘应用常驻）
@@ -90,6 +93,17 @@ func (a *App) startup() {
 		}
 		e.PreventDefault()
 		a.window.Hide()
+	})
+
+	// 标题栏图标 + 标题栏深浅色跟随应用主题。
+	_ = a.window.SetIcon(windowIcon)
+	a.syncTitleBar()
+	mygo.Theme.OnUpdated(func() {
+		if a.window == nil || a.window.IsDestroyed() {
+			return
+		}
+		a.syncTitleBar()
+		a.window.Invalidate()
 	})
 
 	a.startTray()
