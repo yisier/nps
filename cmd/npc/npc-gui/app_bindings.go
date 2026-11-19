@@ -77,8 +77,8 @@ func (a *App) startup() {
 
 	a.window = mygo.NewWindow(mygo.WindowOptions{
 		Title:          "NPS 客户端",
-		Width:          1100,
-		Height:         700,
+		Width:          1000,
+		Height:         600,
 		MinWidth:       1000,
 		MinHeight:      600,
 		TitleBarStyle:  mygo.TitleBarHidden,

@@ -48,7 +48,7 @@ func TestRenderScreens(t *testing.T) {
 		t.Fatal(err)
 	}
 	save := func(name string) {
-		img := ui.Render(a.view, 1100, 700, 2)
+		img := ui.Render(a.view, 1000, 600, 2)
 		f, err := os.Create(filepath.Join(dir, name+".png"))
 		if err != nil {
 			t.Fatal(err)
@@ -67,7 +67,7 @@ func TestRenderScreens(t *testing.T) {
 		ui.Themed(c, ui.DarkTheme()).Fill().Children(func() {
 			a.view(c)
 		})
-	}, 1100, 700, 2)
+	}, 1000, 600, 2)
 	if f, err := os.Create(filepath.Join(dir, "clients-dark.png")); err == nil {
 		_ = png.Encode(f, img)
 		_ = f.Close()

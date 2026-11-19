@@ -97,14 +97,17 @@ go tool mygo build -platform darwin/universal,windows/amd64,linux/amd64
 
    约省 0.1 MB，意义不大，但可以彻底不依赖 WebView2 代码。
 
-2. **UPX 压缩**（效果最明显，可选）：
+2. **UPX 压缩**（发布流程已启用，Windows 产物自动压缩）：
+
+   本地手动压：
 
    ```powershell
    go tool mygo build -skip-installer
    upx --best --lzma bin\windows-amd64\npc-gui.exe
    ```
 
-   22 MB → 约 **6.7 MB**（默认压缩约 8.1 MB）。需要注意：
+   22 MB → 约 **6.7 MB**（默认压缩约 8.1 MB）。`release.yml` 的 Windows job 会在打包 zip
+   前自动下载 UPX 5.3.0 并执行 `--best --lzma`。需要注意：
 
    - 部分杀毒软件会对 UPX 壳报毒或直接拦截
    - 启动时多一次解压，约慢几百毫秒

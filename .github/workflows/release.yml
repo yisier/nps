@@ -182,6 +182,25 @@ jobs:
             Get-ChildItem -Path $out | Format-Table -AutoSize
             exit 1
           }
+
+          # UPX 压缩可执行文件（约 22 MB -> 7 MB）。
+          $upxDir = Join-Path $env:RUNNER_TEMP "upx"
+          New-Item -ItemType Directory -Force $upxDir | Out-Null
+          $upxZip = Join-Path $upxDir "upx.zip"
+          Invoke-WebRequest -Uri "https://github.com/upx/upx/releases/download/v5.3.0/upx-5.3.0-win64.zip" -OutFile $upxZip
+          Expand-Archive -Path $upxZip -DestinationPath $upxDir -Force
+          $upx = Get-ChildItem -Path $upxDir -Recurse -Filter upx.exe | Select-Object -First 1
+          if (-not $upx) {
+            Write-Host "UPX not found"
+            exit 1
+          }
+          & $upx.FullName --best --lzma $exe.FullName
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "UPX failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          Write-Host "Packed size: $([math]::Round((Get-Item $exe.FullName).Length / 1MB, 2)) MB"
+
           Compress-Archive -Path $exe.FullName -DestinationPath (Join-Path $out "$env:APP_NAME-windows-${{ matrix.arch }}.zip") -Force
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
