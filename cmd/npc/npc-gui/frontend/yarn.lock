@@ -228,11 +228,6 @@
   resolved "https://registry.yarnpkg.com/@vue/shared/-/shared-3.5.41.tgz#ac476497f74495f7525087270849841756555cf2"
   integrity sha512-IOnwSCma8j+9xJT6b8H0dEYidC80NsYmNMlZxRsukYcSoGaDBohog5hDxzeUXdFeGWFA++vWvxqOmrr96VlqMA==
 
-"@wailsio/runtime@^3.0.0-beta.12":
-  version "3.0.0-beta.12"
-  resolved "https://registry.yarnpkg.com/@wailsio/runtime/-/runtime-3.0.0-beta.12.tgz#0fb8347441271fae40f59641fd9f66b56561b5bc"
-  integrity sha512-2B456rspX5rDXYhNjRqXNDOPkRXjletGJ4R3beF2FGs7K67MTovLy9acXHYb8nolzL96kygyJ622RIjB45oumg==
-
 csstype@^3.2.3:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.2.3.tgz#ec48c0f3e993e50648c86da559e2610995cf989a"
@@ -287,6 +282,11 @@ magic-string@^0.30.21:
   integrity sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.5.5"
+
+mygo-runtime@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.npmmirror.com/mygo-runtime/-/mygo-runtime-0.10.0.tgz#69f09d9620c79897b1bedffe674b0572fd391497"
+  integrity sha512-nErgpFu05Q+yGONJ5yQBBhuZiZQ0xBg6O/39Mod4lFaGFwrB/8+C2ye0jDGD2XQAzb/rS379ciEWFtwkpKnE+w==
 
 nanoid@^3.3.17:
   version "3.3.18"

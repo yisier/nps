@@ -11,7 +11,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "@wailsio/runtime": "^3.0.0-beta.12",
+    "mygo-runtime": "^0.10.0",
     "vue": "^3.3.4"
   },
   "devDependencies": {

@@ -12,7 +12,6 @@ permissions:
 env:
   GUI_DIR: cmd/npc/npc-gui
   FRONTEND_DIR: cmd/npc/npc-gui/frontend
-  WAILS_VERSION: v3.0.0-beta.12
   APP_NAME: npc-gui
 
 jobs:
@@ -169,7 +168,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: yarn
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
       - name: Enable Yarn (corepack)
@@ -179,35 +178,30 @@ jobs:
         with:
           go-version-file: ${{ env.GUI_DIR }}/go.mod
           check-latest: true
-      - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
-        working-directory: ${{ env.GUI_DIR }}
       - name: Build and package (Windows)
         shell: pwsh
         working-directory: ${{ env.GUI_DIR }}
         run: |
-          $env:GOOS = "windows"
-          $env:GOARCH = "${{ matrix.arch }}"
-          wails3 build --tags npcgui
-          Set-Location bin
-          $zipName = "$env:APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip"
-          $exe = Get-ChildItem -Path . -Filter *.exe | Select-Object -First 1
+          $env:GOFLAGS = "-tags=npcgui"
+          go tool mygo build -skip-installer -platform windows/${{ matrix.arch }}
+          $out = Join-Path "bin" "windows-${{ matrix.arch }}"
+          $exe = Get-ChildItem -Path $out -Filter *.exe | Where-Object { $_.Name -notmatch 'setup' } | Select-Object -First 1
           if (-not $exe) {
-            Write-Host "No build output found in bin"
-            Get-ChildItem -Path . | Format-Table -AutoSize
+            Write-Host "No build output found in $out"
+            Get-ChildItem -Path $out | Format-Table -AutoSize
             exit 1
           }
-          Compress-Archive -Path $exe.Name -DestinationPath $zipName -Force
+          Compress-Archive -Path $exe.FullName -DestinationPath (Join-Path $out "$env:APP_NAME-windows-${{ matrix.arch }}.zip") -Force
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-builds-${{ matrix.arch }}
-          path: ${{ env.GUI_DIR }}/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
+          path: ${{ env.GUI_DIR }}/bin/windows-${{ matrix.arch }}/${{ env.APP_NAME }}-windows-${{ matrix.arch }}.zip
       - name: Upload Windows release asset
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
         with:
-          files: ${{ env.GUI_DIR }}/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
+          files: ${{ env.GUI_DIR }}/bin/windows-${{ matrix.arch }}/${{ env.APP_NAME }}-windows-${{ matrix.arch }}.zip
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -232,7 +226,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: yarn
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
       - name: Enable Yarn (corepack)
@@ -242,42 +236,30 @@ jobs:
         with:
           go-version-file: ${{ env.GUI_DIR }}/go.mod
           check-latest: true
-      - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
-        working-directory: ${{ env.GUI_DIR }}
       - name: Build and package (macOS)
         shell: bash
         working-directory: ${{ env.GUI_DIR }}
         run: |
-          export GOOS=darwin
-          export GOARCH="${{ matrix.arch }}"
-          # wails3 package builds with EXTRA_TAGS=npcgui (Package has no --tags
-          # flag; the var flows into the build dep) and then assembles a proper
-          # bin/npc-gui.app bundle with ad-hoc codesign.
-          wails3 package EXTRA_TAGS=npcgui
-          cd bin
-          # Guard the .app lookups so a no-match does not abort the script
-          # under `set -e -o pipefail`; keep the raw-binary fallback as safety.
+          export GOFLAGS="-tags=npcgui"
+          go tool mygo build -skip-dmg -platform darwin/${{ matrix.arch }}
+          cd "bin/darwin-${{ matrix.arch }}"
           app="$(ls -1d *.app 2>/dev/null | head -n 1 || true)"
           if [ -z "$app" ]; then
-            app="$(find . -maxdepth 1 -type f -perm -111 -exec basename {} \; | head -n 1 || true)"
-          fi
-          if [ -z "$app" ]; then
-            echo "No build output found in bin"
+            echo "No build output found in bin/darwin-${{ matrix.arch }}"
             ls -la
             exit 1
           fi
-          zip -q -r "$APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip" "$app"
+          zip -q -r "$APP_NAME-darwin-${{ matrix.arch }}.zip" "$app"
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-builds-${{ matrix.arch }}
-          path: ${{ env.GUI_DIR }}/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
+          path: ${{ env.GUI_DIR }}/bin/darwin-${{ matrix.arch }}/${{ env.APP_NAME }}-darwin-${{ matrix.arch }}.zip
       - name: Upload macOS release asset
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
         with:
-          files: ${{ env.GUI_DIR }}/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
+          files: ${{ env.GUI_DIR }}/bin/darwin-${{ matrix.arch }}/${{ env.APP_NAME }}-darwin-${{ matrix.arch }}.zip
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -294,14 +276,10 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libgtk-4-dev libwebkitgtk-6.0-dev libsoup-3.0-dev libjavascriptcoregtk-6.0-dev libayatana-appindicator3-dev librsvg2-dev patchelf pkg-config
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: yarn
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
       - name: Enable Yarn (corepack)
@@ -311,34 +289,30 @@ jobs:
         with:
           go-version-file: ${{ env.GUI_DIR }}/go.mod
           check-latest: true
-      - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
-        working-directory: ${{ env.GUI_DIR }}
       - name: Build and package (Linux)
         shell: bash
         working-directory: ${{ env.GUI_DIR }}
         run: |
-          export GOOS=linux
-          export GOARCH="${{ matrix.arch }}"
-          wails3 build --tags npcgui
-          cd bin
-          bin="$(find . -maxdepth 1 -type f -perm -111 -printf '%f\n' | head -n 1)"
+          export GOFLAGS="-tags=npcgui"
+          go tool mygo build -platform linux/${{ matrix.arch }}
+          cd "bin/linux-${{ matrix.arch }}"
+          bin="$(find . -maxdepth 1 -type f -perm -111 ! -name '*.sh' -printf '%f\n' | head -n 1)"
           if [ -z "$bin" ]; then
-            echo "No executable file found in bin"
+            echo "No executable file found in bin/linux-${{ matrix.arch }}"
             ls -la
             exit 1
           fi
-          zip -q "$APP_NAME-${{ matrix.os_name }}-${{ matrix.arch }}.zip" "$bin"
+          zip -q "$APP_NAME-linux-${{ matrix.arch }}.zip" "$bin"
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-builds-${{ matrix.arch }}
-          path: ${{ env.GUI_DIR }}/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
+          path: ${{ env.GUI_DIR }}/bin/linux-${{ matrix.arch }}/${{ env.APP_NAME }}-linux-${{ matrix.arch }}.zip
       - name: Upload Linux release asset
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
         with:
-          files: ${{ env.GUI_DIR }}/bin/${{ env.APP_NAME }}-${{ matrix.os_name }}-${{ matrix.arch }}.zip
+          files: ${{ env.GUI_DIR }}/bin/linux-${{ matrix.arch }}/${{ env.APP_NAME }}-linux-${{ matrix.arch }}.zip
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

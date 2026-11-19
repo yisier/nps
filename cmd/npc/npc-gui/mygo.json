@@ -1,0 +1,23 @@
+{
+  "name": "npc-gui",
+  "slug": "npc-gui",
+  "identifier": "com.yisier.npc-gui",
+  "version": "0.26.40",
+  "publisher": "yisier",
+  "icon": "resources/icon.png",
+  "out": "bin",
+  "devUrl": "http://127.0.0.1:34115",
+  "devCommand": "yarn --cwd frontend dev",
+  "buildCommand": "yarn --cwd frontend build",
+  "frontendDist": "frontend/dist",
+  "bindings": "frontend/src/mygo.ts",
+  "windows": {
+    "displayName": "NPS 客户端",
+    "installDirName": "npc-gui"
+  },
+  "linux": {
+    "maintainer": "yisier",
+    "comment": "NPS 客户端",
+    "categories": ["Network"]
+  }
+}

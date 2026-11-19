@@ -375,8 +375,9 @@
 
 <script>
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-// 直接导入 Wails 生成的 API 绑定
-import { App as AppAPI } from '../bindings/npc-gui/index.js'
+// mygo generate 生成的类型化客户端
+import { App as AppAPI } from './mygo'
+import { isMyGo } from 'mygo-runtime'
 
 export default {
   name: 'App',
@@ -615,37 +616,36 @@ export default {
       }
     }
 
-    // 从直接导入获取 Wails API（使用 let 以便在浏览器中可替换为 mock）
-    let GetShortcuts = AppAPI.GetShortcuts
-    let AddShortcut = AppAPI.AddShortcut
-    let AddShortcutFromBase64 = AppAPI.AddShortcutFromBase64
-    let RemoveShortcut = AppAPI.RemoveShortcut
-    let ToggleClient = AppAPI.ToggleClient
-    let GetConnectionLogs = AppAPI.GetConnectionLogs
-    let ClearConnectionLogs = AppAPI.ClearConnectionLogs
+    // 从生成的客户端获取 API（使用 let 以便在浏览器中可替换为 mock）
+    let GetShortcuts = AppAPI.getShortcuts
+    let AddShortcut = AppAPI.addShortcut
+    let AddShortcutFromBase64 = AppAPI.addShortcutFromBase64
+    let RemoveShortcut = AppAPI.removeShortcut
+    let ToggleClient = AppAPI.toggleClient
+    let GetConnectionLogs = AppAPI.getConnectionLogs
+    let ClearConnectionLogs = AppAPI.clearConnectionLogs
 
-    // 在普通浏览器里运行时 Wails API 可能不存在，提供简单 mock 方便调试 UI
-    // 同时尝试绑定新的设置 & clientStates API
-    let GetGuiSettings = AppAPI.GetGuiSettings
-    let SaveGuiSettings = AppAPI.SaveGuiSettings
-    let GetClientStates = AppAPI.GetClientStates
-    let SaveClientStates = AppAPI.SaveClientStates
-    let SelectDirectory = AppAPI.SelectDirectory
-    let GetDefaultLogDir = AppAPI.GetDefaultLogDir
-    let GetAppVersion = AppAPI.GetAppVersion
-    let CheckForUpdate = AppAPI.CheckForUpdate
-    let DownloadAndInstallUpdate = AppAPI.DownloadAndInstallUpdate
-    let RestartApp = AppAPI.RestartApp
+    // 在普通浏览器里运行时没有 mygo 运行时，提供简单 mock 方便调试 UI
+    let GetGuiSettings = AppAPI.getGuiSettings
+    let SaveGuiSettings = AppAPI.saveGuiSettings
+    let GetClientStates = AppAPI.getClientStates
+    let SaveClientStates = AppAPI.saveClientStates
+    let SelectDirectory = AppAPI.selectDirectory
+    let GetDefaultLogDir = AppAPI.getDefaultLogDir
+    let GetAppVersion = AppAPI.getAppVersion
+    let CheckForUpdate = AppAPI.checkForUpdate
+    let DownloadAndInstallUpdate = AppAPI.downloadAndInstallUpdate
+    let RestartApp = AppAPI.restartApp
 
-    if (!AppAPI || typeof AppAPI.GetShortcuts !== 'function') {
-      console.warn('Wails App API not available — using mock implementations for browser debugging')
+    if (!isMyGo()) {
+      console.warn('MyGo runtime not available — using mock implementations for browser debugging')
       GetShortcuts = async () => {
         return [
           { name: 'MyServer', addr: '127.0.0.1:8024', key: 'alefa114df', tls: false, running: false },
         ]
       }
-      AddShortcut = async (jsonStr) => {
-        console.log('mock AddShortcut', jsonStr)
+      AddShortcut = async (sc) => {
+        console.log('mock AddShortcut', sc)
         return
       }
       AddShortcutFromBase64 = async (b64) => {
@@ -684,12 +684,12 @@ export default {
       RestartApp = async () => { console.log('mock RestartApp') }
     }
 
-    const initWails = async () => {
+    const initBackend = async () => {
       try {
-        console.log('Wails API loaded successfully')
+        console.log('MyGo backend loaded successfully')
         await loadClients()
       } catch (error) {
-        console.error('Failed to initialize Wails:', error)
+        console.error('Failed to initialize backend:', error)
         // Fallback: show empty state
         clients.value = []
       }
@@ -779,7 +779,7 @@ export default {
         return msg
       }
       
-      // Handle Wails error structure
+      // Handle mygo CallError structure
       if (error.errorMessage && typeof error.errorMessage === 'string') {
         const msg = String(error.errorMessage).trim()
         if (!msg || msg === 'undefined' || msg === 'null') return '未知错误'
@@ -882,8 +882,8 @@ export default {
           tls: tls
         }
 
-        // 调用 AddShortcut API，传递 JSON 字符串
-        await AddShortcut(JSON.stringify(shortClient))
+        // 调用 AddShortcut API，直接传递 ShortClient 对象
+        await AddShortcut(shortClient)
 
         closeManualAddDialog()
         await loadClients()
@@ -1275,8 +1275,8 @@ export default {
         mediaQuery.addListener(handleThemeChange)
       }
 
-      // 初始化 Wails
-      initWails()
+      // 初始化后端
+      initBackend()
 
       // 加载版本号（如果后端已绑定）
       await loadAppVersion()

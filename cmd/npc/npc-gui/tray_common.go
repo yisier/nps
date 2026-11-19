@@ -15,6 +15,13 @@ func setQuitting() {
 	quitting = true
 }
 
+// clearQuitting 清除退出状态（退出被取消时调用）
+func clearQuitting() {
+	quitMutex.Lock()
+	defer quitMutex.Unlock()
+	quitting = false
+}
+
 // isQuitting 检查是否正在退出
 func isQuitting() bool {
 	quitMutex.Lock()

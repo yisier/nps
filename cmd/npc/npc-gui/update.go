@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -17,6 +16,7 @@ import (
 	"time"
 
 	"ehang.io/nps/lib/version"
+	"github.com/egoist/mygo"
 )
 
 const (
@@ -173,21 +173,7 @@ func (a *App) DownloadAndInstallUpdate() error {
 
 // RestartApp 重启当前程序（更新完成后调用）
 func (a *App) RestartApp() error {
-	exePath, err := getExecutablePath()
-	if err != nil {
-		return fmt.Errorf("获取当前程序路径失败: %w", err)
-	}
-	cmd := exec.Command(exePath)
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("启动新版本失败: %w", err)
-	}
-	// 延迟退出当前进程，确保新进程已启动
-	go func() {
-		time.Sleep(800 * time.Millisecond)
-		if a.app != nil {
-			a.app.Quit()
-		}
-	}()
+	mygo.App.Relaunch()
 	return nil
 }
 

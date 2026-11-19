@@ -1,4 +1,4 @@
-# 编译输出
+# 编译产物
 *.exe
 *.dll
 *.so
@@ -6,7 +6,7 @@
 *.o
 *.obj
 
-# 依赖包
+# 依赖
 node_modules/
 vendor/
 
@@ -26,11 +26,6 @@ Thumbs.db
 *.syso
 dist/
 
-# wails3 构建输出
+# mygo 构建输出与开发缓存
 bin/
-
-# wails3 task 缓存
-.task/
-
-# NSIS 打包产物（WebView2 bootstrapper / 安装器）
-build/windows/nsis/*.exe
+.mygo/

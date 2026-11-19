@@ -15,13 +15,12 @@ import (
 
 	"ehang.io/nps/client"
 	"ehang.io/nps/lib/version"
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/egoist/mygo"
 )
 
 type App struct {
-	app    *application.App
-	window *application.WebviewWindow
-	tray   *application.SystemTray
+	window *mygo.Window
+	tray   *mygo.Tray
 }
 
 // ShortClient 与前端结构对应
@@ -59,47 +58,49 @@ var (
 	connType          = "tcp"
 )
 
-func NewApp(app *application.App, window *application.WebviewWindow) *App {
-	return &App{app: app, window: window}
-}
-
-func (a *App) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+// startup 在应用就绪后创建主窗口并初始化托盘（由 mygo.App.WhenReady 调用）。
+func (a *App) startup() {
 	// 初始化日志系统：应用日志走 slog，客户端日志走内存缓冲 + JSON 文件
 	initAppLogger()
 
-	// 同步开机启动状态：检查配置与实际注册表是否一致
-	go func() {
-		store, err := loadPersistentStore()
-		if err == nil {
-			actualEnabled := isStartupEnabled()
-			if store.Settings.StartupEnabled && !actualEnabled {
-				// 配置说启用，但实际未启用，则启用之
-				slog.Info("同步开机启动状态：启用")
-				if err := enableStartup(); err != nil {
-					slog.Error("同步开机启动失败", "err", err)
-				}
-			} else if !store.Settings.StartupEnabled && actualEnabled {
-				// 配置说禁用，但实际已启用，则禁用之
-				slog.Info("同步开机启动状态：禁用")
-				if err := disableStartup(); err != nil {
-					slog.Error("同步开机启动失败", "err", err)
-				}
-			}
+	// 同步开机启动状态：检查配置与实际系统设置是否一致
+	go syncStartupState()
+
+	a.window = mygo.NewWindow(mygo.WindowOptions{
+		Title:           "NPS 客户端",
+		URL:             "/",
+		Width:           1000,
+		Height:          600,
+		MinWidth:        1000,
+		MinHeight:       600,
+		BackgroundColor: "#1b2636",
+	})
+
+	// 点击关闭按钮时隐藏窗口而不是退出（托盘应用常驻）
+	a.window.OnClose(func(e *mygo.CloseEvent) {
+		if isQuitting() {
+			return
 		}
-	}()
+		e.PreventDefault()
+		a.window.Hide()
+	})
 
 	a.startTray()
-	return nil
 }
 
-func (a *App) ServiceShutdown() error {
-	setQuitting()
-	closeAllLogStores()
-	if a.tray != nil {
-		a.tray.Destroy()
-		a.tray = nil
+// syncStartupState 让配置文件里的开机启动设置与系统实际状态保持一致。
+func syncStartupState() {
+	store, err := loadPersistentStore()
+	if err != nil {
+		return
 	}
-	return nil
+	actualEnabled := mygo.App.OpenAtLogin()
+	if store.Settings.StartupEnabled == actualEnabled {
+		return
+	}
+	if err := mygo.App.SetOpenAtLogin(store.Settings.StartupEnabled); err != nil {
+		slog.Error("同步开机启动失败", "enabled", store.Settings.StartupEnabled, "err", err)
+	}
 }
 
 func getLogsPath() string {
@@ -290,19 +291,11 @@ func (a *App) SaveGuiSettings(s GuiSettings) error {
 
 	// 如果开机启动设置发生变化，应用到系统
 	if oldStartupEnabled != s.StartupEnabled {
-		if s.StartupEnabled {
-			if err := enableStartup(); err != nil {
-				slog.Error("启用开机启动失败", "err", err)
-				return fmt.Errorf("启用开机启动失败: %v", err)
-			}
-			slog.Info("已启用开机启动")
-		} else {
-			if err := disableStartup(); err != nil {
-				slog.Error("禁用开机启动失败", "err", err)
-				return fmt.Errorf("禁用开机启动失败: %v", err)
-			}
-			slog.Info("已禁用开机启动")
+		if err := mygo.App.SetOpenAtLogin(s.StartupEnabled); err != nil {
+			slog.Error("设置开机启动失败", "enabled", s.StartupEnabled, "err", err)
+			return fmt.Errorf("设置开机启动失败: %v", err)
 		}
+		slog.Info("开机启动设置已应用", "enabled", s.StartupEnabled)
 	}
 
 	return nil
@@ -353,18 +346,20 @@ func (a *App) SelectDirectory() (string, error) {
 	slog.Info("默认目录", "dir", defaultDir)
 
 	// 打开目录选择对话框
-	dialog := a.app.Dialog.OpenFileWithOptions(&application.OpenFileDialogOptions{
-		CanChooseDirectories: true,
-		CanChooseFiles:       false,
-		Title:                "选择日志目录",
-		Directory:            defaultDir,
+	selected, err := mygo.Dialog.Open(mygo.OpenDialogOptions{
+		Parent:      a.window,
+		Title:       "选择日志目录",
+		DefaultPath: defaultDir,
+		Directory:   true,
 	})
-	selectedDir, err := dialog.PromptForSingleSelection()
-
 	if err != nil {
 		slog.Error("打开目录选择对话框失败", "err", err)
 		return "", err
 	}
+	if len(selected) == 0 {
+		return "", nil
+	}
+	selectedDir := selected[0]
 
 	slog.Info("用户选择的目录", "dir", selectedDir)
 	return selectedDir, nil
@@ -393,12 +388,7 @@ func findShortcutIndex(name, addr, key string) int {
 	return -1
 }
 
-func (a *App) AddShortcut(arg string) error {
-	// accept a JSON string from frontend
-	var sc ShortClient
-	if err := json.Unmarshal([]byte(arg), &sc); err != nil {
-		return err
-	}
+func (a *App) AddShortcut(sc ShortClient) error {
 	addShortcut(sc)
 	return nil
 }
@@ -728,19 +718,4 @@ func getExecutablePath() (string, error) {
 		return "", err
 	}
 	return exePath, nil
-}
-
-// enableStartup 启用开机启动（跨平台）
-func enableStartup() error {
-	return enableStartupImpl()
-}
-
-// disableStartup 禁用开机启动（跨平台）
-func disableStartup() error {
-	return disableStartupImpl()
-}
-
-// isStartupEnabled 检查是否已启用开机启动（跨平台）
-func isStartupEnabled() bool {
-	return isStartupEnabledImpl()
 }
