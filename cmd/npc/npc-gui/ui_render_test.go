@@ -73,7 +73,11 @@ func TestRenderScreens(t *testing.T) {
 	}
 
 	a.ui.page = 1
+	a.ui.logFilter = "家庭服务器-6237ed8d52"
+	a.ui.logFilterID = "127.0.0.1:8024|6237ed8d52"
 	save("logs")
+	a.ui.logFilter = ""
+	a.ui.logFilterID = ""
 
 	a.ui.page = 2
 	save("settings")

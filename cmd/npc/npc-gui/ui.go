@@ -690,6 +690,11 @@ func (a *App) logsView(c *ui.Context) {
 			return
 		}
 
+		if a.ui.logFilterID != "" {
+			ui.Text(c, "仅显示能归属到该客户端的日志；部分 npc 全局日志请在「全部日志」查看").
+				FontSize(11).TextColor(t.TextMuted).Padding(0, 16, 6, 16)
+		}
+
 		a.ui.logList.FollowEnd = true
 		ui.List(c, &a.ui.logList, len(logs), func(i int) {
 			a.logRow(c, logs[i])

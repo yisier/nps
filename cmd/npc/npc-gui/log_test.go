@@ -31,6 +31,12 @@ func TestFilteredLogs(t *testing.T) {
 		t.Fatalf("all logs = %d, want 4", len(got))
 	}
 
+	// 下拉框显示【备注-vkey】，没有备注时只显示 vkey。
+	names, ids := a.logOptions()
+	if len(names) != 3 || names[1] != "one-k1" || names[2] != "two-k2" || ids[1] != "1.1.1.1:8000|k1" {
+		t.Fatalf("log options = %v, %v", names, ids)
+	}
+
 	// 同一地址有多个客户端在运行时，不能用地址过滤，避免串日志。
 	a.ui.clients = []ShortClient{
 		{Name: "a", Addr: "1.1.1.1:8000", Key: "k1", Status: "connected"},
