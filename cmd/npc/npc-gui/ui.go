@@ -34,13 +34,14 @@ type uiState struct {
 	logFilterID string
 	logList     ui.ListState
 
-	// 手工添加
-	manualOpen bool
-	manualName string
-	manualAddr string
-	manualKey  string
-	manualTLS  bool
-	manualErr  string
+	// 手工添加 / 编辑
+	manualOpen   bool
+	manualName   string
+	manualAddr   string
+	manualKey    string
+	manualTLS    bool
+	manualErr    string
+	editingIndex int // -1 表示新增；>=0 表示编辑该客户端
 
 	// 删除确认
 	confirmOpen  bool
@@ -408,6 +409,7 @@ func (a *App) clientsView(c *ui.Context) {
 			a.ui.manualKey = ""
 			a.ui.manualTLS = false
 			a.ui.manualErr = ""
+			a.ui.editingIndex = -1
 			a.ui.manualOpen = true
 		})
 	})
@@ -442,6 +444,18 @@ func (a *App) clientCard(c *ui.Context, i int) {
 			ui.Text(c, clientName(cl)).FontSize(16).Bold()
 			a.statusPill(c, cl.Status)
 			ui.Spacer(c)
+
+			editBtn := ui.ButtonBase(c).Size(26, 26).Radius(6).Center().Label("编辑")
+			if editBtn.Hovered() {
+				editBtn.Background(t.Surface)
+			}
+			editBtn.Children(func() {
+				ui.Icon(c, iconEdit).Size(14, 14).TextColor(t.TextMuted)
+			})
+			editBtn.Tooltip("编辑")
+			if editBtn.Clicked() {
+				a.openEditClient(i)
+			}
 
 			closeBtn := ui.ButtonBase(c).Size(26, 26).Radius(6).Center().Label("删除")
 			if closeBtn.Hovered() {
@@ -529,20 +543,52 @@ func (a *App) submitManualAdd() {
 	}
 
 	id := addr + "|" + key
-	for _, cl := range a.ui.clients {
+	for i, cl := range a.ui.clients {
+		if i == a.ui.editingIndex {
+			continue
+		}
 		if clientID(cl) == id {
 			a.ui.manualErr = "该客户端已存在，不能重复添加"
 			return
 		}
 	}
 
-	if err := a.AddShortcut(ShortClient{Name: name, Addr: addr, Key: key, TLS: a.ui.manualTLS}); err != nil {
+	updated := ShortClient{Name: name, Addr: addr, Key: key, TLS: a.ui.manualTLS}
+
+	if a.ui.editingIndex >= 0 && a.ui.editingIndex < len(a.ui.clients) {
+		old := a.ui.clients[a.ui.editingIndex]
+		if err := a.UpdateShortcut(old.Name, old.Addr, old.Key, updated); err != nil {
+			a.ui.manualErr = "保存失败: " + err.Error()
+			return
+		}
+		a.ui.manualOpen = false
+		a.ui.editingIndex = -1
+		a.ui.clients = snapshotShortcuts()
+		a.notify("已保存", "success")
+		return
+	}
+
+	if err := a.AddShortcut(updated); err != nil {
 		a.ui.manualErr = "添加失败: " + err.Error()
 		return
 	}
 	a.ui.manualOpen = false
 	a.ui.clients = snapshotShortcuts()
 	a.notify("客户端已添加", "success")
+}
+
+func (a *App) openEditClient(i int) {
+	if i < 0 || i >= len(a.ui.clients) {
+		return
+	}
+	cl := a.ui.clients[i]
+	a.ui.editingIndex = i
+	a.ui.manualName = cl.Name
+	a.ui.manualAddr = cl.Addr
+	a.ui.manualKey = cl.Key
+	a.ui.manualTLS = cl.TLS
+	a.ui.manualErr = ""
+	a.ui.manualOpen = true
 }
 
 func (a *App) toggleClient(cl ShortClient, run bool) {
@@ -919,9 +965,13 @@ func (a *App) startUpdate() {
 
 func (a *App) manualDialog(c *ui.Context) {
 	t := c.Theme()
+	title, confirm := "手工添加客户端", "确定"
+	if a.ui.editingIndex >= 0 {
+		title, confirm = "编辑客户端", "保存"
+	}
 	ui.Modal(c, &a.ui.manualOpen, func() {
 		ui.Column(c).Width(420).Gap(12).Children(func() {
-			ui.Text(c, "手工添加客户端").FontSize(16).Bold()
+			ui.Text(c, title).FontSize(16).Bold()
 
 			ui.Field(c, "名称", func() {
 				ui.TextInput(c, &a.ui.manualName).Placeholder("例如: test").AutoFocus()
@@ -942,7 +992,7 @@ func (a *App) manualDialog(c *ui.Context) {
 				ui.Button(c, "取消").OnClick(func() {
 					a.ui.manualOpen = false
 				})
-				ui.PrimaryButton(c, "确定").OnClick(a.submitManualAdd)
+				ui.PrimaryButton(c, confirm).OnClick(a.submitManualAdd)
 			})
 		})
 	})

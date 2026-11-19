@@ -84,6 +84,15 @@ func TestRenderScreens(t *testing.T) {
 	save("manual")
 	a.ui.manualOpen = false
 
+	a.ui.editingIndex = 0
+	cl := a.ui.clients[0]
+	a.ui.manualName, a.ui.manualAddr, a.ui.manualKey = cl.Name, cl.Addr, cl.Key
+	a.ui.manualTLS = cl.TLS
+	a.ui.manualOpen = true
+	save("edit")
+	a.ui.manualOpen = false
+	a.ui.editingIndex = -1
+
 	a.ui.confirmOpen = true
 	a.ui.confirmText = fmt.Sprintf("确定要删除客户端 %q 吗？", "家庭服务器")
 	save("confirm")

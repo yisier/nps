@@ -77,52 +77,6 @@ $env:GOFLAGS = "-tags=npcgui"
 go tool mygo build -platform darwin/universal,windows/amd64,linux/amd64
 ```
 
-## 减小体积
-
-`mygo build` 默认已经带 `-trimpath -ldflags "-s -w"`，Go 层面的常规优化不需要再做。
-当前 `npc-gui.exe` 约 22 MB，大致构成：
-
-- Go 运行时、类型信息与 pclntab：约 15 MB（Go 程序必需，无法去掉）
-- mygo 框架（原生 UI、文本排版）：约 3 MB（最小 mygo 原生应用约 10.5 MB）
-- NPS 客户端依赖（TLS / GM TLS、KCP + FEC、beego 日志等）：其余
-
-还可以做的：
-
-1. **不链接 WebView 支持**（Windows，本程序只用原生 UI）：
-
-   ```powershell
-   $env:GOFLAGS = "-tags=npcgui,mygo_nowebview"
-   go tool mygo build
-   ```
-
-   约省 0.1 MB，意义不大，但可以彻底不依赖 WebView2 代码。
-
-2. **UPX 压缩**（发布流程已启用，Windows 产物自动压缩）：
-
-   本地手动压：
-
-   ```powershell
-   go tool mygo build -skip-installer
-   upx --best --lzma bin\windows-amd64\npc-gui.exe
-   ```
-
-   22 MB → 约 **6.7 MB**（默认压缩约 8.1 MB）。`release.yml` 的 Windows job 会在打包 zip
-   前自动下载 UPX 5.3.0 并执行 `--best --lzma`。需要注意：
-
-   - 部分杀毒软件会对 UPX 壳报毒或直接拦截
-   - 启动时多一次解压，约慢几百毫秒
-   - UPX 会破坏已有签名；如果以后要签名，应在压缩之后再签
-   - 本来就没有符号表，崩溃栈定位不会更差
-
-3. **发布包已经会压缩**：22 MB 的 exe 打成 zip 约 9 MB。
-
-4. 想进一步缩小，只能裁剪 NPS 客户端依赖（KCP/FEC、GM TLS、beego 日志，
-   以及 `server/proxy` → `server/tool` → `gopsutil` 这条链），需要改动
-   `ehang.io/nps/client` 的导入结构，改动大且容易影响功能，一般不建议。
-
-`mygo.json` 里已通过 `resourcesExclude` 把图标 PNG 排除在安装目录之外，
-安装目录只保留 `npc-gui.exe`。
-
 ## 项目结构
 
 ```

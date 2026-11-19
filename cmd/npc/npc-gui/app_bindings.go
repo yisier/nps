@@ -70,6 +70,7 @@ func (a *App) startup() {
 	go syncStartupState()
 
 	a.loadUISettings()
+	a.ui.editingIndex = -1
 	a.ui.icon, _ = ui.DecodeBitmap(windowIcon)
 	a.applyThemeMode()
 	a.refreshClients()
@@ -421,6 +422,60 @@ func findShortcutIndex(name, addr, key string) int {
 
 func (a *App) AddShortcut(sc ShortClient) error {
 	addShortcut(sc)
+	return nil
+}
+
+// UpdateShortcut 修改已有客户端的配置；如果它正在运行，会用新配置自动重启。
+func (a *App) UpdateShortcut(oldName, oldAddr, oldKey string, updated ShortClient) error {
+	oldID := oldAddr + "|" + oldKey
+
+	shortcutsMu.Lock()
+	idx := -1
+	for i, it := range shortcuts {
+		if it.Name == oldName && it.Addr == oldAddr && it.Key == oldKey {
+			idx = i
+			continue
+		}
+		if it.Addr == updated.Addr && it.Key == updated.Key {
+			shortcutsMu.Unlock()
+			return errors.New("该客户端已存在，不能重复添加")
+		}
+	}
+	if idx == -1 {
+		shortcutsMu.Unlock()
+		return errors.New("客户端不存在")
+	}
+	shortcutsMu.Unlock()
+
+	runningMu.Lock()
+	_, wasRunning := running[oldID]
+	runningMu.Unlock()
+
+	if wasRunning {
+		_ = a.ToggleClient(oldName, oldAddr, oldKey, false, false)
+	}
+
+	shortcutsMu.Lock()
+	idx = -1
+	for i, it := range shortcuts {
+		if it.Name == oldName && it.Addr == oldAddr && it.Key == oldKey {
+			idx = i
+			break
+		}
+	}
+	if idx >= 0 {
+		shortcuts[idx] = updated
+		saveShortcutsLocked()
+	}
+	shortcutsMu.Unlock()
+
+	if idx < 0 {
+		return errors.New("客户端不存在")
+	}
+
+	if wasRunning {
+		return a.ToggleClient(updated.Name, updated.Addr, updated.Key, updated.TLS, true)
+	}
 	return nil
 }
 
