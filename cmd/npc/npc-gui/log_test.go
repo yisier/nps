@@ -30,4 +30,25 @@ func TestFilteredLogs(t *testing.T) {
 	if got := a.filteredLogs(); len(got) != 4 {
 		t.Fatalf("all logs = %d, want 4", len(got))
 	}
+
+	// 同一地址有多个客户端在运行时，不能用地址过滤，避免串日志。
+	a.ui.clients = []ShortClient{
+		{Name: "a", Addr: "1.1.1.1:8000", Key: "k1", Status: "connected"},
+		{Name: "b", Addr: "1.1.1.1:8000", Key: "k2", Status: "connected"},
+	}
+	a.ui.logs = []ConnectionLog{
+		{Message: "[I] [1.1.1.1:8000|k1] start vkey:k1"},
+		{Message: "[I] [client.go:104] Successful connection with server 1.1.1.1:8000"},
+		{Message: "[E] [control.go:269] EOF"},
+	}
+	a.ui.logFilterID = "1.1.1.1:8000|k1"
+	if got := a.filteredLogs(); len(got) != 1 {
+		t.Fatalf("shared address logs = %d, want only the prefixed line: %+v", len(got), got)
+	}
+
+	// 同地址只剩一个在运行时，可以安全地用地址匹配全局日志。
+	a.ui.clients[1].Status = "stopped"
+	if got := a.filteredLogs(); len(got) != 2 {
+		t.Fatalf("sole running client logs = %d, want 2: %+v", len(got), got)
+	}
 }

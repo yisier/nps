@@ -701,22 +701,42 @@ func (a *App) logOptions() (names, ids []string) {
 	names = []string{"全部日志"}
 	ids = []string{""}
 	for _, cl := range a.ui.clients {
-		names = append(names, fmt.Sprintf("%s (%s)", clientName(cl), cl.Addr))
+		label := cl.Key
+		if name := strings.TrimSpace(cl.Name); name != "" {
+			label = name + "-" + cl.Key
+		}
+		names = append(names, label)
 		ids = append(ids, clientID(cl))
 	}
 	return names, ids
 }
 
-// filteredLogs 按客户端过滤：匹配日志里的 addr|key、地址或密钥。
+// filteredLogs 按客户端过滤：优先匹配 addr|key 和 vkey；
+// 同一地址只有一个客户端在运行时，才用地址匹配全局日志，避免串到别的客户端。
 func (a *App) filteredLogs() []ConnectionLog {
 	if a.ui.logFilterID == "" {
 		return a.ui.logs
 	}
 	needles := []string{a.ui.logFilterID}
+	var target ShortClient
+	found := false
 	for _, cl := range a.ui.clients {
 		if clientID(cl) == a.ui.logFilterID {
-			needles = append(needles, cl.Addr, cl.Key)
+			target = cl
+			found = true
 			break
+		}
+	}
+	if found {
+		needles = append(needles, target.Key)
+		sharing := 0
+		for _, cl := range a.ui.clients {
+			if cl.Addr == target.Addr && cl.Status != "stopped" {
+				sharing++
+			}
+		}
+		if sharing <= 1 {
+			needles = append(needles, target.Addr)
 		}
 	}
 	out := make([]ConnectionLog, 0, 128)
