@@ -11,7 +11,6 @@ func main() {
 	mygo.App.SetVersion(version.VERSION)
 
 	svc := &App{}
-	mygo.Bind(svc)
 
 	// 标记退出状态：真实的退出（托盘“退出”、系统关机、更新重启）都走
 	// OnBeforeQuit，窗口的关闭钩子据此区分“关闭窗口”与“退出程序”。

@@ -11,7 +11,6 @@ permissions:
 
 env:
   GUI_DIR: cmd/npc/npc-gui
-  FRONTEND_DIR: cmd/npc/npc-gui/frontend
   APP_NAME: npc-gui
 
 jobs:
@@ -165,14 +164,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: yarn
-          cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
-      - name: Enable Yarn (corepack)
-        run: corepack enable
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -223,14 +214,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: yarn
-          cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
-      - name: Enable Yarn (corepack)
-        run: corepack enable
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -276,14 +259,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: yarn
-          cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
-      - name: Enable Yarn (corepack)
-        run: corepack enable
       - name: Set up Go
         uses: actions/setup-go@v5
         with:

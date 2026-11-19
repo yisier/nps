@@ -16,11 +16,15 @@ import (
 	"ehang.io/nps/client"
 	"ehang.io/nps/lib/version"
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/ui"
 )
 
 type App struct {
 	window *mygo.Window
 	tray   *mygo.Tray
+
+	// ui 只在主线程（视图回调与 WhenReady）读写。
+	ui uiState
 }
 
 // ShortClient 与前端结构对应
@@ -60,20 +64,23 @@ var (
 
 // startup 在应用就绪后创建主窗口并初始化托盘（由 mygo.App.WhenReady 调用）。
 func (a *App) startup() {
-	// 初始化日志系统：应用日志走 slog，客户端日志走内存缓冲 + JSON 文件
 	initAppLogger()
 
 	// 同步开机启动状态：检查配置与实际系统设置是否一致
 	go syncStartupState()
 
+	a.loadUISettings()
+	a.applyThemeMode()
+	a.refreshClients()
+	a.restoreClientStates()
+
 	a.window = mygo.NewWindow(mygo.WindowOptions{
-		Title:           "NPS 客户端",
-		URL:             "/",
-		Width:           1000,
-		Height:          600,
-		MinWidth:        1000,
-		MinHeight:       600,
-		BackgroundColor: "#1b2636",
+		Title:     "NPS 客户端",
+		Width:     1000,
+		Height:    600,
+		MinWidth:  900,
+		MinHeight: 560,
+		Content:   ui.View(a.view),
 	})
 
 	// 点击关闭按钮时隐藏窗口而不是退出（托盘应用常驻）
@@ -86,6 +93,16 @@ func (a *App) startup() {
 	})
 
 	a.startTray()
+
+	// 窗口重新显示时立即刷新一次状态。
+	a.window.OnShow(func() {
+		a.window.Update(a.refreshFromBackend)
+	})
+
+	// 启动时后台静默检查更新。
+	a.checkUpdate(true)
+	// 定时刷新客户端状态与日志。
+	go a.refreshLoop()
 }
 
 // syncStartupState 让配置文件里的开机启动设置与系统实际状态保持一致。
@@ -432,6 +449,11 @@ func (a *App) AddShortcutFromBase64(s string) error {
 
 func (a *App) GetShortcuts() ([]ShortClient, error) {
 	loadShortcuts()
+	return snapshotShortcuts(), nil
+}
+
+// snapshotShortcuts 返回内存中的客户端列表及其运行状态，不重新读取配置文件。
+func snapshotShortcuts() []ShortClient {
 	shortcutsMu.Lock()
 	defer shortcutsMu.Unlock()
 	// populate running state
@@ -467,7 +489,7 @@ func (a *App) GetShortcuts() ([]ShortClient, error) {
 		}
 		res[i] = sc
 	}
-	return res, nil
+	return res
 }
 
 func (a *App) RemoveShortcut(name, addr, key string) error {

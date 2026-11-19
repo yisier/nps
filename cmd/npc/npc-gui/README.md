@@ -1,6 +1,11 @@
-# NPS 客户端 GUI (MyGo 版本)
+# NPS 客户端 GUI (MyGo 原生 UI 版本)
 
-基于 [MyGo](https://github.com/egoist/mygo) 构建的 NPS 客户端图形界面（纯 Go，无 cgo）。
+基于 [MyGo](https://github.com/egoist/mygo) 构建的 NPS 客户端图形界面。
+界面由 Go 代码用 `ui` 包直接绘制，不启动 WebView，也不需要 Node.js/Yarn：
+
+- 纯 Go、无 cgo，任意平台可交叉编译
+- 不需要 WebView2（Windows）或 WebKitGTK（Linux）
+- 启动更快、内存占用更低，单个二进制约 22 MB
 
 ## 快捷命令格式
 
@@ -22,8 +27,6 @@ bnBzOk15U2VydmVyfDEyNy4wLjAuMTo4MDI0fG15a2V5MTIzfGZhbHNl
 ## 前置要求
 
 - Go 1.27.3+（MyGo 的要求，`go` 命令会按 `go.mod` 自动切换工具链）
-- Node.js 22.6+ 与 Yarn（构建/调试 Vue 前端）
-- 运行 Windows 版本需要 WebView2 Runtime（Windows 11 已内置）
 
 MyGo CLI 通过 `go.mod` 的 `tool` 指令锁定版本，无需单独安装：
 
@@ -36,13 +39,9 @@ go tool mygo version
 ```powershell
 cd cmd/npc/npc-gui
 
-# 启动开发模式：生成 TypeScript 客户端、运行 Vite dev server、
-# 编译并启动应用；修改 Go 代码后自动重启
+# 编译并启动应用；修改 Go 代码后自动重新编译、重启
 go tool mygo dev
 ```
-
-开发应用会加载 `http://127.0.0.1:34115`（见 `mygo.json` 的 `devUrl`），
-前端仍支持 Vite 热更新。开发构建自带 Web 检查器（右键 → 检查）。
 
 ## 构建
 
@@ -63,7 +62,7 @@ GOFLAGS="-tags=npcgui" go tool mygo build
 - macOS：`npc-gui.app` 与 `.dmg`
 - Linux：`npc-gui` 可执行文件、desktop entry、deb/rpm 等
 
-只要一份安装包/压缩包时：
+只要可执行文件时：
 
 ```powershell
 go tool mygo build -skip-installer -skip-dmg
@@ -78,32 +77,18 @@ $env:GOFLAGS = "-tags=npcgui"
 go tool mygo build -platform darwin/universal,windows/amd64,linux/amd64
 ```
 
-### 生成前端绑定
-
-Go 侧绑定方法签名变更后，重新生成类型化客户端：
-
-```powershell
-go tool mygo generate
-```
-
-生成结果位于 `frontend/src/mygo.ts`（已提交）。`mygo dev` 与 `mygo build`
-会自动重新生成。
-
 ## 项目结构
 
 ```
 cmd/npc/npc-gui/
-├── mygo.json             # 应用名称、版本、前端构建与打包配置
-├── main.go               # 应用入口（绑定服务、窗口生命周期、托盘）
-├── app_bindings.go       # App 服务（前端可调用的方法）与客户端逻辑
+├── mygo.json             # 应用名称、版本、打包配置
+├── main.go               # 应用入口（窗口生命周期、托盘、退出状态）
+├── ui.go                 # 原生界面（视图、状态刷新、对话框、操作）
+├── app_bindings.go       # App 状态与客户端管理逻辑
 ├── tray.go               # 系统托盘
 ├── update.go             # GitHub Release 检查与热更新
 ├── logger.go             # 应用日志 / 客户端日志
-├── resources/            # 应用图标与托盘图标
-└── frontend/
-    ├── src/App.vue       # 主界面
-    ├── src/mygo.ts       # go tool mygo generate 生成（已提交）
-    └── dist/             # 前端构建产物（由 mygo build 嵌入二进制）
+└── resources/            # 应用图标与托盘图标
 ```
 
 ## 构建标签
