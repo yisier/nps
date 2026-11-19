@@ -27,12 +27,9 @@ type uiState struct {
 
 	clientList ui.ListState
 
-	// 日志
-	logs        []ConnectionLog
-	logCounts   map[string]int
-	logFilter   string
-	logFilterID string
-	logList     ui.ListState
+	// 日志（全局运行日志，与 npc 进程一致）
+	logs    []ConnectionLog
+	logList ui.ListState
 
 	// 手工添加 / 编辑
 	manualOpen   bool
@@ -624,7 +621,6 @@ func (a *App) removeClient(i int) {
 		a.notify("删除失败: "+err.Error(), "error")
 		return
 	}
-	delete(a.ui.logCounts, clientID(cl))
 	a.ui.clients = snapshotShortcuts()
 	a.notify("已删除", "success")
 }
@@ -633,49 +629,13 @@ func (a *App) removeClient(i int) {
 
 func (a *App) onPageChanged() {
 	if a.ui.page == 1 {
-		a.ui.logFilter = "全部客户端"
-		a.ui.logFilterID = ""
-		a.resetLogs()
 		a.refreshLogs()
 	}
 }
 
-func (a *App) resetLogs() {
-	a.ui.logs = nil
-	a.ui.logCounts = map[string]int{}
-	a.ui.logList = ui.ListState{}
-}
-
-func (a *App) logTargets() []string {
-	if a.ui.logFilterID != "" {
-		return []string{a.ui.logFilterID}
-	}
-	ids := make([]string, 0, len(a.ui.clients))
-	for _, cl := range a.ui.clients {
-		ids = append(ids, clientID(cl))
-	}
-	return ids
-}
-
+// refreshLogs 读取全局运行日志（beego + 标准库 log + 客户端 logger）。
 func (a *App) refreshLogs() {
-	if a.ui.logCounts == nil {
-		a.ui.logCounts = map[string]int{}
-	}
-	for _, id := range a.logTargets() {
-		snap := getClientLogStore(id).snapshot()
-		seen := a.ui.logCounts[id]
-		if len(snap) < seen {
-			// 日志被清空或文件轮转，移除该客户端的旧日志。
-			a.ui.logs = slices.DeleteFunc(a.ui.logs, func(l ConnectionLog) bool {
-				return l.ClientId == id
-			})
-			seen = 0
-		}
-		if len(snap) > seen {
-			a.ui.logs = append(a.ui.logs, snap[seen:]...)
-		}
-		a.ui.logCounts[id] = len(snap)
-	}
+	a.ui.logs = runLogSnapshot()
 	if len(a.ui.logs) > 10000 {
 		a.ui.logs = a.ui.logs[len(a.ui.logs)-10000:]
 	}
@@ -684,27 +644,12 @@ func (a *App) refreshLogs() {
 func (a *App) logsView(c *ui.Context) {
 	t := c.Theme()
 
-	a.pageHeader(c, "日志", "查看各客户端连接日志")
-
-	names, ids := a.logOptions()
-	if !slices.Contains(names, a.ui.logFilter) {
-		a.ui.logFilter = names[0]
-		a.ui.logFilterID = ""
-		a.resetLogs()
-		a.refreshLogs()
-	}
+	a.pageHeader(c, "日志", "与 npc 进程一致的完整运行日志")
 
 	ui.Column(c).Grow(1).Radius(12).Border(1, t.Border).Background(t.Background).Children(func() {
 		ui.Row(c).FillWidth().Gap(8).AlignItems(ui.Center).Padding(12, 16).
 			BorderWidth(0, 0, 1, 0).BorderColor(t.Border).Children(func() {
-			if ui.Select(c, &a.ui.logFilter, names).Label("客户端").Width(280).Changed() {
-				idx := slices.Index(names, a.ui.logFilter)
-				if idx >= 0 {
-					a.ui.logFilterID = ids[idx]
-				}
-				a.resetLogs()
-				a.refreshLogs()
-			}
+			ui.Text(c, fmt.Sprintf("共 %d 条", len(a.ui.logs))).FontSize(12).TextColor(t.TextMuted)
 			ui.Spacer(c)
 			if !a.ui.logList.AtEnd() {
 				ui.Button(c, "回到底部").OnClick(func() {
@@ -728,16 +673,6 @@ func (a *App) logsView(c *ui.Context) {
 	})
 }
 
-func (a *App) logOptions() (names, ids []string) {
-	names = []string{"全部客户端"}
-	ids = []string{""}
-	for _, cl := range a.ui.clients {
-		names = append(names, fmt.Sprintf("%s (%s)", clientName(cl), cl.Addr))
-		ids = append(ids, clientID(cl))
-	}
-	return names, ids
-}
-
 func (a *App) logRow(c *ui.Context, l ConnectionLog) {
 	t := c.Theme()
 	color := t.Text
@@ -753,26 +688,13 @@ func (a *App) logRow(c *ui.Context, l ConnectionLog) {
 		ui.Box(c).Size(6, 6).Radius(3).Background(color).Margin(5, 4, 0, 0)
 		ui.Text(c, l.Timestamp).FontSize(11).TextColor(t.TextMuted)
 		ui.Text(c, l.Message).FontSize(12).TextColor(color).Grow(1)
-		if a.ui.logFilterID == "" {
-			ui.Text(c, a.clientLabel(l.ClientId)).FontSize(11).TextColor(t.TextMuted)
-		}
 	})
 }
 
-func (a *App) clientLabel(id string) string {
-	for _, cl := range a.ui.clients {
-		if clientID(cl) == id {
-			return clientName(cl)
-		}
-	}
-	return id
-}
-
 func (a *App) clearLogs() {
-	for _, id := range a.logTargets() {
-		_ = a.ClearConnectionLogs(id)
-	}
-	a.resetLogs()
+	clearRunLogs()
+	a.ui.logs = nil
+	a.refreshLogs()
 	a.notify("日志已清空", "success")
 }
 

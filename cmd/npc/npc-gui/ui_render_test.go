@@ -32,13 +32,12 @@ func TestRenderScreens(t *testing.T) {
 		{Name: "备用节点", Addr: "10.0.0.2:8024", Key: "abc12345", Status: "stopped"},
 	}
 	a.ui.logs = []ConnectionLog{
-		{Timestamp: "2026-11-19 14:24:54", Message: "启动 NPC 客户端: server=127.0.0.1:8024, vkey=6237ed8d52, tls=false", Type: "info", ClientId: "127.0.0.1:8024|6237ed8d52"},
-		{Timestamp: "2026-11-19 14:24:54", Message: "连接服务器", Type: "info", ClientId: "127.0.0.1:8024|6237ed8d52"},
-		{Timestamp: "2026-11-19 14:24:55", Message: "客户端连接成功", Type: "success", ClientId: "127.0.0.1:8024|6237ed8d52"},
-		{Timestamp: "2026-11-19 14:24:55", Message: "连接服务器失败 (timeout)，将自动重连", Type: "error", ClientId: "hn1.example.com:8024|dd8dc30956"},
-		{Timestamp: "2026-11-19 14:24:56", Message: "客户端连接已断开", Type: "warning", ClientId: "hn1.example.com:8024|dd8dc30956"},
+		{Timestamp: "2026/11/19 14:24:54", Message: "[I] [control.go:111] the version of client is 0.26.40, the core version of client is 0.26.0,tls enable is false", Type: "info"},
+		{Timestamp: "2026/11/19 14:24:54", Message: "[I] [client.go:104] Successful connection with server 127.0.0.1:8024", Type: "success"},
+		{Timestamp: "2026/11/19 14:24:55", Message: "[D] [control.go:430] try send test packet to target 127.0.0.1:8024", Type: "info"},
+		{Timestamp: "2026/11/19 14:24:55", Message: "[E] [client.go:88] The connection server failed and will be reconnected in five seconds, error dial tcp: connection refused", Type: "error"},
+		{Timestamp: "2026/11/19 14:24:56", Message: "[W] [mux.go:252] mux: read session unpack from connection err EOF", Type: "warning"},
 	}
-	a.ui.logFilter = "全部客户端"
 	a.ui.updateInfo = &UpdateInfo{
 		CurrentVersion: "0.26.40", LatestVersion: "0.26.41", UpdateAvailable: true,
 		ReleaseNotes: "修复了若干连接问题。",

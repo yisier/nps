@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -24,12 +25,22 @@ const (
 	logFileMaxBackups = 3
 )
 
-// initAppLogger 初始化 GUI 自身的日志系统。
-// - 全局 beego logger 仍切到 store，避免客户端库的全局日志刷屏控制台（保持原有行为）
-// - 应用自身日志使用 slog（JSON），同时写入 logs/npc-gui.log 与控制台
+// initAppLogger 初始化 GUI 的日志系统。
+// - beego 全局日志（nps 客户端库使用）接到自定义适配器，格式与 npc 进程一致
+// - 标准库 log（lib/nps_mux 等使用）也写入同一份运行日志
+// - 应用自身日志仍使用 slog（JSON），写入 logs/npc-gui.log
 func initAppLogger() {
-	_ = logs.SetLogger("store")
+	logs.Reset()
+	logs.EnableFuncCallDepth(true)
+	logs.SetLogFuncCallDepth(3)
 	logs.SetLevel(logs.LevelDebug)
+	_ = logs.SetLogger("npcgui")
+
+	// lib/nps_mux 等使用标准库 log，收进同一份运行日志。
+	log.SetFlags(0)
+	log.SetOutput(runLogStdWriter{})
+
+	openRunLogFile()
 
 	var w io.Writer = os.Stderr
 	if fw, err := newRotatingFileWriter(filepath.Join(getLogsPath(), "npc-gui.log")); err == nil {
@@ -37,6 +48,107 @@ func initAppLogger() {
 	}
 	logger := slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	slog.SetDefault(logger)
+}
+
+func init() {
+	logs.Register("npcgui", func() logs.Logger { return &runLogAdapter{} })
+}
+
+// runLogAdapter 把 beego 日志写入全局运行日志，格式与 npc 控制台一致：
+// 2026/11/19 16:00:00 [I] [client.go:104] Successful connection ...
+type runLogAdapter struct{}
+
+func (*runLogAdapter) Init(string) error { return nil }
+func (*runLogAdapter) Destroy()          {}
+func (*runLogAdapter) Flush()            {}
+
+func (*runLogAdapter) WriteMsg(when time.Time, msg string, level int) error {
+	logType := "info"
+	switch level {
+	case logs.LevelEmergency, logs.LevelAlert, logs.LevelCritical, logs.LevelError:
+		logType = "error"
+	case logs.LevelWarning:
+		logType = "warning"
+	}
+	appendRunEntry(logType, when, msg)
+	return nil
+}
+
+// runLogStdWriter 收纳标准库 log 的输出。
+type runLogStdWriter struct{}
+
+func (runLogStdWriter) Write(p []byte) (int, error) {
+	msg := strings.TrimRight(string(p), "\r\n")
+	if msg != "" {
+		appendRunMessage("info", "[I] "+msg)
+	}
+	return len(p), nil
+}
+
+type runLogStore struct {
+	mu   sync.Mutex
+	ring *ringBuffer
+	file *rotatingFileWriter
+}
+
+var appRunLog runLogStore
+
+func openRunLogFile() {
+	appRunLog.mu.Lock()
+	defer appRunLog.mu.Unlock()
+	if appRunLog.ring == nil {
+		appRunLog.ring = newRingBuffer(logBufferCap)
+	}
+	if appRunLog.file == nil {
+		if fw, err := newRotatingFileWriter(filepath.Join(getLogsPath(), "npc-client.log")); err == nil {
+			appRunLog.file = fw
+		}
+	}
+}
+
+func appendRunMessage(logType, msg string) {
+	appendRunEntry(logType, time.Now(), msg)
+}
+
+func appendRunEntry(logType string, when time.Time, msg string) {
+	if logType == "info" && isSuccessMessage(msg) {
+		logType = "success"
+	}
+	e := ConnectionLog{
+		Timestamp: when.Format("2006/01/02 15:04:05"),
+		Message:   msg,
+		Type:      logType,
+	}
+
+	appRunLog.mu.Lock()
+	defer appRunLog.mu.Unlock()
+	if appRunLog.ring == nil {
+		appRunLog.ring = newRingBuffer(logBufferCap)
+	}
+	appRunLog.ring.add(e)
+	if appRunLog.file != nil {
+		_, _ = appRunLog.file.Write([]byte(e.Timestamp + " " + msg + "\n"))
+	}
+}
+
+func runLogSnapshot() []ConnectionLog {
+	appRunLog.mu.Lock()
+	defer appRunLog.mu.Unlock()
+	if appRunLog.ring == nil {
+		return nil
+	}
+	return appRunLog.ring.all()
+}
+
+func clearRunLogs() {
+	appRunLog.mu.Lock()
+	defer appRunLog.mu.Unlock()
+	if appRunLog.ring != nil {
+		appRunLog.ring.reset()
+	}
+	if appRunLog.file != nil {
+		_ = appRunLog.file.truncate()
+	}
 }
 
 // rotatingFileWriter 带大小轮转的日志文件写入器（线程安全）。
@@ -291,15 +403,46 @@ func closeAllLogStores() {
 }
 
 // trpcLogger 把 client.Logger 桥接到 clientLogStore，供 TRPClient 使用。
-// Trace 级别与原先 beego(LevelDebug) 行为一致，不落盘。
+// 同时写入全局运行日志（带客户端前缀），与 npc 进程日志放在一起显示。
 type trpcLogger struct {
 	store *clientLogStore
 }
 
-func (l *trpcLogger) Info(format string, v ...interface{})  { l.store.log("info", format, v...) }
-func (l *trpcLogger) Error(format string, v ...interface{}) { l.store.log("error", format, v...) }
-func (l *trpcLogger) Warn(format string, v ...interface{})  { l.store.log("warning", format, v...) }
-func (l *trpcLogger) Trace(format string, v ...interface{}) {}
+func (l *trpcLogger) Info(format string, v ...interface{}) {
+	msg := formatLogMessage(format, v...)
+	l.store.log("info", "%s", msg)
+	appendRunMessage("info", fmt.Sprintf("[I] [%s] %s", l.store.clientId, msg))
+}
+
+func (l *trpcLogger) Error(format string, v ...interface{}) {
+	msg := formatLogMessage(format, v...)
+	l.store.log("error", "%s", msg)
+	appendRunMessage("error", fmt.Sprintf("[E] [%s] %s", l.store.clientId, msg))
+}
+
+func (l *trpcLogger) Warn(format string, v ...interface{}) {
+	msg := formatLogMessage(format, v...)
+	l.store.log("warning", "%s", msg)
+	appendRunMessage("warning", fmt.Sprintf("[W] [%s] %s", l.store.clientId, msg))
+}
+
+func (l *trpcLogger) Trace(format string, v ...interface{}) {
+	msg := formatLogMessage(format, v...)
+	appendRunMessage("info", fmt.Sprintf("[D] [%s] %s", l.store.clientId, msg))
+}
+
+// formatLogMessage 与 beego logs 的格式化规则一致：
+// 没有占位符时把参数依次接在消息后面，避免出现 %!(EXTRA ...)。
+func formatLogMessage(format string, v ...interface{}) string {
+	if len(v) == 0 {
+		return format
+	}
+	msg := format
+	if !strings.Contains(msg, "%") || strings.Contains(msg, "%%") {
+		msg += strings.Repeat(" %v", len(v))
+	}
+	return fmt.Sprintf(msg, v...)
+}
 
 // isSuccessMessage 判断是否为“成功”类日志（用于 UI 高亮）
 func isSuccessMessage(msg string) bool {

@@ -151,3 +151,12 @@ cmd/npc/npc-gui/
 - macOS: `~/Library/Application Support/npc/npc_data.json`
 
 客户端日志默认保存在 `<配置目录>/npc/logs/`，可在设置中修改日志目录。
+日志页显示的是整个客户端进程的运行日志，格式与 npc 一致：
+
+```
+2026/11/19 16:16:30 [I] [client.go:104] Successful connection with server 127.0.0.1:8024
+```
+
+同时会写入：
+- `logs/npc-client.log`：上述文本格式的完整运行日志（与 npc 控制台/文件日志一致）
+- `logs/npc-client-<vkey>.log`：每个客户端单独的 JSON Lines 日志
